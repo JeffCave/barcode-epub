@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+ <head>
+<meta charset="utf-8" />
+
+<script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
+<script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
+
+<!-- script type="text/javascript" src="./lib/bwip-js/lib/jquery.js"></script -->
+<!-- script type="text/javascript" src="./lib/bwip-js/lib/jquery-ui.min.js"></script -->
+<script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
+<script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
+<script type="text/javascript" src="./lib/bwip-js/lib/symdesc.js"></script>
+<script type="text/javascript" src="./lib/bwip-js/lib/canvas-toblob.js"></script>
+<script type="text/javascript" src="./lib/bwip-js/lib/filesaver.js"></script>
+
+<script>
+window.addEventListener('load',()=>{
+
+	const monochrome = true;
+	const bw = new BWIPJS(bwipjs_fonts, monochrome);
+	//const canvas = new OffscreenCanvas(1, 1);
+	const canvas = document.querySelector('canvas').getContext('2d');
+
+	async function Download(){
+		const response = await fetch('./book/thoreau.LifeWoods.epub')
+		let buffer = await response.arrayBuffer();
+		return buffer;
+	}
+
+	async function Barcode(data){
+		let cfg = {
+			bcid: 'datamatrix',
+			includetext: false
+		};
+		return new Promise((success,fail)=>{
+			//canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+			canvas.fillStyle = "white";
+			canvas.fillRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+			bw.bitmap(new Bitmap(canvas.canvas));
+			BWIPP()(bw, 'datamatrix', data, cfg);
+			bwipjs_fonts.loadfonts(function(e) {
+				if (e) {
+					fail(e);
+				} else {
+					bw.render();
+					let img = canvas.canvas.toDataURL();
+					success(img);
+				}
+			});
+		});
+	}
+
+	async function AppendBarcode(barcode){
+		const main = document.querySelector('main');
+		
+		//let img = document.createElement('canvas');
+		let img = document.createElement('img');
+		
+		img.setAttribute('height', barcode.height);
+		img.setAttribute('width', barcode.width);
+		
+		main.append(img);
+
+		//img.transferFromImageBitmap(barcode);
+		img.src = barcode;
+	}
+
+	async function Process(stm){
+		const MAXSIZE = 10;
+		
+		let progress = document.querySelector('progress');
+		progress.setAttribute('max',stm.byteLength);
+		
+		for(let offset = 0; offset < stm.byteLength; offset+=MAXSIZE){
+			let len = stm.byteLength - offset;
+			len = Math.min(len, MAXSIZE);
+			
+			let arr = new Uint8Array(stm,offset,len);
+			arr = String.fromCharCode(...arr);
+			let barcode = await Barcode(arr);
+			await AppendBarcode(barcode);
+			
+			progress.value = offset;
+			if(offset > MAXSIZE*10){
+				break;
+			}
+		}
+	}
+
+	async function Convert(){
+		document.querySelector('main').innerHTML = '';
+		let stm = await Download();
+		await Process(stm);
+	}
+
+	document.querySelector('button[name="convert"]').addEventListener('click',Convert);
+});
+</script>
+ </head>
+<body>
+
+<header>
+<p>
+<ul>
+<li><a href='https://github.com/metafloor/bwip-js'>BWIP JS</a></li>
+<li><a href='https://github.com/bwipp/postscriptbarcode/wiki/Data-Matrix'>Data Matrix</a></li>
+<li><a href='https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap'>Transfering Image Data</a></li>
+</ul>
+</p>
+<fieldset>
+<legend>Stats</legend>
+<button name='convert'>Convert</button>
+<progress min='0' max='100' value='0'></progress>
+<canvas height='38' width='38'></canvas>
+</fieldset>
+</header>
+
+<main>
+</main>
+
+</body>
+</html>

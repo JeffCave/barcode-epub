@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans|Merriweather&display=swap');
+@import url('layout.css');
+@import url('header.css');
+@import url('sidebar.css');
+@import url('mycharts.css');
+
+
+:root{
+	--main-color: rgb(36, 142, 194);
+	--main-color-contrast: white;
+	--corners:0.25em
+}
+
+
+/**** custom components ***/
+
+.showhide{
+	display:none;
+}
+
+ol#toc{
+	list-style-type: upper-roman;
+}
+
+button.showhide {
+	display:block;
+	position:absolute;
+	right:0px;
+	top:0px;
+	background:transparent;
+	border:0;
+}
+
+.fail{
+	/* border-color:darkred;
+	background-color:darkred;
+	color:white;*/
+	font-weight:bold;
+}
+
+input.fail{
+	border-color:red;
+	box-shadow: 0 0 10px red;
+}
+
+input.warn{
+	border-color:orange;
+	box-shadow: 0 0 10px orange;
+}
+
+input.pass{
+	border-color:green;
+	box-shadow: 0 0 10px green;
+}
+
+@media all and (min-width: 400px) {
+	main {
+		flex: 10 0px; 
+		order: 2;
+	}
+	section { 
+		flex: 0 auto; 
+	}
+	section:last-of-type { 
+		order: 3; 
+	}
+	section:first-of-type { 
+		order: 1; 
+	} 
+	footer { 
+		order: 4; 
+	}
+}
+

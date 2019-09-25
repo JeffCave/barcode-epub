@@ -1,0 +1,15 @@
+body > section > *{
+	border: 1px dotted lightgray;
+	border-radius: var(--corners);
+}
+
+body > section h1{
+	font-size:100%;
+	font-size:larger;
+	font-weight:bold;
+}
+
+body > section > nav > ol,body > section > nav > ul{
+	padding-left:1em;
+}
+

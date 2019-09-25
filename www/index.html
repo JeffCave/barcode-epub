@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+ <head>
+<meta charset="utf-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+
+<title>E-Reader</title>
+
+
+<script async src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js" integrity="sha256-59IZ5dbLyByZgSsRE3Z0TjDuX7e1AiqW5bZ8Bg50dsU=" crossorigin="anonymous"></script>
+
+<script async type='module' src="/assetts/js/vius/extensions.js"></script>
+<script async type='module' src="/assetts/js/vius/default.js"></script>
+
+<link rel="shortcut icon" href="/images/favicon.ico" />
+
+ </head>
+<body>
+
+<header>
+<h1> &#5809; <a href="/">E-Reader</a></h1>
+<nav>
+ <ul>
+  <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li>
+
+  <li><a href="https://github.com/jeffcave" target="_blank">GitHub</a></li>
+  <li><a href="https://gitlab.com/jefferey-cave" target="_blank">GitLab</a></li>
+  <li><input type="search" id="sitesearch" placeholder="Search ..." /></li>
+ </ul>
+</nav>
+<nav id='breadcrumb'><ol></ol></nav>
+<nav class='childpages'><ul><li>&nbsp;</li></ul></nav>
+<progress is='ps-progress' id='progress' value='1' min='0' max='1' title=''></progress>
+
+</header>
+
+ {{content}}
+
+
+<footer>
+ 
+<address>
+Jeff Cave
+</address>
+
+
+</footer>
+
+<script>
+
+</script>
+</body>
+{% if site.google_analytics %}
+{% include google_analytics.html %}
+{% endif %}
+</html>
