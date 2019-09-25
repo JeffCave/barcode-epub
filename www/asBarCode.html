@@ -18,7 +18,6 @@
 window.addEventListener('load',()=>{
 
 	const monochrome = true;
-	const bw = new BWIPJS(bwipjs_fonts, monochrome);
 	//const canvas = new OffscreenCanvas(1, 1);
 	const canvas = document.querySelector('canvas').getContext('2d');
 
@@ -34,9 +33,7 @@ window.addEventListener('load',()=>{
 			includetext: false
 		};
 		return new Promise((success,fail)=>{
-			//canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
-			canvas.fillStyle = "white";
-			canvas.fillRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+			const bw = new BWIPJS(bwipjs_fonts, monochrome);
 			bw.bitmap(new Bitmap(canvas.canvas));
 			BWIPP()(bw, 'datamatrix', data, cfg);
 			bwipjs_fonts.loadfonts(function(e) {
