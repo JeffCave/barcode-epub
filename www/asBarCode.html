@@ -5,14 +5,8 @@
 
 <script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
-
-<!-- script type="text/javascript" src="./lib/bwip-js/lib/jquery.js"></script -->
-<!-- script type="text/javascript" src="./lib/bwip-js/lib/jquery-ui.min.js"></script -->
 <script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
-<script type="text/javascript" src="./lib/bwip-js/lib/symdesc.js"></script>
-<script type="text/javascript" src="./lib/bwip-js/lib/canvas-toblob.js"></script>
-<script type="text/javascript" src="./lib/bwip-js/lib/filesaver.js"></script>
 
 <script>
 window.addEventListener('load',()=>{
@@ -20,6 +14,7 @@ window.addEventListener('load',()=>{
 	const monochrome = true;
 	//const canvas = new OffscreenCanvas(1, 1);
 	const canvas = document.querySelector('canvas').getContext('2d');
+	const bwipp = BWIPP();
 
 	async function Download(){
 		const response = await fetch('./book/thoreau.LifeWoods.epub')
@@ -35,15 +30,15 @@ window.addEventListener('load',()=>{
 		return new Promise((success,fail)=>{
 			const bw = new BWIPJS(bwipjs_fonts, monochrome);
 			bw.bitmap(new Bitmap(canvas.canvas));
-			BWIPP()(bw, 'datamatrix', data, cfg);
+			bwipp(bw, 'datamatrix', data, cfg);
 			bwipjs_fonts.loadfonts(function(e) {
 				if (e) {
 					fail(e);
-				} else {
-					bw.render();
-					let img = canvas.canvas.toDataURL();
-					success(img);
+					return;
 				}
+				bw.render();
+				let img = canvas.canvas.toDataURL();
+				success(img);
 			});
 		});
 	}
