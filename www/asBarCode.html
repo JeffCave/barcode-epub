@@ -28,18 +28,20 @@ window.addEventListener('load',()=>{
 			includetext: false
 		};
 		return new Promise((success,fail)=>{
-			const bw = new BWIPJS(bwipjs_fonts, monochrome);
-			bw.bitmap(new Bitmap(canvas.canvas));
-			bwipp(bw, 'datamatrix', data, cfg);
-			bwipjs_fonts.loadfonts(function(e) {
-				if (e) {
-					fail(e);
-					return;
-				}
-				bw.render();
-				let img = canvas.canvas.toDataURL();
-				success(img);
-			});
+			setTimeout(()=>{
+				const bw = new BWIPJS(bwipjs_fonts, monochrome);
+				bw.bitmap(new Bitmap(canvas.canvas));
+				bwipp(bw, 'datamatrix', data, cfg);
+				bwipjs_fonts.loadfonts(function(e) {
+					if (e) {
+						fail(e);
+						return;
+					}
+					bw.render();
+					let img = canvas.canvas.toDataURL();
+					success(img);
+				});
+			},1);
 		});
 	}
 
@@ -59,7 +61,8 @@ window.addEventListener('load',()=>{
 	}
 
 	async function Process(stm){
-		const MAXSIZE = 10;
+		//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
+		const MAXSIZE = 1550;
 		
 		let progress = document.querySelector('progress');
 		progress.setAttribute('max',stm.byteLength);
@@ -74,9 +77,6 @@ window.addEventListener('load',()=>{
 			await AppendBarcode(barcode);
 			
 			progress.value = offset;
-			if(offset > MAXSIZE*10){
-				break;
-			}
 		}
 	}
 
@@ -98,6 +98,7 @@ window.addEventListener('load',()=>{
 <li><a href='https://github.com/metafloor/bwip-js'>BWIP JS</a></li>
 <li><a href='https://github.com/bwipp/postscriptbarcode/wiki/Data-Matrix'>Data Matrix</a></li>
 <li><a href='https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap'>Transfering Image Data</a></li>
+<li><a href='https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp'>Data Matrix Sizes</a>
 </ul>
 </p>
 <fieldset>
