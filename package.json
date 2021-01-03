@@ -1,0 +1,27 @@
+{
+  "name": "barcode-epub",
+  "version": "0.0.1",
+  "description": "Convert digital data to paper storage for long term storage",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/dpub/barcode-epub.git"
+  },
+  "keywords": [
+    "barcode",
+    "datamatrix",
+    "epub"
+  ],
+  "author": "Jeff Cave",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/dpub/barcode-epub/issues"
+  },
+  "homepage": "https://gitlab.com/dpub/barcode-epub#readme",
+  "dependencies": {
+    "bwip-js": "^2.0.11"
+  }
+}
