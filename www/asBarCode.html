@@ -47,13 +47,13 @@ window.addEventListener('load',()=>{
 
 	async function AppendBarcode(barcode){
 		const main = document.querySelector('main');
-		
+
 		//let img = document.createElement('canvas');
 		let img = document.createElement('img');
-		
+
 		img.setAttribute('height', barcode.height);
 		img.setAttribute('width', barcode.width);
-		
+
 		main.append(img);
 
 		//img.transferFromImageBitmap(barcode);
@@ -63,19 +63,19 @@ window.addEventListener('load',()=>{
 	async function Process(stm){
 		//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
 		const MAXSIZE = 1550;
-		
+
 		let progress = document.querySelector('progress');
 		progress.setAttribute('max',stm.byteLength);
-		
+
 		for(let offset = 0; offset < stm.byteLength; offset+=MAXSIZE){
 			let len = stm.byteLength - offset;
 			len = Math.min(len, MAXSIZE);
-			
+
 			let arr = new Uint8Array(stm,offset,len);
 			arr = String.fromCharCode(...arr);
 			let barcode = await Barcode(arr);
 			await AppendBarcode(barcode);
-			
+
 			progress.value = offset;
 		}
 	}
@@ -89,6 +89,25 @@ window.addEventListener('load',()=>{
 	document.querySelector('button[name="convert"]').addEventListener('click',Convert);
 });
 </script>
+<style>
+@media print {
+    header{
+        display:none;
+    }
+    @page{
+        margin: 2cm;
+        border: 1px solid black;
+    }
+    main {
+        margin:auto;
+    }
+    img{
+        display: inline-block;
+        height: 3.4cm;
+        width: 3.4cm;
+    }
+}
+</style>
  </head>
 <body>
 
