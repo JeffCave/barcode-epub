@@ -1,0 +1,32 @@
+img{
+    padding:0;
+    margin:0;
+}
+@media print {
+    header{
+        display:none;
+    }
+    @page{
+        margin: 1.8cm;
+        margin-top:1.5cm;
+        margin-bottom:1.5cm;
+        /* border: 1px solid black; */
+        @top-right {
+            content: counter(page) " of " counter(pages);
+            margin: 30pt 0 10pt 0;
+            font-size: 8pt;
+        }
+    }
+    main {
+        margin:auto;
+        /*
+        border:1px solid black;
+        padding:1mm;
+        */
+    }
+    img{
+        display: inline-block;
+        height: 3.4cm;
+        width: 3.4cm;
+    }
+}

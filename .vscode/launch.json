@@ -21,6 +21,18 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/decode.js"
+        },
+        {
+            "name": "Chromium",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:8887/index.html",
+            "webRoot": "${workspaceFolder}/www",
+            "runtimeExecutable": "/usr/bin/chromium",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "--user-data-dir=../.chromium-cache/"
+            ]
         }
     ]
 }
