@@ -9,20 +9,26 @@
 
 const bwipjs = require('bwip-js');
 const fs = require('fs');
+const sha = require('js-sha512').sha512;
 const { debugPort } = require('process');
 
 async function ProcessChunk(chunk,i){
     let arr = new Uint8Array(chunk);
     arr = String.fromCharCode(...arr);
-    let png = await bwipjs.toBuffer({
-        bcid: 'datamatrix',
-        text: arr,
-        //scale: 3,
-        //height: 10, width: 10, // in millimeters
-        includetext: false,
-        textxalign:  'center',
-    });
-    fs.writeFileSync(`./encoded/s${i}.png`, png,  "binary");
+    try{
+        let png = await bwipjs.toBuffer({
+            bcid: 'datamatrix',
+            text: arr,
+            //scale: 3,
+            //height: 10, width: 10, // in millimeters
+            includetext: false,
+            textxalign:  'center',
+        });
+        fs.writeFileSync(`./encoded/s${i}.png`, png,  "binary");
+    }
+    catch(e){
+        console.error(`BWIPP failed on ${i}`);
+    }
 }
 
 class SplitHeader {
@@ -45,18 +51,18 @@ class SplitHeader {
     }
 
     calcChecksum(){
-        let sum = 'A'.charCodeAt(0);
-        for(let i=this.p.bytes-1; i>2; i--){
-            let byte = this.p.bytes[i];
-            sum += byte;
-            sum = (sum - (sum / 0xFF)) % 0xFF;
+        let sum = 'U'.charCodeAt(0);
+        for(let i=4; i<this.p.bytes.length; i++){
+            sum += this.p.bytes[i];
+            sum += Math.floor(sum / 256);
+            sum %= 256;
         }
         return sum;
     }
 
     setCheck(){
-        this.p.bytes[2] = this.calcChecksum();
-        return this.p.bytes[2];
+        this.p.bytes[3] = this.calcChecksum();
+        return this.p.bytes[3];
     }
 
     get header(){
@@ -77,7 +83,7 @@ class SplitHeader {
     }
 
     get id(){
-        let id = this.p.id[0];
+        let id = this.p.id;
         return id;
     }
     set id(value){
@@ -114,17 +120,35 @@ class SplitHeader {
 }
 SplitHeader.SIZE = 72;
 
+async function calcFileHash(file){
+    let promise = new Promise(resolve=>{
+        let stmIn = fs.createReadStream(file);
+        let hash = sha.create();
+        stmIn.on( 'data' , (chunk)=>{
+            let arr = new Uint8Array(chunk);
+            arr = String.fromCharCode(...arr);
+            hash.update(arr);
+        } );
+        stmIn.on( 'end' , ()=>{
+            hash = hash.arrayBuffer();
+            hash = new Uint8Array(hash);
+            resolve(hash);
+        });
+    });
+    promise = await promise;
+    return promise;
+}
 
-function main(){
+async function main(){
 
-    //https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
     const header = new SplitHeader();
+    //https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
     let MAXSIZE = 1556-header.SIZE;
     let testfile = './www/book/thoreau.LifeWoods.epub';
     let fsize = fs.statSync(testfile);
     header.pages = Math.ceil(fsize.size / MAXSIZE);
+    header.id = await calcFileHash(testfile);
     const stmIn = fs.createReadStream(testfile, {highWaterMark: MAXSIZE});
-    header.id = 0;
     stmIn.on( 'data' , (chunk)=>{
         chunk = Buffer.concat([header.buffer,chunk]);
         ProcessChunk(chunk,header.page);
