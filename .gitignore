@@ -1,2 +1,3 @@
 encoded/
 node_modules/
+.chromium-cache/
