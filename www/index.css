@@ -3,11 +3,17 @@
 https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
 
 */
+body{
+    background-color: steelblue;
+}
 img{
-    padding:0;
+    padding:1px;
     margin:0;
 }
 @media print {
+    body{
+        background-color: none;
+    }
     header{
         display:none;
     }

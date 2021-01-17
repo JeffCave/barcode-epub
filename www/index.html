@@ -5,12 +5,14 @@
 
 <link rel="stylesheet" type="text/css" href="index.css" />
 
+<script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+
 <script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
 
-<script type="text/javascript" src="./index.js"></script>
+<script  type="module" src="./index.js"></script>
 
  </head>
 <body>
@@ -22,13 +24,18 @@
 <li><a href='https://github.com/bwipp/postscriptbarcode/wiki/Data-Matrix'>Data Matrix</a></li>
 <li><a href='https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap'>Transfering Image Data</a></li>
 <li><a href='https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp'>Data Matrix Sizes</a>
+<li><a href='https://github.com/zxing-js/library'>ZXing JS</a></li>
 </ul>
 </p>
 <fieldset>
 <legend>Stats</legend>
-<button name='convert'>Convert</button>
-<progress min='0' max='100' value='0'></progress>
-<canvas height='38' width='38'></canvas>
+<canvas style='float:right;border:1px solid darkslategray;' height='146' width='146'></canvas>
+<a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a><br />
+<button name='encode'>Encode</button>
+<progress name='encode' min='0' max='100' value='0'></progress><br />
+<button name='decode'>Decode</button>
+<progress name='decode' min='0' max='100' value='0'></progress><br />
+<img id='sample' src='KnownGoodBarcode.png' />
 </fieldset>
 </header>
 
