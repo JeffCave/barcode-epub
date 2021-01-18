@@ -6,9 +6,11 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
 body{
     background-color: steelblue;
 }
-img{
-    padding:1px;
+main img{
+    padding:0;
     margin:0;
+    height:146px;
+    width:146px;
 }
 @media print {
     body{
@@ -35,9 +37,9 @@ img{
         padding:1mm;
         */
     }
-    img{
+    main > img{
         display: inline-block;
-        height: 3.4cm;
-        width: 3.4cm;
+        height: 1.7cm;
+        width: 1.7cm;
     }
 }
