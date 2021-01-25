@@ -6,11 +6,11 @@ export {
 };
 
 import SplitHeader from "./lib/splitheader.js";
-
+import * as b45 from './lib/base45.js';
 
 async function Decode(){
    const canvas = document.querySelector('canvas').getContext('2d');
-   const MAXSIZE = 1556 - SplitHeader.SIZE;
+   const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
 
    const codeReader = new ZXing.BrowserDatamatrixCodeReader();
    let stm = null;
@@ -18,7 +18,8 @@ async function Decode(){
    let imgs = Array.from(document.querySelectorAll('main > img'));
    for (let img of imgs){
        let result = await codeReader.decodeFromImage(img);
-       result = result.rawBytes;
+       result = result.text;
+       result = b45.decode(result);
        let header = new SplitHeader(result);
        console.log(`${header.page} of ${header.pages}`);
        let buf = new Uint8Array(result.buffer, header.SIZE);

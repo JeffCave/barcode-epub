@@ -14,7 +14,7 @@ export {
 };
 
 import SplitHeader from "./lib/splitheader.js";
-
+import * as b45 from './lib/base45.js';
 
 const monochrome = true;
 const bwipp = BWIPP();
@@ -44,7 +44,7 @@ function Barcode(data){
         setTimeout(()=>{
             const bw = new BWIPJS(bwipjs_fonts, monochrome);
             bw.bitmap(new Bitmap(state.canvas.canvas));
-            data = String.fromCharCode(...data);
+            data = b45.encode(data);
             bwipp(bw, 'datamatrix', data, cfg);
             bwipjs_fonts.loadfonts(function(e) {
                 if (e) {
@@ -88,7 +88,8 @@ async function Process(stm){
     const header = new SplitHeader();
 
     //https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
-    const MAXSIZE = 1556-header.SIZE;
+    //const MAXSIZE = 1555-header.SIZE;
+    const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-header.SIZE;
 
     let progress = document.querySelector('progress');
     progress.setAttribute('max',stm.byteLength);
