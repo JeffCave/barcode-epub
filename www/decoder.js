@@ -17,10 +17,10 @@ async function Decode(){
 
    let imgs = Array.from(document.querySelectorAll('main > img'));
    for (let img of imgs){
-       let result = await codeReader.decodeFromImage(img);
+       let result = await codeReader.decodeFromImage(undefined,img.src);
        result = result.text;
        result = b45.decode(result);
-       let header = new SplitHeader(result);
+       let header = new SplitHeader(result.buffer);
        console.log(`${header.page} of ${header.pages}`);
        let buf = new Uint8Array(result.buffer, header.SIZE);
 
@@ -31,5 +31,6 @@ async function Decode(){
        let offset = MAXSIZE * header.page;
        stm.set(buf,offset);
    }
+   return stm;
 
 }

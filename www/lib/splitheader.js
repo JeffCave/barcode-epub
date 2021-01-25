@@ -10,6 +10,18 @@ class SplitHeader {
                     bytes[i] = d.charCodeAt(0);
                 });
         }
+        else {
+            if(buffer.buffer){
+                buffer = buffer.buffer;
+            }
+            if(buffer instanceof ArrayBuffer){
+
+            }
+            else if(Array.isArray(buffer)){
+                buffer = new Uint8Array(buffer);
+                buffer = buffer.buffer;
+            }
+        }
         p.buffer = buffer;
         p.bytes = new Uint8Array(buffer,0);
         p.id = new Uint8Array(buffer,4,64);
