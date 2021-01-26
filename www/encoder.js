@@ -1,12 +1,4 @@
 /**
- * Given A4 paper is 21 x 29.7cm and it is important to leave enough
- * margin for binding (and hole punching), an optimal size appears to
- * be 5 across (@3.4x3.4 cm each)
- *
- * Splitting: 4 bytes for a protocol identifier + 64bytes for a UID (sha512) + 2 bytes for sequence ID + 2 bytes for total packages
- * 72 bytes total
- */
-/**
  * https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes#38323755
  */
 export {
@@ -19,7 +11,9 @@ import * as b45 from './lib/base45.js';
 const monochrome = true;
 const bwipp = BWIPP();
 const state = {
-    canvas: null
+    canvas: null,
+    animStart:Date.now(),
+    lastshow: 0,
 };
 
 async function calcFileHash(buffer){
@@ -44,6 +38,11 @@ function Barcode(data){
         setTimeout(()=>{
             const bw = new BWIPJS(bwipjs_fonts, monochrome);
             bw.bitmap(new Bitmap(state.canvas.canvas));
+            let scale = 1;
+            let pad = 1;
+            bw.scale(scale,scale);
+            pad *= scale;
+            bw.bitmap().pad(pad,pad);
             data = b45.encode(data);
             bwipp(bw, 'datamatrix', data, cfg);
             bwipjs_fonts.loadfonts(function(e) {
@@ -54,17 +53,7 @@ function Barcode(data){
                 bw.render();
 
                 //Apparently the parser wants a "white" border around the image. I'm annoyed by this, but ...
-                let ctx = state.canvas;
-                let img = state.canvas.getImageData(0,0,ctx.canvas.height,ctx.canvas.width);
-                ctx.canvas.height += 2 * 2;
-                ctx.canvas.width += 2 * 2;
-                state.canvas.putImageData(img, 2, 2);
-                ctx.rect (0,0,ctx.canvas.height,ctx.canvas.width);
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 4;
-                ctx.stroke();
-
-                img = state.canvas.canvas.toDataURL();
+                let img = state.canvas.canvas.toDataURL();
                 success(img);
             });
         },1);
@@ -76,11 +65,13 @@ async function AppendBarcode(barcode,header){
 
     let img = document.createElement('img');
     img.setAttribute('title', `${header.page} of ${header.pages}`);
+
     main.append(img);
-    main.append(document.createTextNode('\n'));
+    //main.append(document.createTextNode('\n'));
 
     //img.transferFromImageBitmap(barcode);
     img.src = barcode;
+    return img;
 }
 
 
@@ -91,7 +82,7 @@ async function Process(stm){
     //const MAXSIZE = 1555-header.SIZE;
     const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-header.SIZE;
 
-    let progress = document.querySelector('progress');
+    let progress = document.querySelector('progress[name="encode"]');
     progress.setAttribute('max',stm.byteLength);
 
     header.pages = Math.ceil(stm.byteLength / MAXSIZE);
@@ -117,9 +108,22 @@ async function Process(stm){
     }
 }
 
+function Animate(){
+    let imgs = Array.from(document.querySelectorAll("main > img"));
+    if(imgs.length == 0) return;
+
+    imgs[state.lastshow].classList.remove('show');
+
+    let i = (Date.now()/200) % imgs.length;
+    i = Math.floor(i);
+    imgs[i].classList.add('show');
+    state.lastshow = i;
+}
+
 async function Encode(){
     state.canvas = document.querySelector('canvas').getContext('2d');
     document.querySelector('main').innerHTML = '';
     let stm = await Download();
+    setInterval(Animate,100);
     await Process(stm);
 }
