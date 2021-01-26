@@ -9,7 +9,6 @@ import SplitHeader from "./lib/splitheader.js";
 import * as b45 from './lib/base45.js';
 
 async function Decode(){
-    const canvas = document.querySelector('canvas').getContext('2d');
     const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
 
     const codeReader = new ZXing.BrowserDatamatrixCodeReader();

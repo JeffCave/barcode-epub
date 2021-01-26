@@ -27,6 +27,26 @@ class SplitHeader {
         p.id = new Uint8Array(buffer,4,64);
         p.page = new Uint16Array(buffer,68,2);
         this.p = p;
+
+        this.version = 0;
+    }
+
+    isValid(){
+        if(this.bytes[0] !== 'p' && this.bytes[1] !== 'd'){
+            return false;
+        }
+
+        if(this.version !== 0){
+            return false;
+        }
+
+        let actual = this.calcChecksum();
+        let expect = this.checksum;
+        if(actual !== expect){
+            return false;
+        }
+
+        return true;
     }
 
     calcChecksum(){
