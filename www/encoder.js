@@ -37,7 +37,7 @@ function Barcode(data){
             const bw = new BWIPJS(bwipjs_fonts, monochrome);
             bw.bitmap(new Bitmap(state.canvas.canvas));
             let scale = 1;
-            let pad = 1;
+            let pad = 10;
             bw.scale(scale,scale);
             pad *= scale;
             bw.bitmap().pad(pad,pad);
@@ -136,9 +136,12 @@ function Animate(start=null){
 }
 
 async function Encode(){
+    let button = document.querySelector('button[name="encode"]');
+    button.disabled = true;
     state.canvas = document.querySelector('canvas').getContext('2d');
     document.querySelector('main').innerHTML = '';
     let stm = await Download();
     Animate(true);
     await Process(stm);
+    button.disabled = false;
 }

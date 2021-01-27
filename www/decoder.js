@@ -8,17 +8,34 @@ export {
 import SplitHeader from "./lib/splitheader.js";
 import * as b45 from './lib/base45.js';
 
+const state = {
+    video: null
+};
+
+async function getMonitorSource(){
+    if(state.video) return state.video;
+    state.video = await navigator.mediaDevices.getDisplayMedia();
+    return state.video;
+}
+
 async function Decode(){
     const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
 
     const codeReader = new ZXing.BrowserDatamatrixCodeReader();
     let stm = null;
+    let button = document.querySelector('button[name="decode"]');
     let progress = document.querySelector('progress[name="decode"]');
 
-    let imgs = Array.from(document.querySelectorAll('main > img'));
-    let id = null;
-    for (let img of imgs){
-        let result = await codeReader.decodeFromImage(undefined,img.src);
+    button.disabled = true;
+
+    let imgs = await getMonitorSource();
+    let indexcard = null;
+
+    codeReader.decodeFromStream(imgs,undefined,(result,err)=>{
+        if(err){
+            console.debug(err);
+        }
+        if(!result) return;
         result = result.text;
         result = b45.decode(result);
         let header = new SplitHeader(result.buffer);
@@ -29,15 +46,23 @@ async function Decode(){
             let size = MAXSIZE * header.pages;
             stm = new Uint8Array(size);
             progress.setAttribute('max',header.pages);
-            id = header.idString;
+            indexcard = {
+                id: header.idString,
+                waiting: new Set([...Array(header.pages).keys()])
+            };
         }
         let offset = MAXSIZE * header.page;
         stm.set(buf,offset);
-        progress.value += 1;
-    }
+        indexcard.waiting.delete(header.page);
+        progress.value = indexcard.size;
 
-    stm = new Blob([stm],{type:'application/epub+zip'});
-    saveAs(stm,`${id}.epub`);
+        if(indexcard.waiting.size === 0){
+            this.stopContinuousDecode();
+            stm = new Blob([stm],{type:'application/epub+zip'});
+            saveAs(stm,`${id}.epub`);
+            button.disabled = false;
+        }
+    });
 
-    return stm;
+
 }
