@@ -16,6 +16,7 @@ async function Decode(){
     let progress = document.querySelector('progress[name="decode"]');
 
     let imgs = Array.from(document.querySelectorAll('main > img'));
+    let id = null;
     for (let img of imgs){
         let result = await codeReader.decodeFromImage(undefined,img.src);
         result = result.text;
@@ -28,11 +29,15 @@ async function Decode(){
             let size = MAXSIZE * header.pages;
             stm = new Uint8Array(size);
             progress.setAttribute('max',header.pages);
+            id = header.idString;
         }
         let offset = MAXSIZE * header.page;
         stm.set(buf,offset);
         progress.value += 1;
     }
-    return stm;
 
+    stm = new Blob([stm],{type:'application/epub+zip'});
+    saveAs(stm,`${id}.epub`);
+
+    return stm;
 }

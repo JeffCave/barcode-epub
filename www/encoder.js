@@ -12,8 +12,6 @@ const monochrome = true;
 const bwipp = BWIPP();
 const state = {
     canvas: null,
-    animStart:Date.now(),
-    lastshow: 0,
 };
 
 async function calcFileHash(buffer){
@@ -66,6 +64,8 @@ async function AppendBarcode(barcode,header){
     let img = document.createElement('img');
     img.setAttribute('title', `${header.page} of ${header.pages}`);
 
+    img.addEventListener('click',Animate);
+
     main.append(img);
     //main.append(document.createTextNode('\n'));
 
@@ -108,22 +108,37 @@ async function Process(stm){
     }
 }
 
-function Animate(){
-    let imgs = Array.from(document.querySelectorAll("main > img"));
-    if(imgs.length == 0) return;
+function Animate(start=null){
+    if(typeof start !== 'boolean'){
+        start = null;
+    }
+    if(start === null){
+        Animate(!state.animation);
+    }
+    else if (start === false && state.animation){
+        clearInterval(state.animation);
+        state.animation = null;
+    }
+    else if(start == true && !state.animation){
+        state.lastshow = 0;
+        state.animation = setInterval(()=>{
+            let imgs = Array.from(document.querySelectorAll("main > img"));
+            if(imgs.length == 0) return;
 
-    imgs[state.lastshow].classList.remove('show');
+            imgs[state.lastshow].classList.remove('show');
 
-    let i = (Date.now()/200) % imgs.length;
-    i = Math.floor(i);
-    imgs[i].classList.add('show');
-    state.lastshow = i;
+            let i = (Date.now()/200) % imgs.length;
+            i = Math.floor(i);
+            imgs[i].classList.add('show');
+            state.lastshow = i;
+        },100);
+    }
 }
 
 async function Encode(){
     state.canvas = document.querySelector('canvas').getContext('2d');
     document.querySelector('main').innerHTML = '';
     let stm = await Download();
-    setInterval(Animate,100);
+    Animate(true);
     await Process(stm);
 }
