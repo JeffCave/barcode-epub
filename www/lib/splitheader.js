@@ -92,6 +92,23 @@ class SplitHeader {
         }
         this.setCheck();
     }
+
+    get idString(){
+        let id = this.p.id;
+        id = String.fromCharCode(... id);
+        id = window.btoa(id);
+        return id;
+    }
+    set idString(id){
+        id = window.atob(id);
+        id = id.split('').map(d=>{
+            d = d.charCodeAt(0);
+            return d;
+        });
+        id = new Uint8Array(id);
+        this.id = id;
+    }
+
     get page(){
         return this.p.page[0];
     }
