@@ -19,6 +19,12 @@ async function getMonitorSource(){
 }
 
 async function Decode(){
+    let stylesheet = document.createElement('link');
+    stylesheet.setAttribute('rel','stylesheet');
+    stylesheet.setAttribute('type','text/css');
+    stylesheet.setAttribute('href','decode.css');
+    document.head.append(stylesheet);
+
     const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
 
     const codeReader = new ZXing.BrowserDatamatrixCodeReader();
@@ -31,7 +37,8 @@ async function Decode(){
     let imgs = await getMonitorSource();
     let indexcard = null;
 
-    codeReader.decodeFromStream(imgs,undefined,(result,err)=>{
+    let debugvid = document.querySelector('video[name="debug"]');
+    codeReader.decodeFromStream(imgs,debugvid,(result,err)=>{
         if(err){
             console.debug(err);
         }
@@ -61,6 +68,9 @@ async function Decode(){
             stm = new Blob([stm],{type:'application/epub+zip'});
             saveAs(stm,`${id}.epub`);
             button.disabled = false;
+            for(let stylesheet of document.querySelectorAll('link[href="decode.css"]')){
+                document.head.remove(stylesheet);
+            }
         }
     });
 

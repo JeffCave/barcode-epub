@@ -109,6 +109,7 @@ async function Process(stm){
 }
 
 function Animate(start=null){
+    const ANIM_SPEED = 2000;
     if(typeof start !== 'boolean'){
         start = null;
     }
@@ -121,17 +122,21 @@ function Animate(start=null){
     }
     else if(start == true && !state.animation){
         state.lastshow = 0;
-        state.animation = setInterval(()=>{
+
+        let changeslide = ()=>{
             let imgs = Array.from(document.querySelectorAll("main > img"));
             if(imgs.length == 0) return;
 
             imgs[state.lastshow].classList.remove('show');
 
-            let i = (Date.now()/200) % imgs.length;
+            let i = (Date.now()/ANIM_SPEED) % imgs.length;
             i = Math.floor(i);
             imgs[i].classList.add('show');
             state.lastshow = i;
-        },100);
+        };
+
+        state.animation = setInterval(changeslide,ANIM_SPEED);
+        changeslide();
     }
 }
 
