@@ -17,25 +17,18 @@ body{
 }
 main{
     font-size: 0;
-    text-align: center;
 }
 main > img {
-    position: fixed;
+    /* border: 10px solid white; */
     padding: 0;
     margin: 0;
-    opacity:0;
+    display:none;
 }
 main > img::after{
     content: "[" attr(title) "]";
 }
 main > img.show{
-    opacity:1;
-}
-table, tr, th, td {
-    padding:0;
-    margin:0;
-    border-collapse: collapse;
-    font-family: monospace;
+    display:inline-block;
 }
 canvas{
     display:none;
@@ -57,7 +50,7 @@ canvas{
         }
     }
     body{
-        background-color: none;
+        background-color: initial;
     }
     header{
         display:none;
