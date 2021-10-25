@@ -72,8 +72,8 @@ canvas{
     main > img {
         position: relative;
         display: inline-block;
-        height: 42mm;
-        width: 42mm;
+        height: 84mm;
+        width: 84mm;
         animation-name: none;
         opacity:1;
     }
