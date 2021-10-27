@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <title>Camera and Video Control with HTML5 Example</title>
     <meta name="description" content="Access the desktop camera and video using HTML, JavaScript, and Canvas.  The camera may be controlled using HTML5 and getUserMedia." />
-    <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+    <script type="text/javascript" src="./lib/zxing.js"></script>
 
     <style>
         video { border: 1px solid #ccc; display: block; margin: 0 0 20px 0; }
@@ -39,7 +39,6 @@
     log.style.color = 'white';
     console.error = (msg)=>{
         orig(msg);
-        msg = JSON.stringify(msg);
         let li = document.createElement('li');
         li.textContent = msg;
         li.style.backgroundColor = 'darkred';
@@ -56,7 +55,12 @@ window.addEventListener("load", async ()=>{
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
     let video = document.getElementById('video');
-    let mediaConfig =  { video: true };
+    let mediaConfig =  { 
+        video: {
+            facingMode: 'environment'
+        }, 
+        audio: false, 
+    };
     let errBack = function(e) {
         console.log('An error has occurred!', e)
     };
@@ -102,7 +106,12 @@ window.addEventListener("load", async ()=>{
     };
 
     const devices = await navigator.mediaDevices.enumerateDevices();
-    source.innerHTML = devices
+    sources.innerHTML = devices
+        .filter(d=>{
+            let rtn = d.label.trim();
+            rtn = rtn !== '';
+            return rtn ;
+        })
         .map((d)=>{
             let opt = `<option value='${d.deviceId}'>${d.label}</option>`;
             return opt;
@@ -110,12 +119,16 @@ window.addEventListener("load", async ()=>{
         .join('\n')
         ;
     function changeSource(){
+        //if(!video.srcObject) return;
+        //for(let track of video.srcObject.getTracks()){
+        //    track.stop();
+        //}
         navigator.mediaDevices.getUserMedia(mediaConfig).then(function(stream) {
             video.srcObject = stream;
             video.play();
         });
     }
-    source.addEventListener('change',changeSource);
+    sources.addEventListener('change',changeSource);
     changeSource();
 
     // Trigger photo take
