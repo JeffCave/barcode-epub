@@ -33,6 +33,17 @@ main > img.show{
 canvas{
     display:none;
 }
+details > summary {
+    font-size: 2em;
+    content: '⋮⋮⋮';
+}
+details > summary::marker {
+    content: '⋮⋮⋮';
+}
+details[open] > summary{
+    font-size:1em;
+}
+
 @keyframes show {
     0%   { opacity:1; }
     100% { opacity:0; }
@@ -65,8 +76,8 @@ canvas{
     main > img {
         position: relative;
         display: inline-block;
-        height: 84mm;
-        width: 84mm;
+        height: 168mm;
+        width: 168mm;
         animation-name: none;
         opacity:1;
     }

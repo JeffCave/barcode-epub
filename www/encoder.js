@@ -27,8 +27,8 @@ async function Download(){
 
 function Barcode(data){
 	let cfg = {
-		bcid: 'datamatrix',
-		//bcid: 'qrcode',
+		//bcid: 'datamatrix',
+		bcid: 'qrcode',
 		padding: 1,
 		scaleX: 2,
 		scaleY: 2

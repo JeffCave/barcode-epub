@@ -12,29 +12,36 @@ const state = {
 	video: null
 };
 
-async function getMonitorSource(){
+async function getMonitorSource(src='monitor'){
 	if(state.video) return state.video;
-	state.video = await navigator.mediaDevices.getDisplayMedia();
+
+	if(src === 'monitor'){
+		state.video = await navigator.mediaDevices.getDisplayMedia();
+	}
+	else{
+		state.video = await navigator.mediaDevices.getUserMedia({ 
+			audio:false,
+			video: {
+				facingMode: 'environment'
+		  	}
+		});
+		state.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]});
+	}
 	return state.video;
 }
 
-async function Decode(){
-	let stylesheet = document.createElement('link');
-	stylesheet.setAttribute('rel','stylesheet');
-	stylesheet.setAttribute('type','text/css');
-	stylesheet.setAttribute('href','decode.css');
-	//document.head.append(stylesheet);
+async function Decode(imgsource='monitor'){
 
 	const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
 
-	const codeReader = new ZXing.BrowserDatamatrixCodeReader();
-	//const codeReader = new ZXing.BrowserQRCodeReader();
+	//const codeReader = new ZXing.BrowserDatamatrixCodeReader();
+	const codeReader = new ZXing.BrowserQRCodeReader();
 	let button = document.querySelector('button[name="decode"]');
 	let progress = document.querySelector('progress[name="decode"]');
 
 	button.disabled = true;
 
-	let camera = await getMonitorSource();
+	let camera = await getMonitorSource(imgsource);
 	let indexcards = new Map();
 
 	let debugvid = document.querySelector('video[name="debug"]');
@@ -42,10 +49,13 @@ async function Decode(){
 	debugvid.style.display = 'block';
 	
 	codeReader.decodeFromStream(camera,debugvid,(result,err)=>{
+		button.style.backgroundColor = 'green';
 		if(err){
 			console.debug(err);
 		}
 		if(!result) return;
+
+
 		result = result.text;
 		result = b45.decode(result);
 		let header = new SplitHeader(result.buffer);
@@ -82,10 +92,6 @@ async function Decode(){
 			codeReader.stopContinuousDecode();
 			let stm = new Blob([indexcard.stm],{type:'application/epub+zip'});
 			saveAs(stm,`${indexcard.id}.epub`);
-			button.disabled = false;
-			for(let stylesheet of document.querySelectorAll('link[href="decode.css"]')){
-				document.head.remove(stylesheet);
-			}
 			for(let track of state.video.getTracks()){
 				track.stop();
 			}

@@ -19,16 +19,17 @@
 <body>
 
 <header>
-<fieldset>
- <legend>Stats</legend>
+<details open>
+ <summary> </summary>
  <canvas style='border:1px solid darkslategray;' height='146' width='146'></canvas>
  <a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a><br />
  <button name='encode'>Encode</button>
  <progress name='encode' min='0' max='100' value='0'></progress><br />
  <button name='print'>Print</button><br />
  <button name='decode'>Decode</button>
+ <button name='fromCamera'>Decode Camera</button>
  <progress name='decode' min='0' max='100' value='0'></progress><br />
-</fieldset>
+</details>
 </header>
 <main></main>
 <video name='debug' height="80%" width="80%"></video>
