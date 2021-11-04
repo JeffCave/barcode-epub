@@ -44,7 +44,31 @@ details[open] > summary{
     font-size:1em;
 }
 
-@keyframes show {
+.status{
+    position: relative;
+    display:inline-block;
+    height:1em;
+    width:1em;
+    border-radius: 0.5em;
+    border:0.1em solid black;
+    background-color: slategrey;
+    color:slategrey;
+}
+
+.status.pass{
+    background-color: green;
+}
+.status.fail{
+    background-color:red;
+}
+.status.warn{
+    background-color:orange;
+}
+
+.flash{
+    animation-duration:3s;
+}
+@keyframes flash {
     0%   { opacity:1; }
     100% { opacity:0; }
 }
@@ -76,8 +100,8 @@ details[open] > summary{
     main > img {
         position: relative;
         display: inline-block;
-        height: 168mm;
-        width: 168mm;
+        height: 84mm;
+        width: 84mm;
         animation-name: none;
         opacity:1;
     }

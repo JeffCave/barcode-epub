@@ -110,8 +110,8 @@ async function Process(stm){
 }
 
 function Animate(start=null){
-	//const ANIM_SPEED = 2000;
-	const ANIM_SPEED = 750;
+	const ANIM_SPEED = 2000;
+	//const ANIM_SPEED = 750;
 	if(typeof start !== 'boolean'){
 		start = null;
 	}

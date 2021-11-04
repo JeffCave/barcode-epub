@@ -12,7 +12,7 @@ const state = {
 	video: null
 };
 
-async function getMonitorSource(src='monitor'){
+async function getMonitorSource(src='monitor',light=false){
 	if(state.video) return state.video;
 
 	if(src === 'monitor'){
@@ -25,7 +25,9 @@ async function getMonitorSource(src='monitor'){
 				facingMode: 'environment'
 		  	}
 		});
-		state.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]});
+		if(light){
+			state.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]});
+		}
 	}
 	return state.video;
 }
@@ -36,6 +38,7 @@ async function Decode(imgsource='monitor'){
 
 	//const codeReader = new ZXing.BrowserDatamatrixCodeReader();
 	const codeReader = new ZXing.BrowserQRCodeReader();
+	let status = document.querySelector('.status');
 	let button = document.querySelector('button[name="decode"]');
 	let progress = document.querySelector('progress[name="decode"]');
 
@@ -49,13 +52,14 @@ async function Decode(imgsource='monitor'){
 	debugvid.style.display = 'block';
 	
 	codeReader.decodeFromStream(camera,debugvid,(result,err)=>{
-		button.style.backgroundColor = 'green';
 		if(err){
 			console.debug(err);
 		}
 		if(!result) return;
 
 
+		status.classList.add('pass');
+		status.classList.add('flash');
 		result = result.text;
 		result = b45.decode(result);
 		let header = new SplitHeader(result.buffer);
