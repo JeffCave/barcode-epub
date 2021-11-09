@@ -2,7 +2,9 @@
  * https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes#38323755
  */
 export {
-	Encode as default
+	Encode as default,
+	Encode,
+	Animate,
 };
 
 import SplitHeader from "./lib/splitheader.js";
@@ -12,6 +14,7 @@ const monochrome = true;
 const bwipp = BWIPP();
 const state = {
 	canvas: null,
+	context: null,
 };
 
 async function calcFileHash(buffer){
@@ -36,7 +39,7 @@ function Barcode(data){
 	return new Promise((success,fail)=>{
 		setTimeout(()=>{
 			const bw = new BWIPJS(bwipjs_fonts, monochrome);
-			bw.bitmap(new Bitmap(state.canvas.canvas));
+			bw.bitmap(new Bitmap(state.context.canvas));
 			let scale = 2;
 			let pad = 10;
 			bw.scale(scale,scale);
@@ -52,7 +55,7 @@ function Barcode(data){
 				bw.render();
 
 				//Apparently the parser wants a "white" border around the image. I'm annoyed by this, but ...
-				let img = state.canvas.canvas.toDataURL();
+				let img = state.context.canvas.toDataURL();
 				success(img);
 			});
 		},1);
@@ -76,14 +79,13 @@ async function AppendBarcode(barcode,header){
 }
 
 
-async function Process(stm){
+async function Process(stm,progress){
 	const header = new SplitHeader();
 
 	//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
 	//const MAXSIZE = 1555-header.SIZE;
 	const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-header.SIZE;
 
-	let progress = document.querySelector('progress[name="encode"]');
 	progress.setAttribute('max',stm.byteLength);
 
 	header.pages = Math.ceil(stm.byteLength / MAXSIZE);
@@ -109,7 +111,7 @@ async function Process(stm){
 	}
 }
 
-function Animate(start=null){
+function Animate(start=null,query='main > img'){
 	const ANIM_SPEED = 2000;
 	//const ANIM_SPEED = 750;
 	if(typeof start !== 'boolean'){
@@ -126,7 +128,7 @@ function Animate(start=null){
 		state.lastshow = 0;
 
 		let changeslide = ()=>{
-			let imgs = Array.from(document.querySelectorAll("main > img"));
+			let imgs = Array.from(document.querySelectorAll(query));
 			if(imgs.length == 0) return;
 
 			imgs[state.lastshow].classList.remove('show');
@@ -142,13 +144,23 @@ function Animate(start=null){
 	}
 }
 
-async function Encode(){
-	let button = document.querySelector('button[name="encode"]');
-	button.disabled = true;
-	state.canvas = document.querySelector('canvas').getContext('2d');
-	document.querySelector('main').innerHTML = '';
+async function Encode(progress){
+	if(!state.context){
+		// this should be an offscreen canvas
+        //state.canvas = document.querySelector('canvas').getContext('2d');
+		if(window.OffscreenCanvas){
+			state.canvas = new OffscreenCanvas(146, 146);
+		}
+		else{
+			state.canvas = document.createElement('canvas');
+			state.canvas.height = 146;
+			state.canvas.width = state.canvas.height;
+			state.canvas.style.opacity = 0;
+			document.body.append(state.canvas);
+		}
+		state.context = state.canvas.getContext('2d');
+    }
+
 	let stm = await Download();
-	Animate(true);
-	await Process(stm);
-	button.disabled = false;
+	await Process(stm,progress);
 }

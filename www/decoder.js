@@ -32,18 +32,12 @@ async function getMonitorSource(src='monitor',light=false){
 	return state.video;
 }
 
-async function Decode(imgsource='monitor'){
+async function Decode(imgsource='monitor',status){
 
 	const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
 
 	//const codeReader = new ZXing.BrowserDatamatrixCodeReader();
 	const codeReader = new ZXing.BrowserQRCodeReader();
-	let status = document.querySelector('.status');
-	let button = document.querySelector('button[name="decode"]');
-	let progress = document.querySelector('progress[name="decode"]');
-
-	button.disabled = true;
-
 	let camera = await getMonitorSource(imgsource);
 	let indexcards = new Map();
 
@@ -53,13 +47,20 @@ async function Decode(imgsource='monitor'){
 	
 	codeReader.decodeFromStream(camera,debugvid,(result,err)=>{
 		if(err){
-			console.debug(err);
+			switch(err.name){
+				case 'FormatException':
+				case 'NotFoundException':
+					console.debug(err);
+					break;
+				default:
+					console.error(err);
+					break;
+			}
 		}
-		if(!result) return;
+		if(!result) return false;
 
 
-		status.classList.add('pass');
-		status.classList.add('flash');
+		status.status.classList.add('pass');
 		result = result.text;
 		result = b45.decode(result);
 		let header = new SplitHeader(result.buffer);
@@ -67,7 +68,7 @@ async function Decode(imgsource='monitor'){
 		let indexcard = indexcards.get(header.idString);
 		if(!indexcard){
 			let size = MAXSIZE * header.pages;
-			progress.setAttribute('max',header.pages);
+			status.progress.setAttribute('max',header.pages);
 			indexcard = {
 				id: header.idString,
 				waiting: new Set([...Array(header.pages).keys()]),
@@ -90,7 +91,7 @@ async function Decode(imgsource='monitor'){
 		// apply it to the larger stream
 		indexcard.stm.set(buf,offset);
 		indexcard.waiting.delete(header.page);
-		progress.value = indexcard.waiting.size;
+		status.progress.value = indexcard.waiting.size;
 
 		if(indexcard.waiting.size === 0){
 			codeReader.stopContinuousDecode();

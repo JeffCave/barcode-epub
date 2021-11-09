@@ -15,24 +15,34 @@
 
 <script  type="module" src="./index.js"></script>
 
- </head>
+</head>
 <body>
 
 <header>
-<details open>
- <summary> </summary>
- <canvas style='border:1px solid darkslategray;' height='146' width='146'></canvas>
- <a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a><br />
- <button name='encode'>Encode</button>
- <progress name='encode' min='0' max='100' value='0'></progress><br />
- <button name='print'>Print</button><br />
- <button name='decode'>Decode</button>
- <button name='fromCamera'>Decode Camera</button>
- <progress name='decode' min='0' max='100' value='0'></progress>
- <div class='status'></div>
-</details>
+ <nav>
+  <ul>
+   <li><button name='left'>&lt;</button></li>
+   <li><button name='right'>&gt;</button></li>
+  </ul>
+ </nav>
 </header>
-<main></main>
-<video name='debug' height="80%" width="80%"></video>
+<main>
+ <article data-page='decoder'>
+  <button name='decode'>Decode</button><br />
+  <button name='fromCamera'>Decode Camera</button><br />
+  <progress name='decode' min='0' max='100' value='0'></progress><br />
+  <div class='status'></div><br />
+  <video name='debug' height="80%" width="80%"></video>
+ </article>
+ <article data-page='library'>
+  <a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a>
+ </article>
+ <article data-page='book'>
+  <button name='encode'>Encode</button><br />
+  <progress name='encode' min='0' max='100' value='0'></progress><br />
+  <button name='print'>Print</button><br />
+  <canvas style='border:1px solid darkslategray;position:relative;display:block;' height='146' width='146'></canvas><br />
+ </article>
+</main>
 </body>
 </html>
