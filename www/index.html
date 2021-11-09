@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html>
- <head>
+<html lang="en">
+<head>
 <meta charset="utf-8" />
 
 <link rel="stylesheet" type="text/css" href="index.css" />
 
-<script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
 
 <script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
 <script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
+<script type="text/javascript" src="./lib/zxing.js"></script>
 
 <script  type="module" src="./index.js"></script>
 
@@ -19,42 +19,20 @@
 <body>
 
 <header>
-<p>
-<ul>
-<li><a href='https://github.com/metafloor/bwip-js'>BWIP JS</a></li>
-<li><a href='https://github.com/bwipp/postscriptbarcode/wiki/Data-Matrix'>Data Matrix</a></li>
-<li><a href='https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap'>Transfering Image Data</a></li>
-<li><a href='https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp'>Data Matrix Sizes</a>
-<li><a href='https://github.com/zxing-js/library'>ZXing JS</a></li>
-</ul>
-</p>
-<fieldset>
-<legend>Stats</legend>
-<canvas style='float:right;border:1px solid darkslategray;' height='146' width='146'></canvas>
-<a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a><br />
-<button name='encode'>Encode</button>
-<progress name='encode' min='0' max='100' value='0'></progress><br />
-<button name='print'>Print</button><br />
-<button name='decode'>Decode</button>
-<progress name='decode' min='0' max='100' value='0'></progress><br />
-</fieldset>
+<details open>
+ <summary> </summary>
+ <canvas style='border:1px solid darkslategray;' height='146' width='146'></canvas>
+ <a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a><br />
+ <button name='encode'>Encode</button>
+ <progress name='encode' min='0' max='100' value='0'></progress><br />
+ <button name='print'>Print</button><br />
+ <button name='decode'>Decode</button>
+ <button name='fromCamera'>Decode Camera</button>
+ <progress name='decode' min='0' max='100' value='0'></progress>
+ <div class='status'></div>
+</details>
 </header>
-<table>
- <thead>
-  <tr>
-   <td></td>
-   <td></td>
-   <td style='text-align: right;'>test</td>
-  </tr>
- </thead>
- <tbody>
-  <tr>
-   <td colspan='3'>
-    <main></main>
-   </td>
-  </tr>
- </tbody>
-</table>
-
+<main></main>
+<video name='debug' height="80%" width="80%"></video>
 </body>
 </html>

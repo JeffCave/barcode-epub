@@ -17,30 +17,58 @@ body{
 }
 main{
     font-size: 0;
-    text-align: center;
 }
 main > img {
-    position: fixed;
+    /* border: 10px solid white; */
     padding: 0;
     margin: 0;
-    opacity:0;
+    display:none;
 }
 main > img::after{
     content: "[" attr(title) "]";
 }
 main > img.show{
-    opacity:1;
-}
-table, tr, th, td {
-    padding:0;
-    margin:0;
-    border-collapse: collapse;
-    font-family: monospace;
+    display:inline-block;
 }
 canvas{
     display:none;
 }
-@keyframes show {
+details > summary {
+    font-size: 2em;
+    content: '⋮⋮⋮';
+}
+details > summary::marker {
+    content: '⋮⋮⋮';
+}
+details[open] > summary{
+    font-size:1em;
+}
+
+.status{
+    position: relative;
+    display:inline-block;
+    height:1em;
+    width:1em;
+    border-radius: 0.5em;
+    border:0.1em solid black;
+    background-color: slategrey;
+    color:slategrey;
+}
+
+.status.pass{
+    background-color: green;
+}
+.status.fail{
+    background-color:red;
+}
+.status.warn{
+    background-color:orange;
+}
+
+.flash{
+    animation-duration:3s;
+}
+@keyframes flash {
     0%   { opacity:1; }
     100% { opacity:0; }
 }
@@ -57,7 +85,7 @@ canvas{
         }
     }
     body{
-        background-color: none;
+        background-color: initial;
     }
     header{
         display:none;
@@ -72,8 +100,8 @@ canvas{
     main > img {
         position: relative;
         display: inline-block;
-        height: 42mm;
-        width: 42mm;
+        height: 84mm;
+        width: 84mm;
         animation-name: none;
         opacity:1;
     }
