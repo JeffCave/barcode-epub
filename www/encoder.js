@@ -47,7 +47,7 @@ function Barcode(data){
 			bw.bitmap().pad(pad,pad);
 			data = b45.encode(data);
 			bwipp(bw, cfg.bcid, data, cfg);
-			bwipjs_fonts.loadfonts(function(e) {
+			bwipjs_fonts.loadfonts(async function(e) {
 				if (e) {
 					fail(e);
 					return;
@@ -55,8 +55,20 @@ function Barcode(data){
 				bw.render();
 
 				//Apparently the parser wants a "white" border around the image. I'm annoyed by this, but ...
-				let img = state.context.canvas.toDataURL();
-				success(img);
+				let img = state.context.canvas;
+				if('toDataURL' in img){
+					img = img.toDataURL();
+					success(img);
+				}
+				else{
+
+					const reader = new FileReader();
+					reader.addEventListener("load", function () {
+						success(reader.result);
+					}, false);
+					img = await img.convertToBlob();
+					reader.readAsDataURL(img);
+				}
 			});
 		},1);
 	});
