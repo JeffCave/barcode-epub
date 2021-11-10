@@ -26,10 +26,11 @@ main > img {
     display:none;
 }
 main > img::after{
-    content: "[" attr(title) "]";
+    content: "[" attr(alt) "]";
 }
 main > img.show{
     display:inline-block;
+    cursor:none;
 }
 article{
     position:relative;

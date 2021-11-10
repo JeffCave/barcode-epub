@@ -78,7 +78,7 @@ async function AppendBarcode(barcode,header){
 	const main = document.querySelector('main');
 
 	let img = document.createElement('img');
-	img.setAttribute('title', `${header.page} of ${header.pages}`);
+	img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
 
 	img.addEventListener('click',Animate);
 
