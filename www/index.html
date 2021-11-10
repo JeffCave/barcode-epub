@@ -28,20 +28,35 @@
 </header>
 <main>
  <article data-page='decoder'>
-  <button name='decode'>Decode</button><br />
-  <button name='fromCamera'>Decode Camera</button><br />
+  <button name='decode'>Decode</button>
+  <button name='fromCamera'>Decode Camera</button>
+  <button name='fromEpub'>Upload</button>
+  <div class='status'></div>
+  <br />
   <progress name='decode' min='0' max='100' value='0'></progress><br />
-  <div class='status'></div><br />
   <video name='debug' height="80%" width="80%"></video>
  </article>
  <article data-page='library'>
-  <a href='./book/thoreau.LifeWoods.epub'>Book to Encode</a>
+  <ul>
+   <li>
+    [read]
+    [send]
+    [<a href='./book/thoreau.LifeWoods.epub'>save</a>]
+    <output name='id'>xxx...xxx</output>
+    <output name='progress'>365 of 365 (100%)</output>
+    <output name='title'>Life in the Woods</output>
+    <output name='author'>Thoreau</output>
+   </li>
+  </ul>
  </article>
  <article data-page='book'>
-  <button name='encode'>Encode</button><br />
-  <progress name='encode' min='0' max='100' value='0'></progress><br />
-  <button name='print'>Print</button><br />
-  <canvas style='border:1px solid darkslategray;position:relative;display:block;' height='146' width='146'></canvas><br />
+  <nav>
+   <button name='encode'>Encode</button>
+   <button name='print'>🖶</button>
+   <br />
+   <progress name='encode' min='0' max='100' value='0'></progress>
+  </nav>
+  <div id='codeset' name='codeset'></div>
  </article>
 </main>
 </body>

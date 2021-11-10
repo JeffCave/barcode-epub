@@ -19,16 +19,16 @@ body{
 main{
     margin:1em;
 }
-main > img {
+#codeset img {
     /* border: 10px solid white; */
     padding: 0;
     margin: 0;
     display:none;
 }
-main > img::after{
+#codeset img::after{
     content: "[" attr(alt) "]";
 }
-main > img.show{
+#codeset img.show{
     display:inline-block;
     cursor:none;
 }
@@ -36,6 +36,8 @@ article{
     position:relative;
     display:none;
     width:100%;
+    padding:0;
+    margin:0;
 }
 article:nth-of-type(1){
     display:inline-block;
@@ -57,7 +59,20 @@ header > nav > ul {
 header > nav > ul > li {
     display:inline-block;
 }
-
+output{
+    display:block;
+}
+article[data-page="library"] ul {
+    padding:0;
+    margin:0;
+}
+article[data-page="library"] li {
+    border: 0.1em solid black;
+    background-color: ivory;
+    display:inline-block;
+    padding: 1em;
+    border-radius: 1em;
+}
 .status{
     position: relative;
     display:inline-block;
@@ -96,21 +111,26 @@ header > nav > ul > li {
         background-color: initial;
     }
     header{
-        display:none;
+        display: none;
     }
-    thead>td:nth-last-of-type(){
-        content: counter(page) " of " counter(pages);
-
+    main{
+        margin:0;
+        padding:0;
+        border:0;
     }
-    tbody > td{
-        border:1px solid black;
+    article[data-page='book'] nav {
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
     }
-    main > img {
+    div#codeset > img {
         position: relative;
         display: inline-block;
         height: 84mm;
         width: 84mm;
         animation-name: none;
         opacity:1;
+        page-break-inside: initial;
     }
 }

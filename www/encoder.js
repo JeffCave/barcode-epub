@@ -75,7 +75,7 @@ function Barcode(data){
 }
 
 async function AppendBarcode(barcode,header){
-	const main = document.querySelector('main');
+	const main = state.container;
 
 	let img = document.createElement('img');
 	img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
@@ -123,7 +123,7 @@ async function Process(stm,progress){
 	}
 }
 
-function Animate(start=null,query='main > img'){
+function Animate(start=null,container=state.container){
 	const ANIM_SPEED = 2000;
 	//const ANIM_SPEED = 750;
 	if(typeof start !== 'boolean'){
@@ -138,9 +138,10 @@ function Animate(start=null,query='main > img'){
 	}
 	else if(start == true && !state.animation){
 		state.lastshow = 0;
+		state.container = container;
 
 		let changeslide = ()=>{
-			let imgs = Array.from(document.querySelectorAll(query));
+			let imgs = Array.from(state.container.querySelectorAll('img'));
 			if(imgs.length == 0) return;
 
 			imgs[state.lastshow].classList.remove('show');

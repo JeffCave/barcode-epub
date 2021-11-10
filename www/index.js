@@ -45,8 +45,9 @@ function encode(){
 	let button = document.querySelector('button[name="encode"]');
 	button.disabled = true;
 
-	document.querySelector('main').innerHTML = '';
-    Animate(true,'main > img')
+	let imgcontainer = document.querySelector('div[name="codeset"]');
+    imgcontainer.innerHTML = '';
+    Animate(true,imgcontainer);
     Encode(progress);
 	button.disabled = false;
 }

@@ -41,7 +41,7 @@ async function Decode(imgsource='monitor',status){
 	let camera = await getMonitorSource(imgsource);
 	let indexcards = new Map();
 
-	let debugvid = document.querySelector('video[name="debug"]');
+	let debugvid = document.querySelector('video');
 	//debugvid.style.opacity = 0;
 	debugvid.style.display = 'block';
 	
