@@ -41,12 +41,12 @@
    <p>Upload a file...</p>
    <p>Epub files supported</p>
    <p>Images of barcodes</p>
-   <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPubf'>&#10010; Add Epub</ps-filedrop>
+   <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPub'>&#10010; Add Epub</ps-filedrop>
   </section>
  </article>
  <article data-page='library'>
-  <ul>
-   <li>
+  <h2>Catalogue</h2>
+  <template>
     [send]
     [<a href='./book/thoreau.LifeWoods.epub'>save</a>]
     [delete]
@@ -55,7 +55,8 @@
     <output name='progress'>365 of 365 (100%)</output>
     <output name='title'>Life in the Woods</output>
     <output name='author'>Thoreau</output>
-   </li>
+  </template>
+  <ul>
   </ul>
  </article>
  <article data-page='book'>

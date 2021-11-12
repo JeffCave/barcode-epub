@@ -8,9 +8,12 @@ import {Encode,Animate} from "./encoder.js";
 import * as Encoder from "./encoder.js";
 import Decode from "./decoder.js";
 
-let db = null;
+let db = new PouchDB('barcodelib');
 
 window.addEventListener('load',()=>{
+
+    RenderIndex();
+
     let buttons = {
         'button[name="encode"]': encode,
         'button[name="decode"]': ()=>{decode('monitor');},
@@ -28,12 +31,14 @@ window.addEventListener('load',()=>{
     let UploadEpub = document.querySelector('#UploadEpub');
     UploadEpub.addEventListener('change', async (e)=>{
         let files = e.target.files;
+        let updates = [];
         for(let file of files){
             let buff = await file.arrayBuffer();
             let hash = await Encoder.calcFileHash(buff);
             hash = new Uint8Array(hash);
             hash = b45.encode(hash);
-            db.upsert(hash,(doc)=>{
+            hash = hash.replace(/=/g,'');
+            let update = db.upsert(hash,(doc)=>{
                 if(!('_id' in doc)){
                     doc = {
                         _id:hash,
@@ -52,10 +57,12 @@ window.addEventListener('load',()=>{
                 }
                 return doc;
             });
+            updates.push(update);
         }
+        await Promise.all(updates);
+        RenderIndex();
     });
 
-    db = new PouchDB('barcodelib');
 });
 
 
@@ -125,6 +132,24 @@ function page(dir=1){
         else{
             pages.append(pages.children[0]);
         }
+    }
+}
+
+async function RenderIndex(){
+    let htmlList = document.querySelector('article[data-page="library"] > ul');
+    let template = document.querySelector('article[data-page="library"] > template');
+    let recs = await db.allDocs({include_docs:true,attachments: false});
+
+    htmlList.innerHTML = '';
+    for(let rec of recs.rows){
+        rec = rec.doc;
+        let html = document.createElement('li');
+        html.innerHTML = template.innerHTML;
+        html.querySelector('output[name="id"]').value = rec._id.slice(0,4)+'…'+rec._id.slice(-4);
+        html.querySelector('output[name="id"]').title = rec._id;
+        html.querySelector('output[name="progress"]').value = rec.progress;
+        html.querySelector('output[name="title"]').value = rec.title;
+        htmlList.append(html);
     }
 }
 

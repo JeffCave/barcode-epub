@@ -19,6 +19,9 @@ const state = {
 };
 
 async function calcFileHash(buffer){
+	if(buffer instanceof ArrayBuffer){
+		buffer = new Uint8Array(buffer);
+	}
 	buffer = await buffer;
 	let hash = await crypto.subtle.digest("SHA-512", buffer);
 	return hash;
