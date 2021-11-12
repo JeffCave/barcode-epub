@@ -5,9 +5,10 @@ export {
 	Encode as default,
 	Encode,
 	Animate,
+	calcFileHash
 };
 
-import SplitHeader from "./lib/splitheader.js";
+import SplitHeader from "./lib/bcode/splitheader.js";
 import * as b45 from './lib/base45.js';
 
 const monochrome = true;
@@ -18,6 +19,7 @@ const state = {
 };
 
 async function calcFileHash(buffer){
+	buffer = await buffer;
 	let hash = await crypto.subtle.digest("SHA-512", buffer);
 	return hash;
 }

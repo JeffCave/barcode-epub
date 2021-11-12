@@ -1,5 +1,14 @@
+import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
+import "./lib/lib/pouchdb.upsert.min.js";
+import * as b45 from './lib/base45.js';
+
+import "./lib/widgets/psFileDrop.js";
+
 import {Encode,Animate} from "./encoder.js";
+import * as Encoder from "./encoder.js";
 import Decode from "./decoder.js";
+
+let db = null;
 
 window.addEventListener('load',()=>{
     let buttons = {
@@ -7,6 +16,7 @@ window.addEventListener('load',()=>{
         'button[name="decode"]': ()=>{decode('monitor');},
         'button[name="fromCamera"]': ()=>{decode('camera');},
         'button[name="print"]': ()=>{window.print();},
+        'button[name="fromEpub"]': ()=>{upload();},
         'header nav button[name="left"]' : ()=>{page(-1);},
         'header nav button[name="right"]': ()=>{page(+1);},
     };
@@ -14,31 +24,77 @@ window.addEventListener('load',()=>{
         document.querySelector(b).addEventListener('click',buttons[b]);
     }
     page(0);
+
+    let UploadEpub = document.querySelector('#UploadEpub');
+    UploadEpub.addEventListener('change', async (e)=>{
+        let files = e.target.files;
+        for(let file of files){
+            let buff = await file.arrayBuffer();
+            let hash = await Encoder.calcFileHash(buff);
+            hash = new Uint8Array(hash);
+            hash = b45.encode(hash);
+            db.upsert(hash,(doc)=>{
+                if(!('_id' in doc)){
+                    doc = {
+                        _id:hash,
+                        progress:0,
+                    }
+                }
+                if(doc.progress === 1){
+                    return null;
+                }
+                doc.progress = 1;
+                doc._attachments = {
+                    'document': {
+                      content_type: file.type,
+                      data: file
+                    }
+                }
+                return doc;
+            });
+        }
+    });
+
+    db = new PouchDB('barcodelib');
 });
 
-function decode(src='monitor'){
-	let stylesheet = document.createElement('link');
-	stylesheet.setAttribute('rel','stylesheet');
-	stylesheet.setAttribute('type','text/css');
-	stylesheet.setAttribute('href','decode.css');
-	//document.head.append(stylesheet);
 
+
+
+function upload(){
+	let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
+	let sections = Array.from(document.querySelectorAll('article[data-page="decoder"] section'));
+	let sect = document.querySelector('article[data-page="decoder"] section[name="file"]');
+
+	buttons.forEach(b=>{b.disabled = true});
+	sections.forEach(s=>{s.classList.add('hide');});
+    sect.classList.remove('hide');
+	buttons.forEach(b=>{b.disabled = false});
+}
+
+
+async function decode(src='monitor'){
     let status = document.querySelector('.status');
-	let button = document.querySelector('button[name="decode"]');
+	let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
+	let sections = Array.from(document.querySelectorAll('article[data-page="decoder"] section'));
 	let progress = document.querySelector('progress[name="decode"]');
+	let sect = document.querySelector('article[data-page="decoder"] section[name="video"]');
 
-	button.disabled = true;
+	buttons.forEach(b=>{b.disabled = true});
+	sections.forEach(s=>{s.classList.add('hide');});
+    sect.classList.remove('hide');
 
-    Decode(src,{
+    await Decode(src,{
         status:status,
         progress:progress
     });
 
-    button.disabled = false;
+	buttons.forEach(b=>{b.disabled = false});
     for(let stylesheet of document.querySelectorAll('link[href="decode.css"]')){
         document.head.remove(stylesheet);
     }
 }
+
 
 function encode(){
     let progress = document.querySelector('progress[name="encode"]');

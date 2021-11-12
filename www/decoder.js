@@ -5,7 +5,7 @@ export {
 	Decode as default
 };
 
-import SplitHeader from "./lib/splitheader.js";
+import SplitHeader from "./lib/bcode/splitheader.js";
 import * as b45 from './lib/base45.js';
 
 const state = {

@@ -34,14 +34,23 @@
   <div class='status'></div>
   <br />
   <progress name='decode' min='0' max='100' value='0'></progress><br />
-  <video name='debug' height="80%" width="80%"></video>
+  <section name='video' class='hide'>
+   <video name='debug' height="80%" width="80%"></video>
+  </section>
+  <section name='file' class='hide'>
+   <p>Upload a file...</p>
+   <p>Epub files supported</p>
+   <p>Images of barcodes</p>
+   <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPubf'>&#10010; Add Epub</ps-filedrop>
+  </section>
  </article>
  <article data-page='library'>
   <ul>
    <li>
-    [read]
     [send]
     [<a href='./book/thoreau.LifeWoods.epub'>save</a>]
+    [delete]
+    [block].
     <output name='id'>xxx...xxx</output>
     <output name='progress'>365 of 365 (100%)</output>
     <output name='title'>Life in the Woods</output>

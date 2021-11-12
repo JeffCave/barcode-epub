@@ -73,6 +73,11 @@ article[data-page="library"] li {
     padding: 1em;
     border-radius: 1em;
 }
+
+.hide{
+    display:none;
+}
+
 .status{
     position: relative;
     display:inline-block;
