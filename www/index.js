@@ -12,6 +12,7 @@ let db = new PouchDB('barcodelib');
 
 window.addEventListener('load',()=>{
 
+    db.changes({since:'now',live:true}).on('change', RenderIndex);
     RenderIndex();
 
     let buttons = {
@@ -60,7 +61,6 @@ window.addEventListener('load',()=>{
             updates.push(update);
         }
         await Promise.all(updates);
-        RenderIndex();
     });
 
 });
@@ -145,10 +145,16 @@ async function RenderIndex(){
         rec = rec.doc;
         let html = document.createElement('li');
         html.innerHTML = template.innerHTML;
-        html.querySelector('output[name="id"]').value = rec._id.slice(0,4)+'…'+rec._id.slice(-4);
-        html.querySelector('output[name="id"]').title = rec._id;
+
+        let id = rec._id;
+        let rev = rec._rev;
+        html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
+
+        html.querySelector('output[name="id"]').title = id;
+        html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
         html.querySelector('output[name="progress"]').value = rec.progress;
         html.querySelector('output[name="title"]').value = rec.title;
+
         htmlList.append(html);
     }
 }
