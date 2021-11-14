@@ -16,7 +16,6 @@ window.addEventListener('load',()=>{
     RenderIndex();
 
     let buttons = {
-        'button[name="encode"]': encode,
         'button[name="decode"]': ()=>{decode('monitor');},
         'button[name="fromCamera"]': ()=>{decode('camera');},
         'button[name="print"]': ()=>{window.print();},
@@ -103,16 +102,23 @@ async function decode(src='monitor'){
 }
 
 
-function encode(){
-    let progress = document.querySelector('progress[name="encode"]');
-	let button = document.querySelector('button[name="encode"]');
-	button.disabled = true;
+async function encode(id = null){
+    if (!id) return;
 
-	let imgcontainer = document.querySelector('div[name="codeset"]');
+    let rec = await db.get(id,{
+        attachments: true,
+        binary: true
+    });
+
+    let progress = document.querySelector('progress[name="encode"]');
+
+    let imgcontainer = document.querySelector('div[name="codeset"]');
     imgcontainer.innerHTML = '';
-    Animate(true,imgcontainer);
-    Encode(progress);
-	button.disabled = false;
+
+    Encoder.Animate(true,imgcontainer);
+    Encoder.Encode(rec._attachments,progress);
+    
+    page(1);
 }
 
 
@@ -148,7 +154,9 @@ async function RenderIndex(){
 
         let id = rec._id;
         let rev = rec._rev;
+
         html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
+        html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
 
         html.querySelector('output[name="id"]').title = id;
         html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');

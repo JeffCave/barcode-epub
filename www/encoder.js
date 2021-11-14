@@ -5,7 +5,9 @@ export {
 	Encode as default,
 	Encode,
 	Animate,
-	calcFileHash
+	calcFileHash,
+	Process,
+	Barcode,
 };
 
 import SplitHeader from "./lib/bcode/splitheader.js";
@@ -27,11 +29,6 @@ async function calcFileHash(buffer){
 	return hash;
 }
 
-async function Download(){
-	const response = await fetch('./book/thoreau.LifeWoods.epub');
-	let buffer = await response.arrayBuffer();
-	return buffer;
-}
 
 function Barcode(data){
 	let cfg = {
@@ -162,7 +159,7 @@ function Animate(start=null,container=state.container){
 	}
 }
 
-async function Encode(progress){
+async function Encode(blob,progress){
 	if(!state.context){
 		// this should be an offscreen canvas
         //state.canvas = document.querySelector('canvas').getContext('2d');
@@ -178,7 +175,7 @@ async function Encode(progress){
 		}
 		state.context = state.canvas.getContext('2d');
     }
-
-	let stm = await Download();
+	
+	let stm = await blob.document.data.arrayBuffer();
 	await Process(stm,progress);
 }
