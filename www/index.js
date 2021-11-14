@@ -4,9 +4,9 @@ import * as b45 from './lib/base45.js';
 
 import "./lib/widgets/psFileDrop.js";
 
-import {Encode,Animate} from "./encoder.js";
 import * as Encoder from "./encoder.js";
 import Decode from "./decoder.js";
+import SplitHeader from "./lib/bcode/splitheader.js";
 
 let db = new PouchDB('barcodelib');
 
@@ -27,6 +27,7 @@ window.addEventListener('load',()=>{
         document.querySelector(b).addEventListener('click',buttons[b]);
     }
     page(0);
+    Animate(true,document.querySelector('div[name="codeset"]'));
 
     let UploadEpub = document.querySelector('#UploadEpub');
     UploadEpub.addEventListener('change', async (e)=>{
@@ -64,7 +65,40 @@ window.addEventListener('load',()=>{
 
 });
 
+let animator = {};
+function Animate(start=null,container=animator.container){
+	const ANIM_SPEED = 2000;
+	//const ANIM_SPEED = 750;
+	if(typeof start !== 'boolean'){
+		start = null;
+	}
+	if(start === null){
+		Animate(!animator.animation);
+	}
+	else if (start === false && animator.animation){
+		clearInterval(animator.animation);
+		animator.animation = null;
+	}
+	else if(start == true && !animator.animation){
+		animator.lastshow = 0;
+		animator.container = container;
 
+		let changeslide = ()=>{
+			let imgs = Array.from(animator.container.querySelectorAll('img'));
+			if(imgs.length == 0) return;
+
+			imgs[animator.lastshow].classList.remove('show');
+
+			let i = (Date.now()/ANIM_SPEED) % imgs.length;
+			i = Math.floor(i);
+			imgs[i].classList.add('show');
+			animator.lastshow = i;
+		};
+
+		animator.animation = setInterval(changeslide,ANIM_SPEED);
+		changeslide();
+	}
+}
 
 
 function upload(){
@@ -111,20 +145,54 @@ async function encode(id = null){
     });
 
     let progress = document.querySelector('progress[name="encode"]');
-
     let imgcontainer = document.querySelector('div[name="codeset"]');
     imgcontainer.innerHTML = '';
-
-    Encoder.Animate(true,imgcontainer);
-    Encoder.Encode(rec._attachments,progress);
-    
     page(1);
+    
+    let buff = await rec._attachments.document.data.arrayBuffer();
+    for await (let block of Encoder.Process(buff,progress)){
+        let header = new SplitHeader(block);
+        let barcode = await Encoder.Barcode(block);
+        let img = document.createElement('img');
+        img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
+        //img.transferFromImageBitmap(barcode);
+        img.src = barcode;
+        imgcontainer.append(img);
+    }
+
 }
 
 
+/**
+ * Changes the visible page to the specified page.
+ * 
+ * Page can be specified as a string or an integer. A string specifies 
+ * the absolute page name to be changed to, integers represent the number 
+ * of page to move by from current position.
+ * 
+ * The pages are conceptually in a carosel, so negative numbers move left, 
+ * postive numbers move right.
+ * 
+ * Nonsensical values result in a page move of 0 (stay where you are)
+ * 
+ * @param {int|string} dir 
+ */
 function page(dir=1){
     let pages = document.querySelector('main');
     
+    if(typeof dir === 'string'){
+        /*
+        * Find the string in the page labels. If you don't find it, just assume no page change
+        */
+        let label = dir;
+        for(dir=pages.length-1;dir>0;dir--){
+            let page = pages.children[dir];
+            if(page.dataset.page === label){
+                break;
+            }
+        }
+    }
+
     // wraps the pointer to a positive value within the array
     dir %= pages.children.length;
     dir += pages.children.length;

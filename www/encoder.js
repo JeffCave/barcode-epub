@@ -2,9 +2,6 @@
  * https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes#38323755
  */
 export {
-	Encode as default,
-	Encode,
-	Animate,
 	calcFileHash,
 	Process,
 	Barcode,
@@ -21,16 +18,32 @@ const state = {
 };
 
 async function calcFileHash(buffer){
+	buffer = await buffer;
 	if(buffer instanceof ArrayBuffer){
 		buffer = new Uint8Array(buffer);
 	}
-	buffer = await buffer;
 	let hash = await crypto.subtle.digest("SHA-512", buffer);
 	return hash;
 }
 
 
 function Barcode(data){
+	if(!state.context){
+		// this should be an offscreen canvas
+		//state.canvas = document.querySelector('canvas').getContext('2d');
+		if(window.OffscreenCanvas){
+			state.canvas = new OffscreenCanvas(146, 146);
+		}
+		else{
+			state.canvas = document.createElement('canvas');
+			state.canvas.height = 146;
+			state.canvas.width = state.canvas.height;
+			state.canvas.style.opacity = 0;
+			document.body.append(state.canvas);
+		}
+		state.context = state.canvas.getContext('2d');
+	}
+
 	let cfg = {
 		//bcid: 'datamatrix',
 		bcid: 'qrcode',
@@ -76,24 +89,8 @@ function Barcode(data){
 	});
 }
 
-async function AppendBarcode(barcode,header){
-	const main = state.container;
 
-	let img = document.createElement('img');
-	img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
-
-	img.addEventListener('click',Animate);
-
-	main.append(img);
-	//main.append(document.createTextNode('\n'));
-
-	//img.transferFromImageBitmap(barcode);
-	img.src = barcode;
-	return img;
-}
-
-
-async function Process(stm,progress){
+async function* Process(stm,progress){
 	const header = new SplitHeader();
 
 	//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
@@ -112,70 +109,12 @@ async function Process(stm,progress){
 		let block = new Uint8Array(header.SIZE+len);
 		block.set(header.p.bytes,0);
 		block.set(chunk,header.SIZE);
-		try{
-			let barcode = await Barcode(block);
-			await AppendBarcode(barcode,header);
-		}
-		catch(e){
-			console.error(`BWIPP failed on ${header.page}`);
-		}
+
+		yield block;
 
 		header.page++;
 		progress.value = offset;
 	}
+	return;
 }
 
-function Animate(start=null,container=state.container){
-	const ANIM_SPEED = 2000;
-	//const ANIM_SPEED = 750;
-	if(typeof start !== 'boolean'){
-		start = null;
-	}
-	if(start === null){
-		Animate(!state.animation);
-	}
-	else if (start === false && state.animation){
-		clearInterval(state.animation);
-		state.animation = null;
-	}
-	else if(start == true && !state.animation){
-		state.lastshow = 0;
-		state.container = container;
-
-		let changeslide = ()=>{
-			let imgs = Array.from(state.container.querySelectorAll('img'));
-			if(imgs.length == 0) return;
-
-			imgs[state.lastshow].classList.remove('show');
-
-			let i = (Date.now()/ANIM_SPEED) % imgs.length;
-			i = Math.floor(i);
-			imgs[i].classList.add('show');
-			state.lastshow = i;
-		};
-
-		state.animation = setInterval(changeslide,ANIM_SPEED);
-		changeslide();
-	}
-}
-
-async function Encode(blob,progress){
-	if(!state.context){
-		// this should be an offscreen canvas
-        //state.canvas = document.querySelector('canvas').getContext('2d');
-		if(window.OffscreenCanvas){
-			state.canvas = new OffscreenCanvas(146, 146);
-		}
-		else{
-			state.canvas = document.createElement('canvas');
-			state.canvas.height = 146;
-			state.canvas.width = state.canvas.height;
-			state.canvas.style.opacity = 0;
-			document.body.append(state.canvas);
-		}
-		state.context = state.canvas.getContext('2d');
-    }
-	
-	let stm = await blob.document.data.arrayBuffer();
-	await Process(stm,progress);
-}
