@@ -36,7 +36,7 @@ async function getMonitorSource(src='monitor',light=false){
 	return state.video;
 }
 
-async function WatchVideo(imgsource='monitor'){
+async function WatchVideo(imgsource='monitor',status=()=>{}){
 	if (state.watcher) return state.watcher;
 
 	if(!state.codeReader){
@@ -54,6 +54,8 @@ async function WatchVideo(imgsource='monitor'){
 				switch(err.name){
 					case 'FormatException':
 					case 'NotFoundException':
+					case 'ChecksumException':
+					//case 'NullPointerException':
 						console.debug(err);
 						break;
 					default:
@@ -65,8 +67,14 @@ async function WatchVideo(imgsource='monitor'){
 			if(!result) return false;
 
 			result = result.text;
+			// we have simply discovered the last one we processed
+			if(result === state.lastpage){
+				return false;
+			}
+			state.lastpage = result;
+
 			result = b45.decode(result);
-			SaveBlock(result);
+			SaveBlock(result,status);
 		});
 	});
 	return state.watcher;
@@ -83,9 +91,10 @@ function StopVideo(){
 }
 
 
-async function SaveBlock(block){
+async function SaveBlock(block,status=()=>{}){
 	let header = new SplitHeader(block);
 	if(!header.isValid()){
+		status('fail');
 		return null;
 	}
 	
@@ -109,10 +118,12 @@ async function SaveBlock(block){
 	
 	let page = header.page.toFixed(0);
 	if(page in doc._attachments){
+		status('skip');
 		return true;
 	}
 	try{
 		let result = await db.putAttachment(doc._id, page, doc._rev, new Blob([block]), 'application/dpub-seg');
+		status('pass');
 		return result;
 	}
 	catch(e){

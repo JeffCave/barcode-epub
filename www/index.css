@@ -13,7 +13,6 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
 */
 body{
     position:relative;
-    background-color: steelblue;
     margin:0;
 }
 main{
@@ -71,8 +70,14 @@ article[data-page="library"] li {
     border-radius: 1em;
 }
 video{
-    border:0.1em solid white;
-    background-color: slategrey;
+    z-index: -100;
+    border:0;
+    background-color: slategray;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
 }
 
 .hide{
@@ -80,25 +85,55 @@ video{
 }
 
 .status{
+    /*status as an LED*/
     position: relative;
     display:inline-block;
+    border-radius: 0.6cm;
+    background-color: darkslategrey;
+    border:0.1cm solid black;
     height:1cm;
     width:1cm;
-    border-radius: 0.6cm;
-    border:0.1cm solid black;
-    background-color: slategrey;
-    color:slategrey;
-    transition: color 2s;
+
+    /* status as an ghost frame */
+    /*
+    z-index:-99;
+    position:fixed;
+    border-radius: 0;
+    background-color: rgba(0,0,0,0);
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    border: 0;
+    */
+
+    /* status colour changes*/
+    --status-color: rgba(0,0,0,0);
+    --shadow-size: 0;
+    box-shadow:0 0 var(--shadow-size) 0 var(--status-color) inset;
+    transition: box-shadow 2s ease-out;
+
 }
 
-.status.pass{
-    background-color: green;
+.pass{
+    --status-color: green;
+    --shadow-size:10vmax;
+    transition: box-shadow 0s linear;
 }
-.status.fail{
-    background-color:red;
+.fail{
+    --status-color: red;
+    --shadow-size:10vmax;
+    transition: box-shadow 0s linear;
 }
-.status.warn{
-    background-color:orange;
+.warn{
+    --status-color: orange;
+    --shadow-size:10vmax;
+    transition: box-shadow 0s linear;
+}
+.skip{
+    --status-color: steelblue;
+    --shadow-size:10vmax;
+    transition: box-shadow 0s linear;
 }
 
 @media print {

@@ -7,6 +7,7 @@ import * as Decoder from "./decoder.js";
 import SplitHeader from "./lib/bcode/splitheader.js";
 
 let db = new PouchDB('barcodelib');
+db.compact();
 
 window.addEventListener('load',()=>{
 
@@ -136,17 +137,32 @@ function upload(visible=null){
 }
 
 
+let VideoStatus_Clearer = null;
+function VideoStatus(status){
+    let led = document.querySelector('.status');
+
+    clearTimeout(VideoStatus_Clearer);
+    // set the status
+    window.navigator.vibrate(200);
+    led.classList.add(status);
+    // let it take effect
+    VideoStatus_Clearer = setTimeout(() => {
+        VideoStatus_Clearer = null;
+        // then remove it, so that it fades away
+        led.classList.remove('pass','fail','warn','skip');
+    });
+}
+
+
 async function VideoDecode(src='monitor'){
     let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
     let stopButton = document.querySelector('article[data-page="decoder"] button[name="stop"]');
-    let videosection = document.querySelector('article[data-page="decoder"] section[name="video"]');
 
     buttons.forEach(b=>{b.classList.add('hide')});
     stopButton.classList.remove('hide');
-    videosection.classList.remove('hide');
     page('decoder');
 
-    await Decoder.WatchVideo(src);
+    await Decoder.WatchVideo(src,VideoStatus);
 
     stopCamera();
 }
@@ -156,10 +172,8 @@ function stopCamera(){
     Decoder.StopVideo();
     let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
     let stopButton = document.querySelector('article[data-page="decoder"] button[name="stop"]');
-    let videosection = document.querySelector('article[data-page="decoder"] section[name="video"]');
     buttons.forEach(b=>{b.classList.remove('hide')});
     stopButton.classList.add('hide');
-    videosection.classList.add('hide');
 }
 
 
