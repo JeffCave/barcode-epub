@@ -1,11 +1,9 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
-import "./lib/lib/pouchdb.upsert.min.js";
-import * as b45 from './lib/base45.js';
 
 import "./lib/widgets/psFileDrop.js";
 
 import * as Encoder from "./encoder.js";
-import Decode from "./decoder.js";
+import * as Decoder from "./decoder.js";
 import SplitHeader from "./lib/bcode/splitheader.js";
 
 let db = new PouchDB('barcodelib');
@@ -16,8 +14,9 @@ window.addEventListener('load',()=>{
     RenderIndex();
 
     let buttons = {
-        'button[name="decode"]': ()=>{decode('monitor');},
-        'button[name="fromCamera"]': ()=>{decode('camera');},
+        'button[name="fromVideo"]': ()=>{VideoDecode('monitor');},
+        'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
+        'button[name="stop"]': ()=>{stopCamera();},
         'button[name="print"]': ()=>{window.print();},
         'button[name="fromEpub"]': ()=>{upload();},
         'header nav button[name="left"]' : ()=>{page(-1);},
@@ -29,41 +28,67 @@ window.addEventListener('load',()=>{
     page(0);
     Animate(true,document.querySelector('div[name="codeset"]'));
 
-    let UploadEpub = document.querySelector('#UploadEpub');
-    UploadEpub.addEventListener('change', async (e)=>{
-        let files = e.target.files;
-        let updates = [];
-        for(let file of files){
-            let buff = await file.arrayBuffer();
-            let hash = await Encoder.calcFileHash(buff);
-            hash = new Uint8Array(hash);
-            hash = b45.encode(hash);
-            hash = hash.replace(/=/g,'');
-            let update = db.upsert(hash,(doc)=>{
-                if(!('_id' in doc)){
-                    doc = {
-                        _id:hash,
-                        progress:0,
-                    }
-                }
-                if(doc.progress === 1){
-                    return null;
-                }
-                doc.progress = 1;
-                doc._attachments = {
-                    'document': {
-                      content_type: file.type,
-                      data: file
-                    }
-                }
-                return doc;
-            });
-            updates.push(update);
-        }
-        await Promise.all(updates);
-    });
+    document
+        .querySelector('#UploadEpub')
+        .addEventListener('change', (e)=>{
+            LoadFiles(e.target.files)
+        });
 
 });
+
+
+function applyAttach(attach,page,block){
+    if(page in attach) return;
+    if(!(page in attach)){
+        attach[page] = {
+            content_type: 'application/dpub-seg',
+            data: new Blob([block.buffer])
+        };
+    }
+}
+
+
+async function LoadFiles(files){
+    if(files instanceof File){
+        files = [files];
+    }
+    let updates = [];
+    for(let file of files){
+        let buff = await file.arrayBuffer();
+        let blocks = Encoder.Process(buff);
+        let block = (await blocks.next()).value;
+        let header = new SplitHeader(block);
+        let doc = null;
+        try{
+            doc = await db.get(header.idString,{attachments:true,binary:true});
+        }
+        catch(e){
+            if(e.status === 404){
+                doc = {
+                    _id: header.idString,
+                    pages: header.pages,
+                    _attachments:{}
+                };
+            }
+            else{
+                throw e;
+            }
+        }
+        let pages = Object.keys(doc._attachments).length;
+        if(pages === doc.pages){
+            return null;
+        }
+
+        applyAttach(doc._attachments,header.page.toFixed(0),block);
+        for await (let block of blocks){
+            let header = new SplitHeader(block);
+            applyAttach(doc._attachments,header.page.toFixed(0),block);
+        }
+        let update = db.put(doc);
+        updates.push(update);
+    }
+    await Promise.all(updates);
+}
 
 let animator = {};
 function Animate(start=null,container=animator.container){
@@ -101,38 +126,40 @@ function Animate(start=null,container=animator.container){
 }
 
 
-function upload(){
-	let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
-	let sections = Array.from(document.querySelectorAll('article[data-page="decoder"] section'));
-	let sect = document.querySelector('article[data-page="decoder"] section[name="file"]');
-
-	buttons.forEach(b=>{b.disabled = true});
-	sections.forEach(s=>{s.classList.add('hide');});
+function upload(visible=null){
+	let sections = Array.from(document.querySelectorAll('article[data-page="library"] section'));
+    for(let sect of sections){
+        sect.classList.add('hide');
+    }
+    let sect = document.querySelector('article[data-page="library"] section[name="file"]');
     sect.classList.remove('hide');
-	buttons.forEach(b=>{b.disabled = false});
 }
 
 
-async function decode(src='monitor'){
-    let status = document.querySelector('.status');
-	let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
-	let sections = Array.from(document.querySelectorAll('article[data-page="decoder"] section'));
-	let progress = document.querySelector('progress[name="decode"]');
-	let sect = document.querySelector('article[data-page="decoder"] section[name="video"]');
+async function VideoDecode(src='monitor'){
+    let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
+    let stopButton = document.querySelector('article[data-page="decoder"] button[name="stop"]');
+    let videosection = document.querySelector('article[data-page="decoder"] section[name="video"]');
 
-	buttons.forEach(b=>{b.disabled = true});
-	sections.forEach(s=>{s.classList.add('hide');});
-    sect.classList.remove('hide');
+    buttons.forEach(b=>{b.classList.add('hide')});
+    stopButton.classList.remove('hide');
+    videosection.classList.remove('hide');
+    page('decoder');
 
-    await Decode(src,{
-        status:status,
-        progress:progress
-    });
+    await Decoder.WatchVideo(src);
 
-	buttons.forEach(b=>{b.disabled = false});
-    for(let stylesheet of document.querySelectorAll('link[href="decode.css"]')){
-        document.head.remove(stylesheet);
-    }
+    stopCamera();
+}
+
+
+function stopCamera(){
+    Decoder.StopVideo();
+    let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
+    let stopButton = document.querySelector('article[data-page="decoder"] button[name="stop"]');
+    let videosection = document.querySelector('article[data-page="decoder"] section[name="video"]');
+    buttons.forEach(b=>{b.classList.remove('hide')});
+    stopButton.classList.add('hide');
+    videosection.classList.add('hide');
 }
 
 
@@ -144,13 +171,13 @@ async function encode(id = null){
         binary: true
     });
 
-    let progress = document.querySelector('progress[name="encode"]');
     let imgcontainer = document.querySelector('div[name="codeset"]');
     imgcontainer.innerHTML = '';
     page(1);
     
-    let buff = await rec._attachments.document.data.arrayBuffer();
-    for await (let block of Encoder.Process(buff,progress)){
+    for (let block of Object.values(rec._attachments)){
+        block = await block.data.arrayBuffer();
+        block = new Uint8Array(block);
         let header = new SplitHeader(block);
         let barcode = await Encoder.Barcode(block);
         let img = document.createElement('img');
@@ -185,7 +212,7 @@ function page(dir=1){
         * Find the string in the page labels. If you don't find it, just assume no page change
         */
         let label = dir;
-        for(dir=pages.length-1;dir>0;dir--){
+        for(dir=pages.children.length-1;dir>0;dir--){
             let page = pages.children[dir];
             if(page.dataset.page === label){
                 break;
@@ -209,6 +236,24 @@ function page(dir=1){
     }
 }
 
+
+async function Download(id){
+    let rec = await db.get(id,{include_docs:true,attachments:true,binary:true});
+    let attachments = Object.values(rec._attachments);
+    if(rec.pages !== attachments.length){
+        return null;
+    }
+    let buff = [];
+    for(let d of attachments){
+        let buf = await d.data.arrayBuffer();
+        buf = new Uint8Array(buf, SplitHeader.SIZE);
+        buff.push(buf);
+    }
+    let stm = new Blob(buff,{type:'application/epub+zip'});
+    saveAs(stm,`${id}.epub`);
+}
+
+
 async function RenderIndex(){
     let htmlList = document.querySelector('article[data-page="library"] > ul');
     let template = document.querySelector('article[data-page="library"] > template');
@@ -222,13 +267,18 @@ async function RenderIndex(){
 
         let id = rec._id;
         let rev = rec._rev;
+        let curpages = Object.keys(rec._attachments||{}).length;
+        let pct = Math.floor(curpages/rec.pages*100);
 
         html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
         html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
+        html.querySelector('button[name="save"]').addEventListener('click',()=>{Download(id);});
 
         html.querySelector('output[name="id"]').title = id;
         html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
-        html.querySelector('output[name="progress"]').value = rec.progress;
+        html.querySelector('output[name="pages-current"]').value = curpages;
+        html.querySelector('output[name="pages-total"]').value   = rec.pages;
+        html.querySelector('output[name="pages-pct"]').value     = pct;
         html.querySelector('output[name="title"]').value = rec.title;
 
         htmlList.append(html);

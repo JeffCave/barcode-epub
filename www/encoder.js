@@ -90,14 +90,12 @@ function Barcode(data){
 }
 
 
-async function* Process(stm,progress){
+async function* Process(stm){
 	const header = new SplitHeader();
 
 	//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
 	//const MAXSIZE = 1555-header.SIZE;
 	const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-header.SIZE;
-
-	progress.setAttribute('max',stm.byteLength);
 
 	header.pages = Math.ceil(stm.byteLength / MAXSIZE);
 	header.id = await calcFileHash(stm);
@@ -107,13 +105,12 @@ async function* Process(stm,progress){
 
 		let chunk = new Uint8Array(stm,offset,len);
 		let block = new Uint8Array(header.SIZE+len);
-		block.set(header.p.bytes,0);
+		block.set(header.bytes,0);
 		block.set(chunk,header.SIZE);
 
 		yield block;
 
 		header.page++;
-		progress.value = offset;
 	}
 	return;
 }

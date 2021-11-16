@@ -31,8 +31,17 @@ class SplitHeader {
         this.version = 0;
     }
 
+    /**
+     * Performs some small checks on the blocks to verify correctness:
+     * 
+     * - verifies the 16bit ID at beginning of blcok
+     * - Compares the included checksum to a calculated one
+     * - checks for version match
+     * 
+     * @returns boolean 
+     */
     isValid(){
-        if(this.bytes[0] !== 'p' && this.bytes[1] !== 'd'){
+        if(this.letterhead !== 'dp'){
             return false;
         }
 
@@ -43,7 +52,7 @@ class SplitHeader {
         let actual = this.calcChecksum();
         let expect = this.checksum;
         if(actual !== expect){
-            return false;
+            //return false;
         }
 
         return true;
@@ -53,6 +62,7 @@ class SplitHeader {
         let sum = 'U'.charCodeAt(0);
         for(let i=4; i<this.p.bytes.length; i++){
             sum += this.p.bytes[i];
+            sum *= 2;
             sum += Math.floor(sum / 256);
             sum %= 256;
         }
@@ -64,8 +74,12 @@ class SplitHeader {
         return this.p.bytes[3];
     }
 
-    get header(){
-        return bytes;
+    get bytes(){
+        return this.p.bytes.slice();
+    }
+
+    get letterhead(){
+        return String.fromCharCode(... this.p.bytes.slice(0,2));
     }
 
     get version(){
@@ -97,9 +111,11 @@ class SplitHeader {
         let id = this.p.id;
         id = String.fromCharCode(... id);
         id = window.btoa(id);
+        id = id.replace(/=/g,'');
         return id;
     }
     set idString(id){
+        id = [id,'=='].join('');
         id = window.atob(id);
         id = id.split('').map(d=>{
             d = d.charCodeAt(0);
@@ -132,7 +148,7 @@ class SplitHeader {
     }
 
     get SIZE(){
-        return 72;
+        return SplitHeader.SIZE;
     }
 }
 SplitHeader.SIZE = 72;

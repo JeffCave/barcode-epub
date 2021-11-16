@@ -5,6 +5,8 @@
 const CompressionRatio = 4/3;
 
 function encode(buffer){
+    if(buffer instanceof Blob) buffer = new Uint8Array(buffer);
+    
     let str = String.fromCharCode(...buffer);
     str = window.btoa(str);
     str = str.replace(/\+/g,'-');
