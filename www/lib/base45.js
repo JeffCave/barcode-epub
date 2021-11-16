@@ -5,12 +5,18 @@
 const CompressionRatio = 4/3;
 
 function encode(buffer){
+    if(buffer instanceof Blob) buffer = new Uint8Array(buffer);
+    
     let str = String.fromCharCode(...buffer);
     str = window.btoa(str);
+    str = str.replace(/\+/g,'-');
+    str = str.replace(/\//g,'_');
     return str;
 }
 
 function decode(str){
+    str = str.replace(/-/g,'+');
+    str = str.replace(/_/g,'/');
     let buffer = window.atob(str);
     buffer = buffer.split('').map(d=>{
         d = d.charCodeAt(0);

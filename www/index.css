@@ -14,45 +14,81 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
 body{
     position:relative;
     background-color: steelblue;
+    margin:0;
 }
 main{
-    font-size: 0;
+    margin:1em;
 }
-main > img {
+#codeset img {
     /* border: 10px solid white; */
     padding: 0;
     margin: 0;
     display:none;
 }
-main > img::after{
-    content: "[" attr(title) "]";
+#codeset img::after{
+    content: "[" attr(alt) "]";
 }
-main > img.show{
+#codeset img.show{
     display:inline-block;
+    cursor:none;
+}
+article{
+    position:relative;
+    display:none;
+    width:100%;
+    padding:0;
+    margin:0;
+}
+article:nth-of-type(1){
+    display:inline-block;
+}
+button {
+    min-width: 1cm;
+    min-height: 1cm;
 }
 canvas{
     display:none;
 }
-details > summary {
-    font-size: 2em;
-    content: '⋮⋮⋮';
+header {
+    background-color: white;
 }
-details > summary::marker {
-    content: '⋮⋮⋮';
+header > nav > ul {
+    list-style-type: none;
+    padding:0;
 }
-details[open] > summary{
-    font-size:1em;
+header > nav > ul > li {
+    display:inline-block;
+}
+article[data-page="library"] ul {
+    padding:0;
+    margin:0;
+}
+article[data-page="library"] li {
+    border: 0.1em solid black;
+    background-color: ivory;
+    display:inline-block;
+    padding: 1em;
+    border-radius: 1em;
+}
+video{
+    border:0.1em solid white;
+    background-color: slategrey;
+}
+
+.hide{
+    display:none;
 }
 
 .status{
     position: relative;
     display:inline-block;
-    height:1em;
-    width:1em;
-    border-radius: 0.5em;
-    border:0.1em solid black;
+    height:1cm;
+    width:1cm;
+    border-radius: 0.6cm;
+    border:0.1cm solid black;
     background-color: slategrey;
     color:slategrey;
+    transition: color 2s;
 }
 
 .status.pass{
@@ -65,13 +101,6 @@ details[open] > summary{
     background-color:orange;
 }
 
-.flash{
-    animation-duration:3s;
-}
-@keyframes flash {
-    0%   { opacity:1; }
-    100% { opacity:0; }
-}
 @media print {
     @page{
         margin: 1.8cm;
@@ -88,21 +117,26 @@ details[open] > summary{
         background-color: initial;
     }
     header{
-        display:none;
+        display: none;
     }
-    thead>td:nth-last-of-type(){
-        content: counter(page) " of " counter(pages);
-
+    main{
+        margin:0;
+        padding:0;
+        border:0;
     }
-    tbody > td{
-        border:1px solid black;
+    article[data-page='book'] nav {
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
     }
-    main > img {
+    div#codeset > img {
         position: relative;
         display: inline-block;
         height: 84mm;
         width: 84mm;
         animation-name: none;
         opacity:1;
+        page-break-inside: initial;
     }
 }

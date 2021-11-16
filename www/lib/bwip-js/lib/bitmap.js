@@ -38,7 +38,7 @@ function Bitmap(cvsid, rot, bgcolor) {
 			imgheight = height;
 		}
 
-		cvs  = cvsid instanceof window.HTMLCanvasElement
+		cvs  = cvsid instanceof window.HTMLCanvasElement || cvsid instanceof window.OffscreenCanvas
 						? cvsid : document.getElementById(cvsid);
 		cvs.width  = imgwidth + 2*padx;
 		cvs.height = imgheight + 2*pady;

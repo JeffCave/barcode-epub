@@ -1,15 +1,19 @@
-/*
-https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes#38323755
-*/
-export {
-	Decode as default
-};
+import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
 
-import SplitHeader from "./lib/splitheader.js";
+import SplitHeader from "./lib/bcode/splitheader.js";
 import * as b45 from './lib/base45.js';
 
+export {
+	WatchVideo,
+	StopVideo,
+	SaveBlock
+};
+
+const db = new PouchDB('barcodelib');
+
 const state = {
-	video: null
+	video: null,
+	codeReader: null
 };
 
 async function getMonitorSource(src='monitor',light=false){
@@ -32,74 +36,87 @@ async function getMonitorSource(src='monitor',light=false){
 	return state.video;
 }
 
-async function Decode(imgsource='monitor'){
+async function WatchVideo(imgsource='monitor'){
+	if (state.watcher) return state.watcher;
 
-	const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-SplitHeader.SIZE;
-
-	//const codeReader = new ZXing.BrowserDatamatrixCodeReader();
-	const codeReader = new ZXing.BrowserQRCodeReader();
-	let status = document.querySelector('.status');
-	let button = document.querySelector('button[name="decode"]');
-	let progress = document.querySelector('progress[name="decode"]');
-
-	button.disabled = true;
-
+	if(!state.codeReader){
+		//state.codeReader = new ZXing.BrowserDatamatrixCodeReader();
+		state.codeReader = new ZXing.BrowserQRCodeReader();
+	}
 	let camera = await getMonitorSource(imgsource);
-	let indexcards = new Map();
 
-	let debugvid = document.querySelector('video[name="debug"]');
-	//debugvid.style.opacity = 0;
-	debugvid.style.display = 'block';
+	let video = document.querySelector('video');
 	
-	codeReader.decodeFromStream(camera,debugvid,(result,err)=>{
-		if(err){
-			console.debug(err);
-		}
-		if(!result) return;
-
-
-		status.classList.add('pass');
-		status.classList.add('flash');
-		result = result.text;
-		result = b45.decode(result);
-		let header = new SplitHeader(result.buffer);
-
-		let indexcard = indexcards.get(header.idString);
-		if(!indexcard){
-			let size = MAXSIZE * header.pages;
-			progress.setAttribute('max',header.pages);
-			indexcard = {
-				id: header.idString,
-				waiting: new Set([...Array(header.pages).keys()]),
-				stm: new Uint8Array(size)
-			};
-			indexcards.set(indexcard.id, indexcard);
-		}
-		
-		// if this item has already been processed, we can skip and wait for the next one
-		let pct = Math.floor(indexcard.waiting.size / header.pages * 1000)/10;
-		if(!indexcard.waiting.has(header.page)){
-			console.debug(`skip: ${header.page} : ${indexcard.waiting.size} of ${header.pages} (${pct}%)`);
-			return;
-		}
-		console.log(`${header.page} : ${indexcard.waiting.size} of ${header.pages} (${pct}%)`);
-
-		// we have a unique buffer, decode it
-		let buf = new Uint8Array(result.buffer, header.SIZE);
-		let offset = MAXSIZE * header.page;
-		// apply it to the larger stream
-		indexcard.stm.set(buf,offset);
-		indexcard.waiting.delete(header.page);
-		progress.value = indexcard.waiting.size;
-
-		if(indexcard.waiting.size === 0){
-			codeReader.stopContinuousDecode();
-			let stm = new Blob([indexcard.stm],{type:'application/epub+zip'});
-			saveAs(stm,`${indexcard.id}.epub`);
-			for(let track of state.video.getTracks()){
-				track.stop();
+	state.watcher = new Promise((resolved,reject)=>{
+		state.watcherresolver = resolved;
+		state.codeReader.decodeFromStream(camera,video,(result,err)=>{
+			if(err){
+				switch(err.name){
+					case 'FormatException':
+					case 'NotFoundException':
+						console.debug(err);
+						break;
+					default:
+						console.error(err);
+						reject(err);
+						break;
+				}
 			}
-			debugvid.style.display = 'none';
-		}
+			if(!result) return false;
+
+			result = result.text;
+			result = b45.decode(result);
+			SaveBlock(result);
+		});
 	});
+	return state.watcher;
+}
+
+
+function StopVideo(){
+	state.codeReader.stopContinuousDecode();
+	for(let track of state.video.getTracks()){
+		track.stop();
+	}
+	state.watcherresolver(true);
+	state.watcher = null;
+}
+
+
+async function SaveBlock(block){
+	let header = new SplitHeader(block);
+	if(!header.isValid()){
+		return null;
+	}
+	
+	let doc = null;
+	try{
+		doc = await db.get(header.idString,{attachments:true});
+	}
+	catch(e){
+		if(e.status === 404){
+			doc = {
+				_id: header.idString,
+				pages: header.pages,
+				_attachments:{}
+			};
+			await db.put(doc);
+		}
+		else{
+			throw e;
+		}
+	}
+	
+	let page = header.page.toFixed(0);
+	if(page in doc._attachments){
+		return true;
+	}
+	try{
+		let result = await db.putAttachment(doc._id, page, doc._rev, new Blob([block]), 'application/dpub-seg');
+		return result;
+	}
+	catch(e){
+		console.error(e);
+		return false;
+	}
 }
