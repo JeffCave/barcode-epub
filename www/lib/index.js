@@ -1,13 +1,20 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
 
-import "./lib/widgets/psFileDrop.js";
+import "./bwip-js/bwipp.js";
+import "./bwip-js/bwipjs.js";
+import "./bwip-js/lib/xhr-fonts.js";
+import "./bwip-js/lib/bitmap.js";
+import "./zxing.js";
 
-import * as Encoder from "./encoder.js";
-import * as Decoder from "./decoder.js";
-import SplitHeader from "./lib/bcode/splitheader.js";
+import "./widgets/~all.js";
 
-let db = new PouchDB('barcodelib');
+import * as Encoder from "../encoder.js";
+import * as Decoder from "../decoder.js";
+import SplitHeader from "./bcode/splitheader.js";
+
+const db = new PouchDB('barcodelib');
 db.compact();
+let style = null;
 
 window.addEventListener('load',()=>{
 
@@ -35,6 +42,14 @@ window.addEventListener('load',()=>{
             LoadFiles(e.target.files)
         });
 
+    style = document.createElement('style');
+    document.head.append(style);
+    style  = style.sheet;
+
+    style.insertRule('.preload{display:none}');
+    Array.from(document.querySelectorAll('.waitload')).forEach(d=>{
+        d.classList.remove('waitload');
+    });
 });
 
 
@@ -128,11 +143,12 @@ function Animate(start=null,container=animator.container){
 
 
 function upload(visible=null){
-	let sections = Array.from(document.querySelectorAll('article[data-page="library"] section'));
+    let page = document.querySelector('ps-panel[name="library"]');
+	let sections = Array.from(page.querySelectorAll('section'));
     for(let sect of sections){
         sect.classList.add('hide');
     }
-    let sect = document.querySelector('article[data-page="library"] section[name="file"]');
+    let sect = page.querySelector('section[name="file"]');
     sect.classList.remove('hide');
 }
 
@@ -188,7 +204,7 @@ async function encode(id = null){
     let imgcontainer = document.querySelector('div[name="codeset"]');
     imgcontainer.innerHTML = '';
     page(1);
-    
+
     for (let block of Object.values(rec._attachments)){
         block = await block.data.arrayBuffer();
         block = new Uint8Array(block);
@@ -206,48 +222,21 @@ async function encode(id = null){
 
 /**
  * Changes the visible page to the specified page.
- * 
- * Page can be specified as a string or an integer. A string specifies 
- * the absolute page name to be changed to, integers represent the number 
+ *
+ * Page can be specified as a string or an integer. A string specifies
+ * the absolute page name to be changed to, integers represent the number
  * of page to move by from current position.
- * 
- * The pages are conceptually in a carosel, so negative numbers move left, 
+ *
+ * The pages are conceptually in a carosel, so negative numbers move left,
  * postive numbers move right.
- * 
+ *
  * Nonsensical values result in a page move of 0 (stay where you are)
- * 
- * @param {int|string} dir 
+ *
+ * @param {int|string} dir
  */
 function page(dir=1){
-    let pages = document.querySelector('main');
-    
-    if(typeof dir === 'string'){
-        /*
-        * Find the string in the page labels. If you don't find it, just assume no page change
-        */
-        let label = dir;
-        for(dir=pages.children.length-1;dir>0;dir--){
-            let page = pages.children[dir];
-            if(page.dataset.page === label){
-                break;
-            }
-        }
-    }
-
-    // wraps the pointer to a positive value within the array
-    dir %= pages.children.length;
-    dir += pages.children.length;
-    dir %= pages.children.length;
-
-    let page = pages.children[dir];
-    while(page.dataset.page !== pages.children[0].dataset.page){
-        if(dir > 0){
-            pages.prepend(pages.children[pages.children.length-1]);
-        }
-        else{
-            pages.append(pages.children[0]);
-        }
-    }
+    let pages = document.querySelector('ps-tabpanel');
+    pages.rotate(dir);
 }
 
 
@@ -269,8 +258,9 @@ async function Download(id){
 
 
 async function RenderIndex(){
-    let htmlList = document.querySelector('article[data-page="library"] > ul');
-    let template = document.querySelector('article[data-page="library"] > template');
+    let page = document.querySelector('ps-panel[name="library"]');
+    let htmlList = page.querySelector('ul');
+    let template = page.querySelector('template');
     let recs = await db.allDocs({include_docs:true,attachments: false});
 
     htmlList.innerHTML = '';
