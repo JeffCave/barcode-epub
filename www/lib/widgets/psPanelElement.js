@@ -36,11 +36,15 @@ export default class psPanelElement extends HTMLElement {
 			'&nbsp;'
 			;
 
+		this.domResizer = document.createElement('span');
+		this.domResizer.setAttribute('part','resizer');
+		panel.append(this.domResizer);
+
 		this.domMaximize = document.createElement('span');
 		// toggle the switch on/off to reset everything
 		this.maximizable = !this.maximizable;
 		this.maximizable = !this.maximizable;
-		panel.append(this.domMaximize);
+		this.domResizer.append(this.domMaximize);
 		let btn = this.domMaximize;
 		btn.classList.add('resizer');
 		btn.setAttribute('name','maximize');
@@ -51,7 +55,7 @@ export default class psPanelElement extends HTMLElement {
 		});
 
 		this.domRestore = document.createElement('span');
-		panel.append(this.domRestore);
+		this.domResizer.append(this.domRestore);
 		btn = this.domRestore;
 		btn.setAttribute('name','normal');
 		btn.innerHTML = '&#128471;';
@@ -64,7 +68,7 @@ export default class psPanelElement extends HTMLElement {
 		// toggle the switch on/off to reset everything
 		this.minimizable = !this.minimizable;
 		this.minimizable = !this.minimizable;
-		panel.append(this.domMinimize);
+		this.domResizer.append(this.domMinimize);
 		btn = this.domMinimize;
 		btn.setAttribute('name','minimize');
 		btn.innerHTML = '&#128469;';
@@ -130,9 +134,13 @@ export default class psPanelElement extends HTMLElement {
 
 	maximize(){
 		this.normal();
+		this.classList.remove('normal');
 		this.classList.add('maximize');
 	}
 
+	setState(value){
+		this.state = value;
+	}
 
 	get state(){
 		return this.getAttribute('state') || 'normal';
@@ -146,10 +154,8 @@ export default class psPanelElement extends HTMLElement {
 		// Fix this to not need to remove classes, only add them. This will
 		// allow for the transitions to always be applied.
 		//
-		// THis removal is a hacky way to force this one to be most recent
-		allowed.forEach((className)=>{
-			this.classList.remove(className);
-		});
+		// This removal is a hacky way to force this one to be most recent
+		this.classList.remove(...allowed);
 
 		value = (value || '');
 		value = value.toLowerCase();
@@ -215,7 +221,7 @@ export default class psPanelElement extends HTMLElement {
 	border-radius:0.3em;
 }
 
-[name='minimize'], [name='maximize'], [name='normal']{
+[part='resizer']{
 	float: right;
 	z-index: 100000;
 	cursor: default;
@@ -308,35 +314,35 @@ export default class psPanelElement extends HTMLElement {
 
 
 
-:host(.normal) > *{
+:host(.normal) > * {
 	transition: opacity 1s,visibility 1s;
 }
-:host(.normal) > span[name='normal']{
+:host(.normal) > span[part='resizer'] > span[name='normal']{
 	display:none;
 }
-:host(.normal) > span[name='maximize']{
+:host(.normal) [part='resizer'] > span[name='maximize']{
 	display:inline;
 }
-:host(.normal) > span[name='minimize']{
+:host(.normal) [part='resizer'] > span[name='minimize']{
 	display:inline;
 }
 
-:host(.minimize) > *, :host(.minimize) > ::slotted(*) {
+:host(.minimize) [part='resizer'] > *, :host(.minimize) > ::slotted(*) {
 	visibility: hidden;
 	opacity: 0;
 	transition: opacity 0.5s, visibility 0.9s;
 }
 
 
-:host(.maximize) > span[name='maximize']{
+:host(.maximize) [part='resizer'] > span[name='maximize']{
 	display:none;
 }
-:host(.maximize) > span[name='normal']{
+:host(.maximize) [part='resizer'] > span[name='normal']{
 	display:inline;
 }
 
 
-:host(.minimize) > span[name='icon'] {
+:host(.minimize) [part='resizer'] > span[name='icon'] {
 	opacity:1;
 	position:absolute;
 	visibility:visible;

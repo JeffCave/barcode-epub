@@ -22,6 +22,7 @@ export default class psTabbedPanelElement extends HTMLElement {
 
 
 		let menu = document.createElement('ul');
+		menu.setAttribute('part','menu');
 		shadow.append(menu);
 
 		let slot = document.createElement('slot');
@@ -31,7 +32,8 @@ export default class psTabbedPanelElement extends HTMLElement {
 		this.panels = [];
 		this.keys = {};
 		let panel = localStorage.getItem("tabbedpanel");
-		Array.from(this.children).forEach((d,i)=>{
+		for(let i=0; i<this.children.length; i++){
+			const d = this.children[i];
 			if(!(d instanceof psPanelElement) || d.state === 'hide'){
 				d.style.display = 'none';
 				return;
@@ -60,7 +62,7 @@ export default class psTabbedPanelElement extends HTMLElement {
 			d.domIcon.style.display = 'none';
 			d.querySelectorAll('h1').forEach(h1=>{h1.style.display = 'none';});
 			d.style.border = '0 solid black';
-		});
+		}
 		this.activate(panel);
 	}
 

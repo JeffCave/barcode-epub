@@ -23,6 +23,8 @@ main{
     padding: 0;
     margin: 0;
     display:none;
+    height:80vmin;
+    width:80vmin;
 }
 #codeset img::after{
     content: "[" attr(alt) "]";
@@ -70,31 +72,29 @@ article[data-page="library"] li {
     border-radius: 1em;
 }
 video{
-    z-index: -100;
+    /* z-index: -100; */
     border:0;
     background-color: slategray;
-    position:fixed;
+    position: relative;
     top:0;
     left:0;
-    width:100vw;
-    height:100vh;
-}
-
-.hide{
-    display:none;
+    width:80vmin;
+    height:80vmin;
 }
 
 .status{
     /*status as an LED*/
-    position: relative;
+    position: fixed;
+    right:0;
+    bottom:0;
     display:inline-block;
     border-radius: 0.6cm;
-    background-color: darkslategrey;
+    background-color: white;
     border:0.1cm solid black;
     height:1cm;
     width:1cm;
 
-    /* status as an ghost frame */
+    /* status as a ghost frame */
     /*
     z-index:-99;
     position:fixed;
@@ -108,31 +108,32 @@ video{
     */
 
     /* status colour changes*/
-    --status-color: rgba(0,0,0,0);
-    --shadow-size: 0;
-    box-shadow:0 0 var(--shadow-size) 0 var(--status-color) inset;
+    --status-color:darkslategrey;
+    --shadow-size: 0.8cm;
+    box-shadow:-0.3cm -0.3cm var(--shadow-size) 0.1cm var(--status-color) inset;
     transition: box-shadow 2s ease-out;
 
 }
 
+
+.hide{
+    display:none;
+}
+
 .pass{
     --status-color: green;
-    --shadow-size:10vmax;
     transition: box-shadow 0s linear;
 }
 .fail{
     --status-color: red;
-    --shadow-size:10vmax;
     transition: box-shadow 0s linear;
 }
 .warn{
     --status-color: orange;
-    --shadow-size:10vmax;
     transition: box-shadow 0s linear;
 }
 .skip{
     --status-color: steelblue;
-    --shadow-size:10vmax;
     transition: box-shadow 0s linear;
 }
 
@@ -159,19 +160,34 @@ video{
         padding:0;
         border:0;
     }
-    article[data-page='book'] nav {
+    ps-tabpanel::part(menu){
         display: none;
         margin:0;
         padding:0;
         border:0;
     }
-    div#codeset > img {
+    ps-panel::part(resizer){
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    ps-panel[name='book'] nav {
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    #codeset img {
         position: relative;
         display: inline-block;
-        height: 84mm;
-        width: 84mm;
+        top:0;
+        left:0;
+        height: 42mm;
+        width: 42mm;
         animation-name: none;
         opacity:1;
         page-break-inside: initial;
+        border:0;
     }
 }

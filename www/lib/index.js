@@ -171,8 +171,9 @@ function VideoStatus(status){
 
 
 async function VideoDecode(src='monitor'){
-    let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
-    let stopButton = document.querySelector('article[data-page="decoder"] button[name="stop"]');
+    let panel = document.querySelector('ps-panel[name="decoder"]');
+    let buttons = Array.from(panel.querySelectorAll('button'));
+    let stopButton = panel.querySelector('button[name="stop"]');
 
     buttons.forEach(b=>{b.classList.add('hide')});
     stopButton.classList.remove('hide');
@@ -186,8 +187,9 @@ async function VideoDecode(src='monitor'){
 
 function stopCamera(){
     Decoder.StopVideo();
-    let buttons = Array.from(document.querySelectorAll('article[data-page="decoder"] button'));
-    let stopButton = document.querySelector('article[data-page="decoder"] button[name="stop"]');
+    let panel = document.querySelector('ps-panel[name="decoder"]');
+    let buttons = Array.from(panel.querySelectorAll('button'));
+    let stopButton = panel.querySelector('button[name="stop"]');
     buttons.forEach(b=>{b.classList.remove('hide')});
     stopButton.classList.add('hide');
 }
