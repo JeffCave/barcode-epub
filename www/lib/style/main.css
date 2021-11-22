@@ -2,13 +2,14 @@
 @import url('layout.css');
 @import url('header.css');
 @import url('sidebar.css');
-@import url('mycharts.css');
+@import url('marketing.css');
 
 
 :root{
 	--main-color: rgb(36, 142, 194);
 	--main-color-contrast: white;
-	--corners:0.25em
+	/* --corners:0.25em */
+	--corners:0;
 }
 
 
@@ -53,22 +54,26 @@ input.pass{
 	box-shadow: 0 0 10px green;
 }
 
+.waitload{
+	display:none;
+}
+
 @media all and (min-width: 400px) {
 	main {
-		flex: 10 0px; 
+		flex: 10 0px;
 		order: 2;
 	}
-	section { 
-		flex: 0 auto; 
+	section {
+		flex: 0 auto;
 	}
-	section:last-of-type { 
-		order: 3; 
+	section:last-of-type {
+		order: 3;
 	}
-	section:first-of-type { 
-		order: 1; 
-	} 
-	footer { 
-		order: 4; 
+	section:first-of-type {
+		order: 1;
+	}
+	footer {
+		order: 4;
 	}
 }
 

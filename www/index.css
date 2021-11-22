@@ -13,7 +13,6 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
 */
 body{
     position:relative;
-    background-color: steelblue;
     margin:0;
 }
 main{
@@ -24,6 +23,8 @@ main{
     padding: 0;
     margin: 0;
     display:none;
+    height:80vmin;
+    width:80vmin;
 }
 #codeset img::after{
     content: "[" attr(alt) "]";
@@ -71,34 +72,69 @@ article[data-page="library"] li {
     border-radius: 1em;
 }
 video{
-    border:0.1em solid white;
-    background-color: slategrey;
+    /* z-index: -100; */
+    border:0;
+    background-color: slategray;
+    position: relative;
+    top:0;
+    left:0;
+    width:80vmin;
+    height:80vmin;
 }
+
+.status{
+    /*status as an LED*/
+    position: fixed;
+    right:0;
+    bottom:0;
+    display:inline-block;
+    border-radius: 0.6cm;
+    background-color: white;
+    border:0.1cm solid black;
+    height:1cm;
+    width:1cm;
+
+    /* status as a ghost frame */
+    /*
+    z-index:-99;
+    position:fixed;
+    border-radius: 0;
+    background-color: rgba(0,0,0,0);
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    border: 0;
+    */
+
+    /* status colour changes*/
+    --status-color:darkslategrey;
+    --shadow-size: 0.8cm;
+    box-shadow:-0.3cm -0.3cm var(--shadow-size) 0.1cm var(--status-color) inset;
+    transition: box-shadow 2s ease-out;
+
+}
+
 
 .hide{
     display:none;
 }
 
-.status{
-    position: relative;
-    display:inline-block;
-    height:1cm;
-    width:1cm;
-    border-radius: 0.6cm;
-    border:0.1cm solid black;
-    background-color: slategrey;
-    color:slategrey;
-    transition: color 2s;
+.pass{
+    --status-color: green;
+    transition: box-shadow 0s linear;
 }
-
-.status.pass{
-    background-color: green;
+.fail{
+    --status-color: red;
+    transition: box-shadow 0s linear;
 }
-.status.fail{
-    background-color:red;
+.warn{
+    --status-color: orange;
+    transition: box-shadow 0s linear;
 }
-.status.warn{
-    background-color:orange;
+.skip{
+    --status-color: steelblue;
+    transition: box-shadow 0s linear;
 }
 
 @media print {
@@ -124,19 +160,34 @@ video{
         padding:0;
         border:0;
     }
-    article[data-page='book'] nav {
+    ps-tabpanel::part(menu){
         display: none;
         margin:0;
         padding:0;
         border:0;
     }
-    div#codeset > img {
+    ps-panel::part(resizer){
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    ps-panel[name='book'] nav {
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    #codeset img {
         position: relative;
         display: inline-block;
-        height: 84mm;
-        width: 84mm;
+        top:0;
+        left:0;
+        height: 42mm;
+        width: 42mm;
         animation-name: none;
         opacity:1;
         page-break-inside: initial;
+        border:0;
     }
 }
