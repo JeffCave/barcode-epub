@@ -1,7 +1,7 @@
 body{
 	position:relative;
 	font-family: 'Open Sans', sans-serif;
-	display: flex;  
+	display: flex;
 	flex-flow: row wrap;
 	margin:0;
 	padding: 0;
@@ -32,6 +32,7 @@ a:hover{
 }
 
 footer {
+	display: none;
 	background: var(--main-color);
 	color: var(--main-color-contrast);
 	font-size:0.5em;
@@ -41,14 +42,20 @@ footer {
 main {
 	text-align: left;
 	background: white;
-	max-width:480px;
+	margin:0;
 }
 
 body > section:last-of-type {
+	display: none;
+	padding:0;
+	margin:0;
 	/*background: deepskyblue*/;
 }
 
 body > section:first-of-type {
+	display: none;
+	padding:0;
+	margin:0;
 	/*background: gold;*/
 }
 
@@ -61,7 +68,7 @@ address{
 button, input{
 	border: 1px solid black;
 	border-radius:0.25em;
-	
+
 }
 
 button:hover, input:hover,input:focus{

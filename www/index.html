@@ -1,73 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+ <meta charset="utf-8" />
 
-<link rel="stylesheet" type="text/css" href="index.css" />
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
 
-<script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
-<script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
-<script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
-<script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
-<script type="text/javascript" src="./lib/zxing.js"></script>
+ <script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
+ <script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
+ <script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
+ <script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
+ <script type="text/javascript" src="./lib/zxing.js"></script>
 
-<script  type="module" src="./index.js"></script>
+ <script  type="module" src="./lib/index.js"></script>
 
+ <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
+ <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+
+ <link rel="stylesheet" type="text/css" href="./lib/style/main.css" />
+ <link rel="stylesheet" type="text/css" href="./index.css" />
+
+ <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" />
 </head>
 <body>
 
 <header>
+ <h1>Barcoder</h1>
+
+ <img src='logo.png' title='Barcoder' />
+ <button name='menu'>&hellip;</button>
  <nav>
-  <ul>
-   <li><button name='left'>◀</button></li>
-   <li><button name='right'>▶</button></li>
-  </ul>
+  <button name='left'>◀</button>
+  <button name='right'>▶</button>
+  <button id='Bug' title='Report a Bug' onclick='window.location="https://gitlab.com/jefferey-cave/miss/issues"'>&#128028;</button>
+  <button id='DeleteAll' title='Remove Comparision Data'>&#128465;</button>
  </nav>
+ <ps-alert></ps-alert>
 </header>
-<main>
- <article data-page='decoder'>
-  <button name='fromVideo'>🖵</button>
-  <button name='fromCamera'>📷</button>
-  <button name='stop' class='hide'>⏹</button>
-  <br />
-  <section name='video' class='hide'>
-   <video name='debug' height="80%" width="80%"></video>
-  </section>
- </article>
- <article data-page='library'>
-  <h2>Catalogue</h2>
-  <nav>
-   <button name='fromEpub'>🖿</button>
-  </nav>
-  <section name='file' class='hide'>
-   <p>Upload a file...</p>
-   <p>Epub files supported</p>
-   <p>Images of barcodes</p>
-   <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPub'>&#10010; Add Epub</ps-filedrop>
-  </section>
-  <template>
+<h1 class='preload'>&hellip;</h1>
+<section class='waitload'>
+</section>
+<main class='waitload'>
+ <ps-tabpanel>
+  <ps-panel icon='photo_camera' name='decoder'>
+   <h1>Decoder</h1>
    <nav>
-    <button name='send' title='Encode'>🙾</button>
-    <button name='save' title='Save to Disk'>🖫</button>
-    <button name='delete'title='Delete'>🗑</button>
-    ⏸
+    <button name='fromVideo'>🖵</button>
+    <button name='fromCamera'>📷</button>
+    <button name='stop' class='hide'>⏹</button>
    </nav>
-   <div><output name='id'>xxx...xxx</output></div>
-   <div><output name='pages-current'>365</output> of <output name='pages-total'>365</output> (<output name='pages-pct'>100</output>%)</div>
-   <div><label>Title</label>: <output name='title'>Life in the Woods</output></div>
-   <div><label>Author</label>: <output name='author'>Thoreau</output></div>
-  </template>
-  <ul>
-  </ul>
- </article>
- <article data-page='book'>
-  <nav>
-   <button name='print' title='Print'>🖶</button>
-  </nav>
-  <div id='codeset' name='codeset'></div>
- </article>
+   <section name='video'>
+    <video></video>
+    <div class='status'></div>
+   </section>
+  </ps-panel>
+  <ps-panel icon='library_books' name='library'>
+   <h1>Catalogue</h1>
+   <nav>
+    <button name='fromEpub'>🖿</button>
+   </nav>
+   <section name='file' class='hide'>
+    <p>Upload a file...</p>
+    <p>Epub files supported</p>
+    <p>Images of barcodes</p>
+    <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPub'>&#10010; Add Epub</ps-filedrop>
+   </section>
+   <template>
+    <nav>
+     <button name='send' title='Encode'>🙾</button>
+     <button name='save' title='Save to Disk'>🖫</button>
+     <button name='delete'title='Delete'>🗑</button>
+     ⏸
+    </nav>
+    <div><output name='id'>xxx...xxx</output></div>
+    <div><output name='pages-current'>365</output> of <output name='pages-total'>365</output> (<output name='pages-pct'>100</output>%)</div>
+    <div><label>Title</label>: <output name='title'>Life in the Woods</output></div>
+    <div><label>Author</label>: <output name='author'>Thoreau</output></div>
+   </template>
+   <ul>
+   </ul>
+  </ps-panel>
+  <ps-panel icon='book' name='book'>
+   <h1>Reader</h1>
+   <nav>
+    <button name='print' title='Print'>🖶</button>
+   </nav>
+   <div id='codeset' name='codeset'></div>
+  </ps-panel>
+  <ps-panel icon='settings'>
+   <h1>Options</h1>
+   <form>
+    <label>Field 1</label>:<input name='thing' />
+   </form>
+  </ps-panel>
+ </ps-tabpanel>
 </main>
+<section style='display:none;'>
+ Sidebar 2
+</section>
+<footer>
+ <div>
+  <a href=''>Jeff Cave</a>
+  &mdash; Privacy
+  &mdash; <a href='docs/readme.md'>Purpose</a>
+  &mdash; <a href='?experimental'>Experimental Mode</a>
+ </div>
+ <pre style='float:right;'>
+  $Id$
+ </pre>
+</footer>
+
+
 </body>
 </html>
