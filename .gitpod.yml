@@ -1,4 +1,5 @@
 
 vscode:
   extensions:
+    - mhutchie.git-graph
     - ritwickdey.liveserver
