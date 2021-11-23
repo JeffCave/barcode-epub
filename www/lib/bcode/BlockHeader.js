@@ -1,8 +1,21 @@
-class SplitHeader {
+export {
+    BlockHeader as default,
+    BlockHeader
+};
+
+
+/**
+ * Block's have a standardized header that allows us to reconstruct the
+ * parts later.
+ *
+ * This class will lay itself over an existing block and allow for simple
+ * reading of the parts.
+ */
+class BlockHeader {
     constructor(buffer=null){
         let p = {};
         if(!buffer){
-            buffer = new ArrayBuffer(SplitHeader.SIZE);
+            buffer = new ArrayBuffer(BlockHeader.SIZE);
             // First two bytes are going to spell "dp" for "dpub"
             let bytes = new Uint8Array(buffer,0);
             'dp'.split('')
@@ -32,32 +45,53 @@ class SplitHeader {
     }
 
     /**
+     * Performs validation check, however returns true/false instead of
+     * giving a reason.
+     *
+     * @returns boolean
+     */
+    isValid(){
+        try{
+            this.validate();
+            return true;
+        }
+        catch{
+            return false;
+        }
+    }
+
+    /**
      * Performs some small checks on the blocks to verify correctness:
-     * 
+     *
      * - verifies the 16bit ID at beginning of blcok
      * - Compares the included checksum to a calculated one
      * - checks for version match
-     * 
-     * @returns boolean 
+     *
+     * @throws RangeError if validation fails
      */
-    isValid(){
+    validate(){
         if(this.letterhead !== 'dp'){
-            return false;
+            throw new RangeError(`Invalid letter head in conntent (${this.letterhead})`);
         }
 
         if(this.version !== 0){
-            return false;
+            throw new RangeError(`Version mismatch (${this.version})`);
         }
 
         let actual = this.calcChecksum();
         let expect = this.checksum;
         if(actual !== expect){
-            //return false;
+            //throw new RangeError(`Checksum mismatch`);
         }
 
         return true;
     }
 
+    /**
+     * A simple one byte checksum.
+     *
+     * @returns the checksum calcuated on the block
+     */
     calcChecksum(){
         let sum = 'U'.charCodeAt(0);
         for(let i=4; i<this.p.bytes.length; i++){
@@ -130,7 +164,7 @@ class SplitHeader {
     }
     set page(value){
         value = value || 0;
-        value = ~~value; // abs-numeric
+        value = ~~value; // abs-integer
         this.p.page[0] = value;
         this.setCheck();
     }
@@ -139,7 +173,7 @@ class SplitHeader {
     }
     set pages(value){
         value = value || 0;
-        value = ~~value; // abs-numeric
+        value = ~~value; // abs-integer
         this.p.page[1] = value;
         this.setCheck();
     }
@@ -148,12 +182,8 @@ class SplitHeader {
     }
 
     get SIZE(){
-        return SplitHeader.SIZE;
+        return BlockHeader.SIZE;
     }
 }
-SplitHeader.SIZE = 72;
+BlockHeader.SIZE = 72;
 
-export {
-    SplitHeader as default,
-    SplitHeader
-};

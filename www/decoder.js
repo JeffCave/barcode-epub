@@ -1,7 +1,8 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
 
-import SplitHeader from "./lib/bcode/splitheader.js";
 import * as b45 from './lib/base45.js';
+import Block from "./lib/bcode/Block.js";
+import Barcoder from "./lib/bcode/Barcoder.js";
 
 export {
 	WatchVideo,
@@ -23,7 +24,7 @@ async function getMonitorSource(src='monitor',light=false){
 		state.video = await navigator.mediaDevices.getDisplayMedia();
 	}
 	else{
-		state.video = await navigator.mediaDevices.getUserMedia({ 
+		state.video = await navigator.mediaDevices.getUserMedia({
 			audio:false,
 			video: {
 				facingMode: 'environment'
@@ -46,7 +47,7 @@ async function WatchVideo(imgsource='monitor',status=()=>{}){
 	let camera = await getMonitorSource(imgsource);
 
 	let video = document.querySelector('video');
-	
+
 	state.watcher = new Promise((resolved,reject)=>{
 		state.watcherresolver = resolved;
 		state.codeReader.decodeFromStream(camera,video,(result,err)=>{
@@ -90,44 +91,11 @@ function StopVideo(){
 	state.watcher = null;
 }
 
-
+/**
+ * @deprecated use 'Barcoder.SaveBlock' instead
+ */
 async function SaveBlock(block,status=()=>{}){
-	let header = new SplitHeader(block);
-	if(!header.isValid()){
-		status('fail');
-		return null;
-	}
-	
-	let doc = null;
-	try{
-		doc = await db.get(header.idString,{attachments:true});
-	}
-	catch(e){
-		if(e.status === 404){
-			doc = {
-				_id: header.idString,
-				pages: header.pages,
-				_attachments:{}
-			};
-			await db.put(doc);
-		}
-		else{
-			throw e;
-		}
-	}
-	
-	let page = header.page.toFixed(0);
-	if(page in doc._attachments){
-		status('skip');
-		return true;
-	}
-	try{
-		let result = await db.putAttachment(doc._id, page, doc._rev, new Blob([block]), 'application/dpub-seg');
-		status('pass');
-		return result;
-	}
-	catch(e){
-		console.error(e);
-		return false;
-	}
+	block = new Block(block);
+	let result = Barcoder.SaveBlock(block);
+	status(result);
 }
