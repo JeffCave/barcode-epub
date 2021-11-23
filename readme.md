@@ -6,10 +6,23 @@ The intent is to create an EPUB reader that stores its data on paper, and is ent
 
 ## Running
 
+
+### WWW
+
 It is a self-contained web app, and therefore has no build dependancies, though it does have a few CORS calls that require it to be served.
 
 1. serve: `./www` on `127.0.0.1`
 2. nav: `http://lvh.me/index.html`
+
+### CLI
+
+The command line version is a seperate instance optimized for scripting on the command line.
+
+``` bash
+cd ./cli
+node encode.js
+node decode.js
+```
 
 ## Quick Usage
 
