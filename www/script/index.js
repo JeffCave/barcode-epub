@@ -1,16 +1,16 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
 
-import "./bwip-js/bwipp.js";
-import "./bwip-js/bwipjs.js";
-import "./bwip-js/lib/xhr-fonts.js";
-import "./bwip-js/lib/bitmap.js";
-import "./zxing.js";
+import "./lib/bwip-js/bwipp.js";
+import "./lib/bwip-js/bwipjs.js";
+import "./lib/bwip-js/lib/xhr-fonts.js";
+import "./lib/bwip-js/lib/bitmap.js";
+import "./lib/zxing.js";
 
-import "./widgets/~all.js";
+import "./lib/widgets/~all.js";
 
 import * as Encoder from "../encoder.js";
 import * as Decoder from "../decoder.js";
-import SplitHeader from "./bcode/splitheader.js";
+import SplitHeader from "./bcode/splitheader.js.js";
 
 const db = new PouchDB('barcodelib');
 db.compact();

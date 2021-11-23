@@ -94,6 +94,48 @@ class Barcoder extends EventTarget{
         }
     }
 
+    async WatchVideo(stream){
+        if (state.watcher) return state.watcher;
 
+        if(!state.codeReader){
+            //state.codeReader = new ZXing.BrowserDatamatrixCodeReader();
+            state.codeReader = new ZXing.BrowserQRCodeReader();
+        }
+        let camera = await getMonitorSource(imgsource);
+
+        let video = document.querySelector('video');
+
+        state.watcher = new Promise((resolved,reject)=>{
+            state.watcherresolver = resolved;
+            state.codeReader.decodeFromStream(camera,video,(result,err)=>{
+                if(err){
+                    switch(err.name){
+                        case 'FormatException':
+                        case 'NotFoundException':
+                        case 'ChecksumException':
+                        //case 'NullPointerException':
+                            console.debug(err);
+                            break;
+                        default:
+                            console.error(err);
+                            reject(err);
+                            break;
+                    }
+                }
+                if(!result) return false;
+
+                result = result.text;
+                // we have simply discovered the last one we processed
+                if(result === state.lastpage){
+                    return false;
+                }
+                state.lastpage = result;
+
+                result = b45.decode(result);
+                SaveBlock(result,status);
+            });
+        });
+        return state.watcher;
+    }
 }
 

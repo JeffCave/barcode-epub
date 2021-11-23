@@ -1,8 +1,6 @@
-import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
-
-import * as b45 from './lib/base45.js';
-import Block from "./lib/bcode/Block.js";
-import Barcoder from "./lib/bcode/Barcoder.js";
+import * as b45 from './script/lib/base45.js';
+import Block from "./script/bcode/Block.js";
+import Barcoder from "./script/bcode/Barcoder.js";
 
 export {
 	WatchVideo,
@@ -10,13 +8,14 @@ export {
 	SaveBlock
 };
 
-const db = new PouchDB('barcodelib');
-
 const state = {
 	video: null,
 	codeReader: null
 };
 
+/**
+ * @deprecated use 'Camera.getMonitorSource' instead
+ */
 async function getMonitorSource(src='monitor',light=false){
 	if(state.video) return state.video;
 
@@ -37,6 +36,9 @@ async function getMonitorSource(src='monitor',light=false){
 	return state.video;
 }
 
+/**
+ * @deprecated: use 'Barcoder.WatchVideo' instead
+ */
 async function WatchVideo(imgsource='monitor',status=()=>{}){
 	if (state.watcher) return state.watcher;
 
@@ -81,7 +83,9 @@ async function WatchVideo(imgsource='monitor',status=()=>{}){
 	return state.watcher;
 }
 
-
+/**
+ * @deprecated use 'Camera.StopVideo' instead
+ */
 function StopVideo(){
 	state.codeReader.stopContinuousDecode();
 	for(let track of state.video.getTracks()){
