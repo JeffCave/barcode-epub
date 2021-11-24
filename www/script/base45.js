@@ -2,11 +2,17 @@
  * https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes#38323755
  */
 
+ export{
+    encode,
+    decode,
+    CompressionRatio,
+};
+
 const CompressionRatio = 4/3;
 
 function encode(buffer){
     if(buffer instanceof Blob) buffer = new Uint8Array(buffer);
-    
+
     let str = String.fromCharCode(...buffer);
     str = window.btoa(str);
     str = str.replace(/\+/g,'-');
@@ -26,8 +32,4 @@ function decode(str){
     return buffer;
 }
 
-export{
-    encode,
-    decode,
-    CompressionRatio,
-};
+

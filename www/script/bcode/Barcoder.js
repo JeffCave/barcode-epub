@@ -1,10 +1,10 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
 
-import "./zxing.js";
+import "../lib/zxing.js";
 
 import Block from './Block.js';
 import ePub from './ePub.js';
-import SplitHeader from './SplitHeader.js';
+import BlockHeader from "./BlockHeader.js";
 
 export{
     Barcoder as default,
@@ -30,7 +30,7 @@ class Barcoder extends EventTarget{
 
 
     static async *ProcessBuffer(stm){
-        const header = new SplitHeader();
+        const header = new BlockHeader();
 
         //https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
         //const MAXSIZE = 1555-header.SIZE;

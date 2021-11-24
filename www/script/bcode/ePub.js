@@ -9,7 +9,7 @@ class ePub{
         this.parts = new Map();
     }
 
-    async static calcFileHash(buffer){
+    static async calcFileHash(buffer){
         buffer = await buffer;
         if(buffer instanceof ArrayBuffer){
             buffer = new Uint8Array(buffer);

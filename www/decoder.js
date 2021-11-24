@@ -1,4 +1,4 @@
-import * as b45 from './script/lib/base45.js';
+import * as b45 from './script/base45.js';
 import Block from "./script/bcode/Block.js";
 import Barcoder from "./script/bcode/Barcoder.js";
 

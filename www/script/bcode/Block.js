@@ -1,9 +1,10 @@
-import "./bwip-js/bwipp.js";
-import "./bwip-js/bwipjs.js";
-import "./bwip-js/lib/xhr-fonts.js";
-import "./bwip-js/lib/bitmap.js";
+//import "../lib/bwip-js/bwipp.js";
+//import "../lib/bwip-js/bwipjs.js";
+//import "../lib/bwip-js/lib/xhr-fonts.js";
+//import "../lib/bwip-js/lib/bitmap.js";
 
-import SplitHeader from "./SplitHeader";
+import BlockHeader from "./BlockHeader.js";
+import * as b45 from "../base45.js";
 
 export{
     Block as default,
@@ -18,24 +19,25 @@ const state = {
 };
 
 class Block extends Uint8Array{
-    constructor(){
-        super(Block.MaxSize+SplitHeader.SIZE);
-        this.p = {};
-    }
     constructor(buffer,offset=0){
-        super(buffer,offset,Block.MaxSize+SplitHeader.SIZE);
+        if(!buffer){
+            super(Block.MaxSize+BlockHeader.SIZE);
+        }
+        else{
+            super(buffer,offset,Block.MaxSize+BlockHeader.SIZE);
+        }
         this.p = {};
     }
 
     get header(){
         if(!this.p.header){
-            this.p.header = new SplitHeader(this);
+            this.p.header = new BlockHeader(this);
         }
         return this.p.header;
     }
 
     set header(head){
-        if(!(head instanceof SplitHeader)) throw TypeError('Not an instance of a SplitHeader');
+        if(!(head instanceof BlockHeader)) throw TypeError('Not an instance of a SplitHeader');
         head.buffer
     }
 
@@ -116,4 +118,4 @@ class Block extends Uint8Array{
 
 }
 
-Block.MaxSize = Math.floor(1555/b45.CompressionRatio)-header.SIZE;;
+Block.MaxSize = Math.floor(1555/b45.CompressionRatio)-BlockHeader.SIZE;;

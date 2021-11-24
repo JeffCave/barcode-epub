@@ -1,16 +1,18 @@
 import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
 
+/* dead: 2021-11-23
 import "./lib/bwip-js/bwipp.js";
 import "./lib/bwip-js/bwipjs.js";
 import "./lib/bwip-js/lib/xhr-fonts.js";
 import "./lib/bwip-js/lib/bitmap.js";
 import "./lib/zxing.js";
+*/
 
-import "./lib/widgets/~all.js";
+import "./widgets/~all.js";
 
 import * as Encoder from "../encoder.js";
 import * as Decoder from "../decoder.js";
-import SplitHeader from "./bcode/splitheader.js.js";
+import BlockHeader from "./bcode/BlockHeader.js";
 
 const db = new PouchDB('barcodelib');
 db.compact();
@@ -73,7 +75,7 @@ async function LoadFiles(files){
         let buff = await file.arrayBuffer();
         let blocks = Encoder.Process(buff);
         let block = (await blocks.next()).value;
-        let header = new SplitHeader(block);
+        let header = new BlockHeader(block);
         let doc = null;
         try{
             doc = await db.get(header.idString,{attachments:true,binary:true});
@@ -97,7 +99,7 @@ async function LoadFiles(files){
 
         applyAttach(doc._attachments,header.page.toFixed(0),block);
         for await (let block of blocks){
-            let header = new SplitHeader(block);
+            let header = new BlockHeader(block);
             applyAttach(doc._attachments,header.page.toFixed(0),block);
         }
         let update = db.put(doc);
@@ -210,7 +212,7 @@ async function encode(id = null){
     for (let block of Object.values(rec._attachments)){
         block = await block.data.arrayBuffer();
         block = new Uint8Array(block);
-        let header = new SplitHeader(block);
+        let header = new BlockHeader(block);
         let barcode = await Encoder.Barcode(block);
         let img = document.createElement('img');
         img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
@@ -251,7 +253,7 @@ async function Download(id){
     let buff = [];
     for(let d of attachments){
         let buf = await d.data.arrayBuffer();
-        buf = new Uint8Array(buf, SplitHeader.SIZE);
+        buf = new Uint8Array(buf, BlockHeader.SIZE);
         buff.push(buf);
     }
     let stm = new Blob(buff,{type:'application/epub+zip'});

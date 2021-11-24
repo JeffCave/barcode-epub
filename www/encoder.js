@@ -5,9 +5,9 @@ export {
 	Barcode,
 };
 
-import Barcoder from "./lib/bcode/Barcoder.js";
-import ePub from "./lib/bcode/ePub.js";
-import Block from './lib/bcode/Block.js';
+import Barcoder from "./script/bcode/Barcoder.js";
+import ePub from "./script/bcode/ePub.js";
+import Block from './script/bcode/Block.js';
 
 /**
  * @deprecated use 'epub.calcFileHash' instead
