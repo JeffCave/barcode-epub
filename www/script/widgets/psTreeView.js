@@ -4,10 +4,6 @@ export{
 	psTreeView
 };
 
-/*
-global HTMLElement
-*/
-
 class psTreeView extends HTMLElement{
 	constructor(){
 		super();
@@ -90,11 +86,11 @@ class psTreeView extends HTMLElement{
 		details.prepend(summary);
 		// if we don't have a sub file section,
 		// create one
-		let trees = Array.from(dom.querySelectorAll("ps-treeview"));
+		let trees = Array.from(dom.querySelectorAll('ps-treeview'));
 		while(trees.length < this.asFileCollection.children.length){
 			let tree = new psTreeView();
 			details.append(tree);
-			trees = Array.from(dom.querySelectorAll("ps-treeview"));
+			trees = Array.from(dom.querySelectorAll('ps-treeview'));
 		}
 		for(let t=0; t<trees.length; t++){
 			let tree = trees[t];
@@ -179,7 +175,7 @@ class psTreeView extends HTMLElement{
 			let curr = obj;
 			let last = null;
 			let n = null;
-			path.forEach(function(node,i,path){
+			path.forEach((node)=>{
 				if(!(node in curr)){
 					curr[node] = {};
 				}
@@ -193,15 +189,15 @@ class psTreeView extends HTMLElement{
 
 		function unwalk(obj,parent={}){
 			if(typeof obj !== 'object'){
-				throw new Error("This case should never exist");
+				throw new Error('This case should never exist');
 			}
 			let entries = Object.entries(obj);
 			let list = [];
 			for(let i in entries){
 				let d = entries[i];
 				let item = {
-					"name": d[0],
-					"parent": parent
+					'name': d[0],
+					'parent': parent
 				};
 				item.path = [item.name];
 				if(parent.path){
@@ -236,7 +232,7 @@ class psTreeView extends HTMLElement{
 
 	dragstart(event){
 		let path = event.target.dataset.path;
-		event.dataTransfer.setData("text/plain", path);
+		event.dataTransfer.setData('text/plain', path);
 	}
 
 
@@ -251,4 +247,5 @@ try{
 		Vue.config.ignoredElements.push('ps-treeview');
 	}
 }
+// eslint-disable-next-line
 catch(err){}

@@ -1,4 +1,9 @@
-import "https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js";
+import 'https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js';
+/*
+global
+	PouchDB,
+	saveAs
+*/
 
 /* dead: 2021-11-23
 import "./lib/bwip-js/bwipp.js";
@@ -8,11 +13,11 @@ import "./lib/bwip-js/lib/bitmap.js";
 import "./lib/zxing.js";
 */
 
-import "./widgets/~all.js";
+import './widgets/~all.js';
 
-import * as Encoder from "../encoder.js";
-import * as Decoder from "../decoder.js";
-import BlockHeader from "./bcode/BlockHeader.js";
+import * as Encoder from '../encoder.js';
+import * as Decoder from '../decoder.js';
+import BlockHeader from './bcode/BlockHeader.js';
 
 const db = new PouchDB('barcodelib');
 db.compact();
@@ -20,92 +25,92 @@ let style = null;
 
 window.addEventListener('load',()=>{
 
-    db.changes({since:'now',live:true}).on('change', RenderIndex);
-    RenderIndex();
+	db.changes({since:'now',live:true}).on('change', RenderIndex);
+	RenderIndex();
 
-    let buttons = {
-        'button[name="fromVideo"]': ()=>{VideoDecode('monitor');},
-        'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
-        'button[name="stop"]': ()=>{stopCamera();},
-        'button[name="print"]': ()=>{window.print();},
-        'button[name="fromEpub"]': ()=>{upload();},
-        'header nav button[name="left"]' : ()=>{page(-1);},
-        'header nav button[name="right"]': ()=>{page(+1);},
-    };
-    for(let b in buttons){
-        document.querySelector(b).addEventListener('click',buttons[b]);
-    }
-    page(0);
-    Animate(true,document.querySelector('div[name="codeset"]'));
+	let buttons = {
+		'button[name="fromVideo"]': ()=>{VideoDecode('monitor');},
+		'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
+		'button[name="stop"]': ()=>{stopCamera();},
+		'button[name="print"]': ()=>{window.print();},
+		'button[name="fromEpub"]': ()=>{upload();},
+		'header nav button[name="left"]' : ()=>{page(-1);},
+		'header nav button[name="right"]': ()=>{page(+1);},
+	};
+	for(let b in buttons){
+		document.querySelector(b).addEventListener('click',buttons[b]);
+	}
+	page(0);
+	Animate(true,document.querySelector('div[name="codeset"]'));
 
-    document
-        .querySelector('#UploadEpub')
-        .addEventListener('change', (e)=>{
-            LoadFiles(e.target.files)
-        });
+	document
+		.querySelector('#UploadEpub')
+		.addEventListener('change', (e)=>{
+			LoadFiles(e.target.files);
+		});
 
-    style = document.createElement('style');
-    document.head.append(style);
-    style  = style.sheet;
+	style = document.createElement('style');
+	document.head.append(style);
+	style  = style.sheet;
 
-    style.insertRule('.preload{display:none}');
-    Array.from(document.querySelectorAll('.waitload')).forEach(d=>{
-        d.classList.remove('waitload');
-    });
+	style.insertRule('.preload{display:none}');
+	Array.from(document.querySelectorAll('.waitload')).forEach(d=>{
+		d.classList.remove('waitload');
+	});
 });
 
 
 function applyAttach(attach,page,block){
-    if(page in attach) return;
-    if(!(page in attach)){
-        attach[page] = {
-            content_type: 'application/dpub-seg',
-            data: new Blob([block.buffer])
-        };
-    }
+	if(page in attach) return;
+	if(!(page in attach)){
+		attach[page] = {
+			content_type: 'application/dpub-seg',
+			data: new Blob([block.buffer])
+		};
+	}
 }
 
 
 async function LoadFiles(files){
-    if(files instanceof File){
-        files = [files];
-    }
-    let updates = [];
-    for(let file of files){
-        let buff = await file.arrayBuffer();
-        let blocks = Encoder.Process(buff);
-        let block = (await blocks.next()).value;
-        let header = new BlockHeader(block);
-        let doc = null;
-        try{
-            doc = await db.get(header.idString,{attachments:true,binary:true});
-        }
-        catch(e){
-            if(e.status === 404){
-                doc = {
-                    _id: header.idString,
-                    pages: header.pages,
-                    _attachments:{}
-                };
-            }
-            else{
-                throw e;
-            }
-        }
-        let pages = Object.keys(doc._attachments).length;
-        if(pages === doc.pages){
-            return null;
-        }
+	if(files instanceof File){
+		files = [files];
+	}
+	let updates = [];
+	for(let file of files){
+		let buff = await file.arrayBuffer();
+		let blocks = Encoder.Process(buff);
+		let block = (await blocks.next()).value;
+		let header = new BlockHeader(block);
+		let doc = null;
+		try{
+			doc = await db.get(header.idString,{attachments:true,binary:true});
+		}
+		catch(e){
+			if(e.status === 404){
+				doc = {
+					_id: header.idString,
+					pages: header.pages,
+					_attachments:{}
+				};
+			}
+			else{
+				throw e;
+			}
+		}
+		let pages = Object.keys(doc._attachments).length;
+		if(pages === doc.pages){
+			return null;
+		}
 
-        applyAttach(doc._attachments,header.page.toFixed(0),block);
-        for await (let block of blocks){
-            let header = new BlockHeader(block);
-            applyAttach(doc._attachments,header.page.toFixed(0),block);
-        }
-        let update = db.put(doc);
-        updates.push(update);
-    }
-    await Promise.all(updates);
+		applyAttach(doc._attachments,header.page.toFixed(0),block);
+		for await (let block of blocks){
+			let header = new BlockHeader(block);
+			applyAttach(doc._attachments,header.page.toFixed(0),block);
+		}
+		let update = db.put(doc);
+		updates.push(update);
+	}
+	await Promise.all(updates);
 }
 
 let animator = {};
@@ -144,82 +149,82 @@ function Animate(start=null,container=animator.container){
 }
 
 
-function upload(visible=null){
-    let page = document.querySelector('ps-panel[name="library"]');
+function upload(){
+	let page = document.querySelector('ps-panel[name="library"]');
 	let sections = Array.from(page.querySelectorAll('section'));
-    for(let sect of sections){
-        sect.classList.add('hide');
-    }
-    let sect = page.querySelector('section[name="file"]');
-    sect.classList.remove('hide');
+	for(let sect of sections){
+		sect.classList.add('hide');
+	}
+	let sect = page.querySelector('section[name="file"]');
+	sect.classList.remove('hide');
 }
 
 
 let VideoStatus_Clearer = null;
 function VideoStatus(status){
-    let led = document.querySelector('.status');
+	let led = document.querySelector('.status');
 
-    clearTimeout(VideoStatus_Clearer);
-    // set the status
-    window.navigator.vibrate(200);
-    led.classList.add(status);
-    // let it take effect
-    VideoStatus_Clearer = setTimeout(() => {
-        VideoStatus_Clearer = null;
-        // then remove it, so that it fades away
-        led.classList.remove('pass','fail','warn','skip');
-    });
+	clearTimeout(VideoStatus_Clearer);
+	// set the status
+	window.navigator.vibrate(200);
+	led.classList.add(status);
+	// let it take effect
+	VideoStatus_Clearer = setTimeout(() => {
+		VideoStatus_Clearer = null;
+		// then remove it, so that it fades away
+		led.classList.remove('pass','fail','warn','skip');
+	});
 }
 
 
 async function VideoDecode(src='monitor'){
-    let panel = document.querySelector('ps-panel[name="decoder"]');
-    let buttons = Array.from(panel.querySelectorAll('button'));
-    let stopButton = panel.querySelector('button[name="stop"]');
+	let panel = document.querySelector('ps-panel[name="decoder"]');
+	let buttons = Array.from(panel.querySelectorAll('button'));
+	let stopButton = panel.querySelector('button[name="stop"]');
 
-    buttons.forEach(b=>{b.classList.add('hide')});
-    stopButton.classList.remove('hide');
-    page('decoder');
+	buttons.forEach(b=>{b.classList.add('hide');});
+	stopButton.classList.remove('hide');
+	page('decoder');
 
-    await Decoder.WatchVideo(src,VideoStatus);
+	await Decoder.WatchVideo(src,VideoStatus);
 
-    stopCamera();
+	stopCamera();
 }
 
 
 function stopCamera(){
-    Decoder.StopVideo();
-    let panel = document.querySelector('ps-panel[name="decoder"]');
-    let buttons = Array.from(panel.querySelectorAll('button'));
-    let stopButton = panel.querySelector('button[name="stop"]');
-    buttons.forEach(b=>{b.classList.remove('hide')});
-    stopButton.classList.add('hide');
+	Decoder.StopVideo();
+	let panel = document.querySelector('ps-panel[name="decoder"]');
+	let buttons = Array.from(panel.querySelectorAll('button'));
+	let stopButton = panel.querySelector('button[name="stop"]');
+	buttons.forEach(b=>{b.classList.remove('hide');});
+	stopButton.classList.add('hide');
 }
 
 
 async function encode(id = null){
-    if (!id) return;
+	if (!id) return;
 
-    let rec = await db.get(id,{
-        attachments: true,
-        binary: true
-    });
+	let rec = await db.get(id,{
+		attachments: true,
+		binary: true
+	});
 
-    let imgcontainer = document.querySelector('div[name="codeset"]');
-    imgcontainer.innerHTML = '';
-    page(1);
+	let imgcontainer = document.querySelector('div[name="codeset"]');
+	imgcontainer.innerHTML = '';
+	page(1);
 
-    for (let block of Object.values(rec._attachments)){
-        block = await block.data.arrayBuffer();
-        block = new Uint8Array(block);
-        let header = new BlockHeader(block);
-        let barcode = await Encoder.Barcode(block);
-        let img = document.createElement('img');
-        img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
-        //img.transferFromImageBitmap(barcode);
-        img.src = barcode;
-        imgcontainer.append(img);
-    }
+	for (let block of Object.values(rec._attachments)){
+		block = await block.data.arrayBuffer();
+		block = new Uint8Array(block);
+		let header = new BlockHeader(block);
+		let barcode = await Encoder.Barcode(block);
+		let img = document.createElement('img');
+		img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
+		//img.transferFromImageBitmap(barcode);
+		img.src = barcode;
+		imgcontainer.append(img);
+	}
 
 }
 
@@ -239,57 +244,57 @@ async function encode(id = null){
  * @param {int|string} dir
  */
 function page(dir=1){
-    let pages = document.querySelector('ps-tabpanel');
-    pages.rotate(dir);
+	let pages = document.querySelector('ps-tabpanel');
+	pages.rotate(dir);
 }
 
 
 async function Download(id){
-    let rec = await db.get(id,{include_docs:true,attachments:true,binary:true});
-    let attachments = Object.values(rec._attachments);
-    if(rec.pages !== attachments.length){
-        return null;
-    }
-    let buff = [];
-    for(let d of attachments){
-        let buf = await d.data.arrayBuffer();
-        buf = new Uint8Array(buf, BlockHeader.SIZE);
-        buff.push(buf);
-    }
-    let stm = new Blob(buff,{type:'application/epub+zip'});
-    saveAs(stm,`${id}.epub`);
+	let rec = await db.get(id,{include_docs:true,attachments:true,binary:true});
+	let attachments = Object.values(rec._attachments);
+	if(rec.pages !== attachments.length){
+		return null;
+	}
+	let buff = [];
+	for(let d of attachments){
+		let buf = await d.data.arrayBuffer();
+		buf = new Uint8Array(buf, BlockHeader.SIZE);
+		buff.push(buf);
+	}
+	let stm = new Blob(buff,{type:'application/epub+zip'});
+	saveAs(stm,`${id}.epub`);
 }
 
 
 async function RenderIndex(){
-    let page = document.querySelector('ps-panel[name="library"]');
-    let htmlList = page.querySelector('ul');
-    let template = page.querySelector('template');
-    let recs = await db.allDocs({include_docs:true,attachments: false});
+	let page = document.querySelector('ps-panel[name="library"]');
+	let htmlList = page.querySelector('ul');
+	let template = page.querySelector('template');
+	let recs = await db.allDocs({include_docs:true,attachments: false});
 
-    htmlList.innerHTML = '';
-    for(let rec of recs.rows){
-        rec = rec.doc;
-        let html = document.createElement('li');
-        html.innerHTML = template.innerHTML;
+	htmlList.innerHTML = '';
+	for(let rec of recs.rows){
+		rec = rec.doc;
+		let html = document.createElement('li');
+		html.innerHTML = template.innerHTML;
 
-        let id = rec._id;
-        let rev = rec._rev;
-        let curpages = Object.keys(rec._attachments||{}).length;
-        let pct = Math.floor(curpages/rec.pages*100);
+		let id = rec._id;
+		let rev = rec._rev;
+		let curpages = Object.keys(rec._attachments||{}).length;
+		let pct = Math.floor(curpages/rec.pages*100);
 
-        html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
-        html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
-        html.querySelector('button[name="save"]').addEventListener('click',()=>{Download(id);});
+		html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
+		html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
+		html.querySelector('button[name="save"]').addEventListener('click',()=>{Download(id);});
 
-        html.querySelector('output[name="id"]').title = id;
-        html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
-        html.querySelector('output[name="pages-current"]').value = curpages;
-        html.querySelector('output[name="pages-total"]').value   = rec.pages;
-        html.querySelector('output[name="pages-pct"]').value     = pct;
-        html.querySelector('output[name="title"]').value = rec.title;
+		html.querySelector('output[name="id"]').title = id;
+		html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
+		html.querySelector('output[name="pages-current"]').value = curpages;
+		html.querySelector('output[name="pages-total"]').value   = rec.pages;
+		html.querySelector('output[name="pages-pct"]').value	 = pct;
+		html.querySelector('output[name="title"]').value = rec.title;
 
-        htmlList.append(html);
-    }
+		htmlList.append(html);
+	}
 }
 

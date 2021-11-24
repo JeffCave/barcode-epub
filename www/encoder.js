@@ -5,8 +5,8 @@ export {
 	Barcode,
 };
 
-import Barcoder from "./script/bcode/Barcoder.js";
-import ePub from "./script/bcode/ePub.js";
+import Barcoder from './script/bcode/Barcoder.js';
+import ePub from './script/bcode/ePub.js';
 import Block from './script/bcode/Block.js';
 
 /**

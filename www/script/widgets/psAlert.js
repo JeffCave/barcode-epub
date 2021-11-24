@@ -1,10 +1,5 @@
 'use strict';
 
-/*
-global _
-global HTMLElement
-*/
-
 export default class psAlert extends HTMLElement {
 	constructor(){
 		super();
@@ -122,4 +117,5 @@ try{
 		Vue.config.ignoredElements.push('ps-alert');
 	}
 }
+// eslint-disable-next-line
 catch(err){}

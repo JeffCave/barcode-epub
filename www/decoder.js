@@ -27,7 +27,7 @@ async function getMonitorSource(src='monitor',light=false){
 			audio:false,
 			video: {
 				facingMode: 'environment'
-		  	}
+			}
 		});
 		if(light){
 			state.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]});
