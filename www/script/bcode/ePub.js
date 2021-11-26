@@ -5,8 +5,12 @@ export{
 };
 
 class ePub{
-	constructor(){
+	constructor(opts = {}){
 		this.parts = new Map();
+		this._ = Object.assign({
+			hash: 'SHA-512'
+		},opts);
+
 	}
 
 	static async calcFileHash(buffer){

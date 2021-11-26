@@ -1,8 +1,6 @@
 'use strict';
 
-/*
-global TextEncoder
-*/
+
 export default class vius{
 	/**
 	 * Read the settings from the form and convert them into a data
@@ -45,14 +43,12 @@ export default class vius{
 	}
 
 	static async hash(str, hash = 'SHA-1'){
-		str = new TextEncoder("utf-8").encode(str);
-		str = await window.crypto.subtle.digest('SHA-1',str);
+		str = new TextEncoder('utf-8').encode(str);
+		str = await window.crypto.subtle.digest(hash,str);
 		str = Array.from(new Uint8Array(str)).map(d=>{
-				return String.fromCharCode(d);
-			})
-			.join('')
-			;
-		str = "node."+window.btoa(str);
+			return String.fromCharCode(d);
+		}).join('');
+		str = 'node.'+window.btoa(str);
 		return str;
 	}
 
@@ -82,7 +78,7 @@ export default class vius{
 				.finally(()=>{
 					scheduled = null;
 				})
-				;
+			;
 			next = now + delay;
 		};
 	}

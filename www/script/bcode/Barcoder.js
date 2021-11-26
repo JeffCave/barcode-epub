@@ -10,7 +10,7 @@ global
 import Block from './Block.js';
 import ePub from './ePub.js';
 import BlockHeader from './BlockHeader.js';
-import b45 from '../base45.js';
+import * as b45 from '../base45.js';
 
 export{
 	Barcoder as default,
