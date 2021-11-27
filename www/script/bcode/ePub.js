@@ -5,10 +5,12 @@ export{
 };
 
 class ePub{
+	static get HASH(){ return 'SHA-512'; }
+
 	constructor(opts = {}){
 		this.parts = new Map();
 		this._ = Object.assign({
-			hash: 'SHA-512'
+			hash: ePub.HASH
 		},opts);
 
 	}
@@ -18,7 +20,7 @@ class ePub{
 		if(buffer instanceof ArrayBuffer){
 			buffer = new Uint8Array(buffer);
 		}
-		let hash = await crypto.subtle.digest(this._.hash, buffer);
+		let hash = await crypto.subtle.digest(ePub.HASH, buffer);
 		return hash;
 	}
 
@@ -27,4 +29,6 @@ class ePub{
 		return hash;
 	}
 
+
 }
+
