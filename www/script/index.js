@@ -3,23 +3,18 @@ global
 	saveAs
 */
 
-/* dead: 2021-11-23
-import "./lib/bwip-js/bwipp.js";
-import "./lib/bwip-js/bwipjs.js";
-import "./lib/bwip-js/lib/xhr-fonts.js";
-import "./lib/bwip-js/lib/bitmap.js";
-import "./lib/zxing.js";
-*/
-
 import './widgets/~all.js';
 
-import * as Encoder from '../encoder.js';
-import * as Decoder from '../decoder.js';
-import BlockHeader from './bcode/BlockHeader.js';
 import Barcoder from './bcode/Barcoder.js';
+import Block from './bcode/Block.js';
+import Camera from './bcode/Camera.js';
+import ePub from './bcode/ePub.js';
 
 const barcoder = new Barcoder();
 const db = barcoder.db;
+const state = {
+	camera: null
+};
 let style = null;
 
 window.addEventListener('load',()=>{
@@ -59,17 +54,6 @@ window.addEventListener('load',()=>{
 });
 
 
-function applyAttach(attach,page,block){
-	if(page in attach) return;
-	if(!(page in attach)){
-		attach[page] = {
-			content_type: 'application/dpub-seg',
-			data: new Blob([block.buffer])
-		};
-	}
-}
-
-
 async function LoadFiles(files){
 	if(files instanceof File){
 		files = [files];
@@ -77,39 +61,14 @@ async function LoadFiles(files){
 	let updates = [];
 	for(let file of files){
 		let buff = await file.arrayBuffer();
-		let blocks = Encoder.Process(buff);
-		let block = (await blocks.next()).value;
-		let header = new BlockHeader(block);
-		let doc = null;
-		try{
-			doc = await db.get(header.idString,{attachments:true,binary:true});
-		}
-		catch(e){
-			if(e.status === 404){
-				doc = {
-					_id: header.idString,
-					pages: header.pages,
-					_attachments:{}
-				};
-			}
-			else{
-				throw e;
-			}
-		}
-		let pages = Object.keys(doc._attachments).length;
-		if(pages === doc.pages){
-			return null;
-		}
-
-		applyAttach(doc._attachments,header.page.toFixed(0),block);
+		let blocks = Barcoder.ProcessBuffer(buff);
 		for await (let block of blocks){
-			let header = new BlockHeader(block);
-			applyAttach(doc._attachments,header.page.toFixed(0),block);
+			let update = await barcoder.SaveBlock(block);
+			updates.push(update);
 		}
-		let update = db.put(doc);
-		updates.push(update);
 	}
-	await Promise.all(updates);
+	updates = Promise.all(updates);
+	return updates;
 }
 
 let animator = {};
@@ -188,14 +147,22 @@ async function VideoDecode(src='monitor'){
 	stopButton.classList.remove('hide');
 	page('decoder');
 
-	await Decoder.WatchVideo(src,VideoStatus);
+	if(!state.camera){
+		state.camera = new Camera();
+	}
+	barcoder.addEventListener('saveblock',(event)=>{
+		VideoStatus(event.detail.status.level);
+	});
+	await state.camera.setMonitorSource(src);
+	await barcoder.WatchVideo(state.camera);
 
 	stopCamera();
 }
 
 
 function stopCamera(){
-	Decoder.StopVideo();
+	state.camera.StopVideo();
+	barcoder.StopVideo();
 	let panel = document.querySelector('ps-panel[name="decoder"]');
 	let buttons = Array.from(panel.querySelectorAll('button'));
 	let stopButton = panel.querySelector('button[name="stop"]');
@@ -219,8 +186,9 @@ async function encode(id = null){
 	for (let block of Object.values(rec._attachments)){
 		block = await block.data.arrayBuffer();
 		block = new Uint8Array(block);
-		let header = new BlockHeader(block);
-		let barcode = await Encoder.Barcode(block);
+		block = new Block(block);
+		let header = new block.header;
+		let barcode = block.toImage();
 		let img = document.createElement('img');
 		img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
 		//img.transferFromImageBitmap(barcode);
@@ -253,17 +221,7 @@ function page(dir=1){
 
 async function Download(id){
 	let rec = await db.get(id,{include_docs:true,attachments:true,binary:true});
-	let attachments = Object.values(rec._attachments);
-	if(rec.pages !== attachments.length){
-		return null;
-	}
-	let buff = [];
-	for(let d of attachments){
-		let buf = await d.data.arrayBuffer();
-		buf = new Uint8Array(buf, BlockHeader.SIZE);
-		buff.push(buf);
-	}
-	let stm = new Blob(buff,{type:'application/epub+zip'});
+	let stm = ePub.toBuffer(rec);
 	saveAs(stm,`${id}.epub`);
 }
 

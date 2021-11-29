@@ -58,9 +58,9 @@ class Barcoder extends EventTarget{
 			len = Math.min(len, MAXSIZE);
 
 			let chunk = new Uint8Array(stm,offset,len);
-			let block = new Uint8Array(header.SIZE+len);
-			block.set(header.bytes,0);
-			block.set(chunk,header.SIZE);
+			let block = new Block(len);
+			block.header = header;
+			block.body = chunk;
 
 			yield block;
 

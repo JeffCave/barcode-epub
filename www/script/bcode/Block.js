@@ -39,7 +39,11 @@ const state = {
 class Block extends Uint8Array{
 	constructor(buffer,offset=0){
 		if(!buffer){
-			super(Block.MaxSize+BlockHeader.SIZE);
+			buffer = Block.MaxSize;
+		}
+		if(Number.isInteger(buffer)){
+			buffer += BlockHeader.SIZE;
+			super(buffer);
 		}
 		else{
 			super(buffer,offset,Block.MaxSize+BlockHeader.SIZE);
@@ -59,7 +63,7 @@ class Block extends Uint8Array{
 
 	set header(head){
 		if(!(head instanceof BlockHeader)) throw TypeError('Not an instance of a SplitHeader');
-		this.set(head.buffer,0);
+		this.set(head.bytes,0);
 	}
 
 	/**
@@ -71,6 +75,9 @@ class Block extends Uint8Array{
 		body = String.fromCharCode(... body);
 		this.p.body = body;
 		return this.p.body;
+	}
+	set body(bytes){
+		this.set(bytes,this.header.SIZE);
 	}
 
 	/**
@@ -140,6 +147,7 @@ class Block extends Uint8Array{
 			},1);
 		});
 	}
+
 
 }
 

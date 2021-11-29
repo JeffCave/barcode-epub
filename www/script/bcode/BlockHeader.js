@@ -72,7 +72,7 @@ class BlockHeader {
 	 */
 	validate(){
 		if(this.letterhead !== 'dp'){
-			throw new RangeError(`Invalid letter head in conntent (${this.letterhead})`);
+			throw new RangeError(`Invalid letter head in content (${this.letterhead})`);
 		}
 
 		if(this.version !== 0){
