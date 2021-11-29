@@ -3,48 +3,72 @@ export {
 	Camera
 };
 
-const state = {
-	video: null,
-	codeReader: null
-};
 
-
-
+/**
+ * A simple controller for the video feeds, based aournd the camera
+ */
 class Camera{
 
 
-	constructor(){
+	constructor(opts){
+		this.p = Object.assign({
+			light: false,
+			src: 'monitor',
+		},opts);
+		this.p.stream = null;
+	}
 
+	get stream(){
+		return this.p.stream;
 	}
 
 
-	async getMonitorSource(src='monitor',light=false){
-		if(state.video) return state.video;
+	get light(){
+		return this.p.light;
+	}
+	set light(state){
+		state = !!state;
+		if(this.p.light === state) return;
+		this.p.light = state;
+		this.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:state}]});
+	}
+
+
+	async setMonitorSource(src=this.p.src){
+		//verify that the value is of the correct type
+		src = src || '';
+		src = src.toString().toLocaleLowerCase();
+		if(!['monitor','camera'].includes(src)) throw new RangeError('src is invalid value. Allowed [monitor,camera]');
+		// if it is different than the last selection, stop the last one
+		if(src !== this.p.src) this.StopVideo();
+		// if we already have a running stream, just give them that one
+		if(this.p.stream) return this.p.stream;
+
 
 		if(src === 'monitor'){
-			state.video = await navigator.mediaDevices.getDisplayMedia();
+			this.p.stream = await navigator.mediaDevices.getDisplayMedia();
 		}
 		else{
-			state.video = await navigator.mediaDevices.getUserMedia({
+			this.p.stream = await navigator.mediaDevices.getUserMedia({
 				audio:false,
 				video: {
 					facingMode: 'environment'
 				}
 			});
-			if(light){
-				state.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]});
-			}
+			this.light = !this.light;
+			this.light = !this.light;
 		}
-		return state.video;
+		return this.p.stream;
 	}
 
 
 	StopVideo(){
-		state.codeReader.stopContinuousDecode();
-		for(let track of state.video.getTracks()){
-			track.stop();
+		this.light = false;
+		if(this.video){
+			for(let track of this.video.getTracks()){
+				track.stop();
+			}
 		}
-		state.watcherresolver(true);
-		state.watcher = null;
+		this.video = null;
 	}
 }

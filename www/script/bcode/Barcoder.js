@@ -5,16 +5,23 @@ import '../lib/zxing.js';
 /*
 global
 	PouchDB
+	ZXing
 */
 
-import Block from './Block.js';
-import ePub from './ePub.js';
-import BlockHeader from './BlockHeader.js';
 import * as b45 from '../base45.js';
+import Block from './Block.js';
+import BlockHeader from './BlockHeader.js';
+import Camera from './Camera.js';
+import ePub from './ePub.js';
 
 export{
 	Barcoder as default,
 	Barcoder
+};
+
+const Readers = {
+	'qrcode':()=>{return new ZXing.BrowserQRCodeReader();},
+	'datamatrix':()=>{return new ZXing.BrowserDatamatrixCodeReader();},
 };
 
 class Barcoder extends EventTarget{
@@ -22,6 +29,7 @@ class Barcoder extends EventTarget{
 		super();
 		if(!db){
 			db = new PouchDB(this.constructor.name);
+			db.compact();
 		}
 		this._ = {
 			//bcid: 'datamatrix',
@@ -62,7 +70,7 @@ class Barcoder extends EventTarget{
 	}
 
 
-	async SaveBlock(block){
+	async SaveBlock(block,ttl=10){
 		if(!(block instanceof Block)){
 			throw new TypeError('not an instance of type Block');
 		}
@@ -89,32 +97,62 @@ class Barcoder extends EventTarget{
 
 		let page = header.page.toFixed(0);
 		if(page in doc._attachments){
-			return 'skip';
+			let event = new CustomEvent('saveblock', {
+				detail: {
+					block: header,
+					status: {level:'skip',code: 208, msg: 'Already Recorded'},
+				}
+			});
+			this.dispatchEvent(event);
+			return true;
 		}
 		try{
 			let result = await this.db.putAttachment(doc._id, page, doc._rev, new Blob([block]), 'application/dpub-seg');
+			let event = new CustomEvent('saveblock', {
+				detail: {
+					block: header,
+					status: {level:'pass',code: 200, msg: 'Success'},
+				}
+			});
+			this.dispatchEvent(event);
 			return result;
 		}
 		catch(e){
+			if(e.status === 409 && ttl > 0) {
+				setTimeout(()=>{
+					this.SaveBlock(block,ttl--);
+				});
+				return true;
+			}
+
 			console.error(e);
+			let event = new CustomEvent('saveblock', {
+				detail: {
+					block: header,
+					status: {level:'fail',code: e.status, msg: e.message},
+				}
+			});
+			this.dispatchEvent(event);
+			this.lastpage = null;
 			return false;
 		}
 	}
 
-	async WatchVideo(stream){
-		if (state.watcher) return state.watcher;
+	async WatchVideo(camera){
+		if(!(camera instanceof Camera)) throw new TypeError('stream must be an instance of `Camera`');
+		if (this.watcher) return this.watcher;
 
-		if(!state.codeReader){
-			//state.codeReader = new ZXing.BrowserDatamatrixCodeReader();
-			state.codeReader = new ZXing.BrowserQRCodeReader();
+		if(!this.codeReader){
+			let reader = this._.bcid;
+			reader = Readers[reader]();
+			this.codeReader = reader;
 		}
-		let camera = await getMonitorSource(imgsource);
 
 		let video = document.querySelector('video');
 
-		state.watcher = new Promise((resolved,reject)=>{
-			state.watcherresolver = resolved;
-			state.codeReader.decodeFromStream(camera,video,(result,err)=>{
+		this.watcher = new Promise((resolved,reject)=>{
+			this.watcherresolver = resolved;
+			this.codeReader.decodeFromStream(camera.stream,video,(result,err)=>{
 				if(err){
 					switch(err.name){
 						case 'FormatException':
@@ -133,16 +171,24 @@ class Barcoder extends EventTarget{
 
 				result = result.text;
 				// we have simply discovered the last one we processed
-				if(result === state.lastpage){
+				if(result === this.lastpage){
+					let event = new CustomEvent('saveblock', {
+						detail: {
+							block: null,
+							status: {level:'skip',code: 204, msg: 'Just processed'},
+						}
+					});
+					this.dispatchEvent(event);
 					return false;
 				}
-				state.lastpage = result;
+				this.lastpage = result;
 
 				result = b45.decode(result);
-				this.SaveBlock(result,status).then(resolved);
+				let block = new Block(result);
+				this.SaveBlock(block).then(resolved);
 			});
 		});
-		return state.watcher;
+		return this.watcher;
 	}
 }
 

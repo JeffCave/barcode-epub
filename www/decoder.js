@@ -1,6 +1,6 @@
-import * as b45 from './script/base45.js';
-import Block from './script/bcode/Block.js';
 import Barcoder from './script/bcode/Barcoder.js';
+import Block from './script/bcode/Block.js';
+import Camera from './script/bcode/Camera.js';
 
 export {
 	WatchVideo,
@@ -12,6 +12,7 @@ const state = {
 	video: null,
 	codeReader: null
 };
+const barcoder = new Barcoder();
 
 /**
  * @deprecated use 'Camera.getMonitorSource' instead
@@ -40,59 +41,21 @@ async function getMonitorSource(src='monitor',light=false){
  * @deprecated: use 'Barcoder.WatchVideo' instead
  */
 async function WatchVideo(imgsource='monitor',status=()=>{}){
-	if (state.watcher) return state.watcher;
-
-	if(!state.codeReader){
-		//state.codeReader = new ZXing.BrowserDatamatrixCodeReader();
-		state.codeReader = new ZXing.BrowserQRCodeReader();
+	if(!state.camera){
+		state.camera = new Camera();
 	}
-	let camera = await getMonitorSource(imgsource);
-
-	let video = document.querySelector('video');
-
-	state.watcher = new Promise((resolved,reject)=>{
-		state.watcherresolver = resolved;
-		state.codeReader.decodeFromStream(camera,video,(result,err)=>{
-			if(err){
-				switch(err.name){
-					case 'FormatException':
-					case 'NotFoundException':
-					case 'ChecksumException':
-					//case 'NullPointerException':
-						console.debug(err);
-						break;
-					default:
-						console.error(err);
-						reject(err);
-						break;
-				}
-			}
-			if(!result) return false;
-
-			result = result.text;
-			// we have simply discovered the last one we processed
-			if(result === state.lastpage){
-				return false;
-			}
-			state.lastpage = result;
-
-			result = b45.decode(result);
-			SaveBlock(result,status);
-		});
+	barcoder.addEventListener('saveblock',(event)=>{
+		status(event.detail.status.level);
 	});
-	return state.watcher;
+	await state.camera.setMonitorSource(imgsource);
+	return barcoder.WatchVideo(state.camera);
 }
 
 /**
  * @deprecated use 'Camera.StopVideo' instead
  */
 function StopVideo(){
-	state.codeReader.stopContinuousDecode();
-	for(let track of state.video.getTracks()){
-		track.stop();
-	}
-	state.watcherresolver(true);
-	state.watcher = null;
+	state.camera.StopVideo();
 }
 
 /**
@@ -100,6 +63,6 @@ function StopVideo(){
  */
 async function SaveBlock(block,status=()=>{}){
 	block = new Block(block);
-	let result = Barcoder.SaveBlock(block);
+	let result = barcoder.SaveBlock(block);
 	status(result);
 }

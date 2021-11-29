@@ -130,8 +130,8 @@ export default class psFileDrop extends HTMLElement{
 
 
 
-window.customElements.define('ps-filedrop',psFileDrop);
 try{
+	window.customElements.define('ps-filedrop',psFileDrop);
 	/* global Vue */
 	if(Vue && !Vue.config.ignoredElements.includes('ps-filedrop')){
 		Vue.config.ignoredElements.push('ps-filedrop');

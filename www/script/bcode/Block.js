@@ -26,6 +26,16 @@ const state = {
 	context: null,
 };
 
+/**
+ * A reconstructable component of a data file
+ *
+ * EPubs are split into Blocks for transmission. The file is split into
+ * parts the size that a block can hold, a bit of metadata is added to
+ * the file (like it position in the larger set).
+ *
+ * The block can then be presented as a binary array, or converted to
+ * a Barcode for distribution
+ */
 class Block extends Uint8Array{
 	constructor(buffer,offset=0){
 		if(!buffer){
@@ -37,6 +47,9 @@ class Block extends Uint8Array{
 		this.p = {};
 	}
 
+	/**
+	 * {BlockHeader} The current header of the block
+	 */
 	get header(){
 		if(!this.p.header){
 			this.p.header = new BlockHeader(this);
@@ -46,23 +59,27 @@ class Block extends Uint8Array{
 
 	set header(head){
 		if(!(head instanceof BlockHeader)) throw TypeError('Not an instance of a SplitHeader');
-		head.buffer
+		this.set(head.buffer,0);
 	}
 
+	/**
+	 * The binary payload content of the block
+	 */
 	get body(){
 		if(this.p.body) return this.p.body;
-		this.p.body = Uint8Array(this,this.header.SIZE+1);
+		let body = new Uint8Array(this,this.header.SIZE+1);
+		body = String.fromCharCode(... body);
+		this.p.body = body;
 		return this.p.body;
 	}
 
-	get raw(){
-		if(this.p.raw) return this.p.raw;
-		this.p.raw = b45.decode(this.body);
-		return this.p.raw;
-	}
-
+	/**
+	 * Generates the image that represents the block
+	 *
+	 * @returns {Bitmap} a bitmap image of teh Barcode
+	 */
 	toImage(){
-		let data = this.raw;
+		let data = this;
 		if(!state.context){
 			// this should be an offscreen canvas
 			//state.canvas = document.querySelector('canvas').getContext('2d');

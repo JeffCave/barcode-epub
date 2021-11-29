@@ -1,7 +1,5 @@
-import 'https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js';
 /*
 global
-	PouchDB,
 	saveAs
 */
 
@@ -18,9 +16,10 @@ import './widgets/~all.js';
 import * as Encoder from '../encoder.js';
 import * as Decoder from '../decoder.js';
 import BlockHeader from './bcode/BlockHeader.js';
+import Barcoder from './bcode/Barcoder.js';
 
-const db = new PouchDB('barcodelib');
-db.compact();
+const barcoder = new Barcoder();
+const db = barcoder.db;
 let style = null;
 
 window.addEventListener('load',()=>{
@@ -162,6 +161,9 @@ function upload(){
 
 let VideoStatus_Clearer = null;
 function VideoStatus(status){
+	const allowed = ['pass','fail','warn','skip'];
+	if(!allowed.includes(status)) return;
+
 	let led = document.querySelector('.status');
 
 	clearTimeout(VideoStatus_Clearer);
@@ -172,7 +174,7 @@ function VideoStatus(status){
 	VideoStatus_Clearer = setTimeout(() => {
 		VideoStatus_Clearer = null;
 		// then remove it, so that it fades away
-		led.classList.remove('pass','fail','warn','skip');
+		led.classList.remove(... allowed);
 	});
 }
 

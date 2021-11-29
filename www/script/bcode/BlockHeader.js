@@ -104,19 +104,38 @@ class BlockHeader {
 		return sum;
 	}
 
+	/**
+	 * Calculates the checksum and stores it
+	 *
+	 * This does not accept a parameter, and always performs the calculation.
+	 * This is to prevent someone sending an invalid checksum
+	 *
+	 * @returns teh checksum
+	 */
 	setCheck(){
 		this.p.bytes[3] = this.calcChecksum();
 		return this.p.bytes[3];
 	}
 
+	/**
+	 * The underlying bytes of teh header
+	 */
 	get bytes(){
 		return this.p.bytes.slice();
 	}
 
+	/**
+	 * The first two characters of the byte stream ('dp')
+	 *
+	 * If it is a valid block it will start with 'dp'
+	 */
 	get letterhead(){
 		return String.fromCharCode(... this.p.bytes.slice(0,2));
 	}
 
+	/**
+	 * Version number of the header format
+	 */
 	get version(){
 		return this.p.bytes[2];
 	}
@@ -126,10 +145,16 @@ class BlockHeader {
 		this.p.bytes[2] = value;
 	}
 
+	/**
+	 * The checksum stored in the header
+	 */
 	get checksum(){
 		return this.p.bytes[3];
 	}
 
+	/**
+	 * The ID of the file associated with the block
+	 */
 	get id(){
 		let id = this.p.id;
 		return id;
@@ -142,6 +167,9 @@ class BlockHeader {
 		this.setCheck();
 	}
 
+	/**
+	 * The id associated with the block, as a string
+	 */
 	get idString(){
 		let id = this.p.id;
 		id = String.fromCharCode(... id);
@@ -160,6 +188,9 @@ class BlockHeader {
 		this.id = id;
 	}
 
+	/**
+	 * The current block's position within the set
+	 */
 	get page(){
 		return this.p.page[0];
 	}
@@ -169,6 +200,10 @@ class BlockHeader {
 		this.p.page[0] = value;
 		this.setCheck();
 	}
+
+	/**
+	 * The total number of blocks available in the set
+	 */
 	get pages(){
 		return this.p.page[1];
 	}
@@ -178,10 +213,17 @@ class BlockHeader {
 		this.p.page[1] = value;
 		this.setCheck();
 	}
+
+	/**
+	 * The underlying buffer
+	 */
 	get buffer(){
 		return this.p.buffer;
 	}
 
+	/**
+	 * Number of bytes associated iwth the header
+	 */
 	get SIZE(){
 		return BlockHeader.SIZE;
 	}
