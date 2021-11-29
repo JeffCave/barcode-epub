@@ -151,6 +151,7 @@ async function VideoDecode(src='monitor'){
 		state.camera = new Camera();
 	}
 	barcoder.addEventListener('saveblock',(event)=>{
+		if(event.detail.status.code === 204) return;
 		VideoStatus(event.detail.status.level);
 	});
 	await state.camera.setMonitorSource(src);
@@ -162,7 +163,6 @@ async function VideoDecode(src='monitor'){
 
 function stopCamera(){
 	state.camera.StopVideo();
-	barcoder.StopVideo();
 	let panel = document.querySelector('ps-panel[name="decoder"]');
 	let buttons = Array.from(panel.querySelectorAll('button'));
 	let stopButton = panel.querySelector('button[name="stop"]');

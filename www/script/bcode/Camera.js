@@ -31,6 +31,7 @@ class Camera{
 		if(this.p.light === state) return;
 		this.p.light = state;
 		this.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:state}]});
+		this.dispatchEvent(new CustomEvent( 'light',{detail:state}));
 	}
 
 
@@ -58,6 +59,8 @@ class Camera{
 			this.light = !this.light;
 			this.light = !this.light;
 		}
+		this.dispatchEvent(new CustomEvent( 'play' , {detail: this.p.stream} ));
+
 		return this.p.stream;
 	}
 
@@ -70,5 +73,6 @@ class Camera{
 			}
 		}
 		this.video = null;
+		this.dispatchEvent(new CustomEvent( 'pause'));
 	}
 }

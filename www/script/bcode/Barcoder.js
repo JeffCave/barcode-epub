@@ -24,6 +24,17 @@ const Readers = {
 	'datamatrix':()=>{return new ZXing.BrowserDatamatrixCodeReader();},
 };
 
+function StopVideo(self, camera){
+	if(!self.watcher) return;
+
+	self.watcherresolver();
+	self.watcher = null;
+	if(camera && self.watcherStopper){
+		camera.removeEventListener(self.watcherStopper);
+		self.watcherStopper = null;
+	}
+}
+
 class Barcoder extends EventTarget{
 	constructor(db,opts={}){
 		super();
@@ -149,7 +160,8 @@ class Barcoder extends EventTarget{
 		}
 
 		let video = document.querySelector('video');
-
+		this.watcherStopper = ()=>{StopVideo(this,camera);};
+		camera.addEventListener('pause',this.watcherStopper);
 		this.watcher = new Promise((resolved,reject)=>{
 			this.watcherresolver = resolved;
 			this.codeReader.decodeFromStream(camera.stream,video,(result,err)=>{
