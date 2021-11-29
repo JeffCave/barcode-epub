@@ -2,8 +2,8 @@
 
 This codebase utlizes Web Components. [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) is a suite of different technologies allowing you to create reusable custom elements — with their functionality encapsulated away from the rest of your code — and utilize them in your web apps.
 
-# Epub reader components (widgets)
-
+# Epub reader components/widgets
+1. [Structure](#pageTOC)
 1. [pageTOC.js (Short description)](#pageTOC)
 1. [psAlert.js (Short description)](#psAlert)
 1. [psFileDrop.js (Short description)](#psFileDrop)  
@@ -14,7 +14,10 @@ This codebase utlizes Web Components. [Web Components](https://developer.mozilla
 1. [unicons.js (Short description)](#unicons)
 1. [~all.js (Short description)](#~all)
 
-# pagetoc
+# Structure
+``
+
+# pageTOC
 [The pageTOC.js compoenent](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/pageTOC.js) is...description
 
 # psAlert
@@ -36,7 +39,7 @@ This codebase utlizes Web Components. [Web Components](https://developer.mozilla
 [The psTreeView.js component](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/psTreeView.js) is...description
 
 # unicons
-[The unicons.js component](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/unicons.js) is...description
+[The unicons.js widget](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/unicons.js) queries the DOM for an element and loads a specified icon url. It contains an object with various icons used within the application.
 
 # ~all
-[The ~all.js component](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/~all.js) is...description
+[The ~all.js widget](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/~all.js) facilitates importing all the webcompoenents
