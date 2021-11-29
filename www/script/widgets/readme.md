@@ -14,7 +14,7 @@ This codebase utlizes Web Components. [Web Components](https://developer.mozilla
 1. [unicons.js (Short description)](#unicons)
 1. [~all.js (Short description)](#~all)
 
-# pageTOC
+# pagetoc
 [The pageTOC.js compoenent](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/pageTOC.js) is...description
 
 # psAlert
