@@ -1,8 +1,5 @@
 'use strict';
 
-/*
-global HTMLElement
-*/
 export {
 	psPanelElement
 };
@@ -34,7 +31,7 @@ export default class psPanelElement extends HTMLElement {
 			icons[this.icon] ||
 			this.icon.split().shift() ||
 			'&nbsp;'
-			;
+		;
 
 		this.domResizer = document.createElement('span');
 		this.domResizer.setAttribute('part','resizer');
@@ -90,7 +87,7 @@ export default class psPanelElement extends HTMLElement {
 	}
 
 	set icon(value){
-		this.setAttribute("icon", value);
+		this.setAttribute('icon', value);
 	}
 
 	get summary(){
@@ -106,7 +103,7 @@ export default class psPanelElement extends HTMLElement {
 		if (this._.title) return this._.title;
 
 		this._.title = ' ';
-		let title = this.querySelector('h1')
+		let title = this.querySelector('h1');
 		if(title){
 			this._.title = title.textContent;
 		}
@@ -364,4 +361,5 @@ try{
 		Vue.config.ignoredElements.push('ps-panel');
 	}
 }
+// eslint-disable-next-line
 catch(err){}

@@ -3,11 +3,6 @@ export {
 	psTabbedPanelElement
 };
 
-/*
-global HTMLElement
-global localStorage
-*/
-
 import psPanelElement from './psPanelElement.js';
 
 export default class psTabbedPanelElement extends HTMLElement {
@@ -31,7 +26,7 @@ export default class psTabbedPanelElement extends HTMLElement {
 		this.tabs = [];
 		this.panels = [];
 		this.keys = {};
-		let panel = localStorage.getItem("tabbedpanel");
+		let panel = localStorage.getItem('tabbedpanel');
 		for(let i=0; i<this.children.length; i++){
 			const d = this.children[i];
 			if(!(d instanceof psPanelElement) || d.state === 'hide'){
@@ -116,7 +111,7 @@ export default class psTabbedPanelElement extends HTMLElement {
 	activate(key){
 		key = key || Object.keys(this.keys)[0];
 		key = key.toLowerCase();
-		localStorage.setItem("tabbedpanel", key);
+		localStorage.setItem('tabbedpanel', key);
 		this.current_key = key;
 
 		let panel = this.keys[key];
@@ -214,4 +209,5 @@ try{
 		Vue.config.ignoredElements.push('ps-tabpanel');
 	}
 }
+// eslint-disable-next-line
 catch(err){}

@@ -5,7 +5,7 @@ export{
 	unicons
 };
 
-const iconURL= "https://fonts.googleapis.com/icon?family=Material+Icons";
+const iconURL= 'https://fonts.googleapis.com/icon?family=Material+Icons';
 
 document.addEventListener('load',()=>{
 	let link = document.head.querySelector(`link[href="${iconURL}"]`);
@@ -15,7 +15,7 @@ document.addEventListener('load',()=>{
 		link.setAttribute('href',iconURL);
 		document.head.append(link);
 	}
-})
+});
 
 /**
  * A collection of Unicode characters that correspond to various icons.
@@ -25,7 +25,7 @@ document.addEventListener('load',()=>{
  */
 const unicons = Object.seal({
 	'bar_chart'		:'&#128202;',
-	'book'          :'&#128213;'	, // 📕
+	'book'		  :'&#128213;'	, // 📕
 	'bubble_chart'	:'&#9741;',
 	'bug_report'	:'&#128028;'	, // 🐜
 	'collections'	:'&#128218;',

@@ -65,7 +65,7 @@ class psProgress extends HTMLProgressElement{
 
 	get title(){
 		let pct = (this.position*100).toFixed(1);
-		let msg = "Nothing happening right now.";
+		let msg = 'Nothing happening right now.';
 		if(this.ratio !== 1){
 			msg = this.value + ' of ' + this.max + ' ('+pct+'%)';
 		}
