@@ -5,4 +5,5 @@ vscode:
   extensions:
     - mhutchie.git-graph
     - ritwickdey.liveserver
+    - zaaack.markdown-editor
     - dbaeumer.vscode-eslint
