@@ -7,3 +7,4 @@ vscode:
     - ritwickdey.liveserver
     - zaaack.markdown-editor
     - dbaeumer.vscode-eslint
+    - hbenl.vscode-mocha-test-adapter
