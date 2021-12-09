@@ -8,3 +8,4 @@ vscode:
     - zaaack.markdown-editor
     - dbaeumer.vscode-eslint
     - hbenl.vscode-mocha-test-adapter
+    - eamodio.gitlens

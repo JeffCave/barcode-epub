@@ -1,22 +1,31 @@
+const { assert } = require('chai');
+
+
+const status = {
+	mocha: null,
+	browser: null,
+	server: null
+};
+
+
+before(async function(){
+	var http = require('http');
+	var finalhandler = require('finalhandler');
+	var serveStatic = require('serve-static');
+	var serve = serveStatic('../www');
+	var server = http.createServer(function(req, res) {
+		var done = finalhandler(req, res);
+		serve(req, res, done);
+	});
+	server.listen(3030);
+
+	status.server = server;
+
 /*
+
 var webdriver = require('selenium-webdriver');
 //var chrome = require('selenium-webdriver/chrome');
 var firefox = require('selenium-webdriver/firefox');
-
-
-var http = require('http');
-var finalhandler = require('finalhandler');
-var serveStatic = require('serve-static');
-const { assert } = require('chai');
-var serve = serveStatic('../www');
-var server = http.createServer(function(req, res) {
-	var done = finalhandler(req, res);
-	serve(req, res, done);
-});
-server.listen(3030);
-
-
-
 var profile = new firefox.Profile('./build');
 var firefoxOptions = new firefox.Options().setProfile(profile);
 
@@ -28,10 +37,17 @@ var driver = new webdriver.Builder()
 	;
 */
 
+});
+
+after(async function(){
+	await status.server.close();
+});
+
+
 describe('Self-Test', function(){
 
 
-	let baseUrl = 'http://localhost:3030/';
+	let baseUrl = 'http://localhost:${state.server.address().port}/';
 
 	before(function(){
 		//driver.get(baseUrl + './index.html');
@@ -51,24 +67,12 @@ describe('Self-Test', function(){
 		// no matter if there are failed cases
 	});
 
-	/**
-	 * [1] tests that the page is discoverable
-	 */
-	it('Test-1: page found', async function(){
-		this.skip();
-		/*
-		driver.findElement(webdriver.By.css('body')); //.sendKeys(my_username);
-		let title = await driver.getTitle();
-		assert.equal(title,'MISS','Title is correct');
-		*/
+	it('Test framework is loaded and present', function(){
+		assert.isTrue(true,'Test framework is loaded');
 	});
 
-	it('Test-2', function(){
-		this.skip();
-	});
-
-	it('Test-3', function(){
-		this.skip();
+	it('The server is running', async function(){
+		assert.isTrue(status.server.listening,'test server is listneing for connections');
 	});
 
 });
