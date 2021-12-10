@@ -1,7 +1,9 @@
+//https://github.com/mdn/headless-examples/blob/master/selenium-test.js
+
 const { assert } = require('chai');
 
 
-const status = {
+const state = {
 	mocha: null,
 	browser: null,
 	server: null
@@ -13,48 +15,41 @@ before(async function(){
 	var finalhandler = require('finalhandler');
 	var serveStatic = require('serve-static');
 	var serve = serveStatic('../www');
-	var server = http.createServer(function(req, res) {
+	state.server = http.createServer(function(req, res) {
 		var done = finalhandler(req, res);
 		serve(req, res, done);
 	});
-	server.listen(3030);
+	state.server.listen(3030);
 
-	status.server = server;
 
-/*
+	var webdriver = require('selenium-webdriver');
+	state.By = webdriver.By;
+	state.until = webdriver.until;
+	//var chrome = require('selenium-webdriver/chrome');
+	var firefox = require('selenium-webdriver/firefox');
+	var options = new firefox.Options();
+	options.addArguments('-headless');
 
-var webdriver = require('selenium-webdriver');
-//var chrome = require('selenium-webdriver/chrome');
-var firefox = require('selenium-webdriver/firefox');
-var profile = new firefox.Profile('./build');
-var firefoxOptions = new firefox.Options().setProfile(profile);
-
-var driver = new webdriver.Builder()
-	.forBrowser('firefox')
-	.setFirefoxOptions(firefoxOptions)
-	.setChromeOptions( )
-	.build()
-	;
-*/
-
+	state.browser = new webdriver.Builder()
+		.forBrowser('firefox')
+		.setFirefoxOptions(options)
+		.setChromeOptions( )
+		.build();
 });
 
 after(async function(){
-	await status.server.close();
+	state.browser.quit();
+	await state.server.close();
 });
 
 
-describe('Self-Test', function(){
+describe('Testing Framework', function(){
 
-
-	let baseUrl = 'http://localhost:${state.server.address().port}/';
 
 	before(function(){
-		//driver.get(baseUrl + './index.html');
 	});
 
 	after(function(){
-		//return driver.quit();
 	});
 
 	beforeEach(function(){
@@ -67,12 +62,33 @@ describe('Self-Test', function(){
 		// no matter if there are failed cases
 	});
 
-	it('Test framework is loaded and present', function(){
+	it('is loaded and present', function(){
 		assert.isTrue(true,'Test framework is loaded');
 	});
 
-	it('The server is running', async function(){
-		assert.isTrue(status.server.listening,'test server is listneing for connections');
+	it('has a running HTTP server', async function(){
+		assert.isTrue(state.server.listening,'test server is listneing for connections');
+	});
+
+	it('can load a page into the browser', async function(){
+		try{
+			await state.browser.get('https://example.com/');
+			let title = await state.browser.getTitle();
+			assert.isNotEmpty(title,'Page was found');
+			/*
+			let baseUrl = `http://localhost:${state.server.address().port}/index.html`;
+			await state.browser.get(baseUrl + './index.html');
+			let h1 = state.browser.findElement(state.By.css('h1'));
+			let text = await h1.getText();
+			assert.isNotEmpty(text,'Content was found');
+			title = await state.browser.getTitle();
+			assert.isNotEmpty(title,'Page was found');
+			*/
+		}
+		catch(e){
+
+		}
+		return new Promise();
 	});
 
 });
