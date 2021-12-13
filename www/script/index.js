@@ -208,24 +208,26 @@ function stopCamera(){
 }
 
 
-async function send(id = null){
+async function send(id = []){
 	if (!id) return;
 
-	id = id.detail;
+	id = Array.from(id.detail);
 	let imgcontainer = document.querySelector('div[name="codeset"]');
 	imgcontainer.innerHTML = '';
 	page(1);
 
-	let epub = await barcoder.GetBook(id);
-	let blocks = await epub.getBlocks();
-	for (let block of blocks.values()){
-		let header = block.header;
-		let barcode = await block.toImage();
-		let img = document.createElement('img');
-		img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
-		//img.transferFromImageBitmap(barcode);
-		img.src = barcode;
-		imgcontainer.append(img);
+	let epubs = await barcoder.GetBooks(id);
+	for(let epub of epubs){
+		let blocks = await epub.getBlocks();
+		for (let block of blocks.values()){
+			let header = block.header;
+			let barcode = await block.toImage();
+			let img = document.createElement('img');
+			img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
+			//img.transferFromImageBitmap(barcode);
+			img.src = barcode;
+			imgcontainer.append(img);
+		}
 	}
 }
 
@@ -251,10 +253,12 @@ function page(dir=1){
 
 
 async function Download(id){
-	id = id.detail;
-	let epub = await barcoder.GetBook(id);
-	let stm = epub.toBlob();
-	saveAs(stm,`${id}.epub`);
+	id = Array.from(id.detail);
+	let epubs = await barcoder.GetBooks(id);
+	for(let epub of epubs){
+		let stm = await epub.toBlob();
+		saveAs(stm,`${id}.epub`);
+	}
 }
 
 

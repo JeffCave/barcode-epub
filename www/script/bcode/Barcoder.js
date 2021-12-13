@@ -91,18 +91,57 @@ class Barcoder extends psThing{
 		return ePub.BlobToBlocks(stm);
 	}
 
+	/**
+	 * @deprecated use 'GetBooks' instead
+	 */
+	async GetBook(id){
+		return this.GetBooks(id);
+	}
 
 	/**
 	 *
-	 * @param {Uint8Array|string} id of the book to find
+	 * @param {List of Uint8Array|string} id of the book to find
 	 */
-	async GetBook(id){
-		let rec = await this.db.get(id,{
+	async GetBooks(id){
+		id = Array.from(id);
+		let results = await this.db.allDocs({
+			keys: id,
+			include_docs: true,
 			attachments: true,
 			binary: true
 		});
-		let epub = new ePub(rec);
-		return epub;
+		let epubs = [];
+		for(let rec of results.rows){
+			let epub = new ePub(rec.doc);
+			epubs.push(epub);
+		}
+		return epubs;
+	}
+
+	/**
+	 * Given a list of IDs removes them from the database
+	 *
+	 * @param {*} ids
+	 * @returns
+	 */
+	async remove(ids){
+		ids = Array.from(ids);
+		let recs = await this.db.allDocs({
+			keys: ids,
+			include_docs: true,
+		});
+		let dels = [];
+		for(let rec of recs.rows){
+			rec = rec.doc;
+			rec = {
+				_id: rec._id,
+				_rev: rec._rev,
+				_deleted: true
+			};
+			dels.push(rec);
+		}
+		let rtn = await this.db.bulkDocs(dels);
+		return rtn;
 	}
 
 	/**
