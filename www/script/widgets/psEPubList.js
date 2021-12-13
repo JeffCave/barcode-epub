@@ -39,6 +39,9 @@ class psEpubList extends psThing {
 		}
 		// show or hide the buttons based on whether anything is selected or not
 		this.addEventListener('change',(e)=>{
+			if(e.detail.includes('barcoder')){
+				this._.changehandler();
+			}
 			if(e.detail.includes('selected')){
 				let items = shadow.querySelector('nav [name="selection"]');
 				items.style.display = (this.selected.size === 0) ? 'none':'initial';
@@ -137,12 +140,16 @@ class psEpubList extends psThing {
 	initialize(){
 		this.selected = ['dummy'];
 		this.selected = [];
+
+		this.Updator();
 	}
 
 	/**
 	 * Draws the library page.
 	 */
 	async Updator(){
+		if(!this.barcoder) return;
+
 		let db = this.barcoder.db;
 		let htmlList = this._.shadow.querySelector('ul');
 		let template = psEpubList.DefaultItem;
