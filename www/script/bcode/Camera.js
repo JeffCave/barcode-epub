@@ -7,10 +7,11 @@ export {
 /**
  * A simple controller for the video feeds, based aournd the camera
  */
-class Camera{
+class Camera extends EventTarget{
 
 
 	constructor(opts){
+		super();
 		this.p = Object.assign({
 			light: false,
 			src: 'monitor',

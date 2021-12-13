@@ -5,6 +5,10 @@ export{
 	ePub
 };
 
+/*
+global
+	Buffer
+*/
 
 /**
  * Interprets an EPub document
@@ -33,15 +37,20 @@ class ePub{
 	 * @param {Object} opts collection of options
 	 */
 	constructor(buffer, opts = {}){
-		this.parts = new Map();
 		this._ = Object.assign({
 			hash: ePub.HASH
 		},opts);
-
+		if(buffer instanceof Blob){
+			this.buffer = new Uint8Array(buffer.arrayBuffer());
+		}
+		// is this a DB record?
+		if('_id' in buffer){
+			this.rec = buffer;
+		}
 	}
 
 	/**
-	 * Calcualtes the unique id the ePub
+	 * Calculates the unique id the ePub
 	 *
 	 * @returns {Uint8Array} 64-byte Array representing the file hash
 	 */
@@ -50,6 +59,45 @@ class ePub{
 		return hash;
 	}
 
+	/**
+	 * The collection of blocks we currently have for the File
+	 */
+	async getBlocks(){
+		if(this._.blocks) return this._.blocks;
+
+		let rec = this.rec;
+		let attachments = Object.values(rec._attachments);
+		this._.blocks = new Map();
+		for(let d of attachments){
+			let buf = await d.data.arrayBuffer();
+			let block = new Block(buf);
+			let page = block.header.page;
+			this._.blocks.set(page,block);
+		}
+		return this._.blocks;
+	}
+
+	/**
+	 * Converts the underlying ePub to a blob format
+	 *
+	 * @returns {Blob} of the file
+	 */
+	async toBlob(){
+		let rec = this.rec;
+		let attachments = Object.values(rec._attachments);
+		if(rec.pages !== attachments.length){
+			return null;
+		}
+		let buff = [];
+		for(let d of attachments){
+			let buf = await d.data.arrayBuffer();
+			let block = new Block(buf);
+			block = block.body;
+			buff.push(block);
+		}
+		let stm = new Blob(buff,{type:'application/epub+zip'});
+		return stm;
+	}
 
 	/**
 	 * Calculates the unique id of a given buffer
@@ -66,19 +114,12 @@ class ePub{
 		return hash;
 	}
 
+	/**
+	 * @deprecated: use instance method 'toBlob' instead
+	 */
 	static async toBuffer(rec){
-		let attachments = Object.values(rec._attachments);
-		if(rec.pages !== attachments.length){
-			return null;
-		}
-		let buff = [];
-		for(let d of attachments){
-			let buf = await d.data.arrayBuffer();
-			let block = new Block(buf);
-			block = block.body;
-			buff.push(block);
-		}
-		let stm = new Blob(buff,{type:'application/epub+zip'});
+		let epub = new ePub(rec);
+		let stm = epub.toBlob();
 		return stm;
 	}
 

@@ -11,8 +11,9 @@ export {
  * This class will lay itself over an existing block and allow for simple
  * reading of the parts.
  */
-class BlockHeader {
+class BlockHeader extends EventTarget {
 	constructor(buffer=null){
+		super();
 		let p = {};
 		if(!buffer){
 			buffer = new ArrayBuffer(BlockHeader.SIZE);

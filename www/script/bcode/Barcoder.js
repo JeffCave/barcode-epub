@@ -30,7 +30,7 @@ function StopVideo(self, camera){
 	self.watcherresolver();
 	self.watcher = null;
 	if(camera && self.watcherStopper){
-		camera.removeEventListener(self.watcherStopper);
+		camera.removeEventListener('pause',self.watcherStopper);
 		self.watcherStopper = null;
 	}
 }
@@ -51,7 +51,20 @@ class Barcoder extends EventTarget{
 			hash:'SHA-512'
 		};
 		this._ = Object.assign(this._,opts);
+
 		this.db = db;
+		db.changes({since:'now',live:true}).on('change', (e)=>{this.emitChangeEvent(e);});
+	}
+
+	emit(name,detail){
+		let event = new CustomEvent('change', {
+			detail: detail
+		});
+		this.dispatchEvent(event);
+
+	}
+	emitChangeEvent(e){
+		this.emit('change',e);
 	}
 
 
@@ -78,6 +91,20 @@ class Barcoder extends EventTarget{
 			header.page++;
 		}
 		return;
+	}
+
+
+	/**
+	 *
+	 * @param {Uint8Array|string} id of the book to find
+	 */
+	async GetBook(id){
+		let rec = await this.db.get(id,{
+			attachments: true,
+			binary: true
+		});
+		let epub = new ePub(rec);
+		return epub;
 	}
 
 
