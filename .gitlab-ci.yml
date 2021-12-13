@@ -10,12 +10,15 @@ test:
     - npm install --silent;
     - export PATH=$PATH:./node_modules/.bin;
     - mocha ./tests -R 'json' > ./test-results.json;
+    - mocha ./tests -R 'mocha-junit-reporter' > ./test-results.xml;
   artifacts:
     untracked: false
     expire_in: 30 days
     paths:
       - ./apt.log
-      - ./test-results.json
+      - ./test-results.*
+    reports:
+      junit: test-results.xml
 
 pages:
   stage: deploy
