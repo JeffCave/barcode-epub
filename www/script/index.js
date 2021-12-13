@@ -21,8 +21,10 @@ let style = null;
  */
 window.addEventListener('load',()=>{
 
-	barcoder.addEventListener('change', RenderIndex);
-	RenderIndex();
+	let list = document.querySelector('ps-epublist');
+	list.barcoder = barcoder;
+	list.addEventListener('send',send);
+	list.addEventListener('save',Download);
 
 	let buttons = {
 		'button[name="fromVideo"]': ()=>{VideoDecode('monitor');},
@@ -53,7 +55,7 @@ window.addEventListener('load',()=>{
 	Array.from(document.querySelectorAll('.waitload')).forEach(d=>{
 		d.classList.remove('waitload');
 	});
-});
+},{once:true});
 
 
 /**
@@ -206,10 +208,10 @@ function stopCamera(){
 }
 
 
-async function encode(id = null){
+async function send(id = null){
 	if (!id) return;
 
-
+	id = id.detail;
 	let imgcontainer = document.querySelector('div[name="codeset"]');
 	imgcontainer.innerHTML = '';
 	page(1);
@@ -249,45 +251,10 @@ function page(dir=1){
 
 
 async function Download(id){
+	id = id.detail;
 	let epub = await barcoder.GetBook(id);
 	let stm = epub.toBlob();
 	saveAs(stm,`${id}.epub`);
 }
 
-
-/**
- * Draws the library page.
- */
-async function RenderIndex(){
-	let db = barcoder.db;
-	let page = document.querySelector('ps-panel[name="library"]');
-	let htmlList = page.querySelector('ul');
-	let template = page.querySelector('template');
-	let recs = await db.allDocs({include_docs:true,attachments: false});
-
-	htmlList.innerHTML = '';
-	for(let rec of recs.rows){
-		rec = rec.doc;
-		let html = document.createElement('li');
-		html.innerHTML = template.innerHTML;
-
-		let id = rec._id;
-		let rev = rec._rev;
-		let curpages = Object.keys(rec._attachments||{}).length;
-		let pct = Math.floor(curpages/rec.pages*100);
-
-		html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
-		html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
-		html.querySelector('button[name="save"]').addEventListener('click',()=>{Download(id);});
-
-		html.querySelector('output[name="id"]').title = id;
-		html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
-		html.querySelector('output[name="pages-current"]').value = curpages;
-		html.querySelector('output[name="pages-total"]').value   = rec.pages;
-		html.querySelector('output[name="pages-pct"]').value	 = pct;
-		html.querySelector('output[name="title"]').value = rec.title;
-
-		htmlList.append(html);
-	}
-}
 
