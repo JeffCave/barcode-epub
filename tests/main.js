@@ -6,20 +6,16 @@ global
 */
 
 const { assert } = require('chai');
-let webdriver = require('selenium-webdriver');
-//let chrome = require('selenium-webdriver/chrome');
-let firefox = require('selenium-webdriver/firefox');
+const webdriver = require('selenium-webdriver');
+//const chrome = require('selenium-webdriver/chrome');
+const firefox = require('selenium-webdriver/firefox');
 
 const util = require('util');
 const fs = require('fs');
 const exec = util.promisify(require('child_process').exec);
+
+const exe = util.promisify(exec);
 const ffPath = './build/firefox/firefox';
-
-process.env['PATH'] = [
-	`${process.cwd()}/node_modules/.bin`,
-	process.env['PATH']
-].join(':');
-
 const state = {
 	mocha: null,
 	browser: null,
@@ -28,7 +24,7 @@ const state = {
 
 
 async function getGeckoVersion(){
-	let result = await exec('geckodriver -V');
+	let result = await exe('geckodriver -V');
 	let text = result.stdout;
 	text = text.split(' ');
 	text = text[1];
@@ -82,9 +78,6 @@ async function startServer(){
 		}
 	}
 
-	console.log(`Serving..: ${path}`);
-	console.log(`Listen on: ${server.address().port}`);
-
 	return server;
 
 }
@@ -103,6 +96,11 @@ function setupMocha(mocha){
 }
 
 before(async function(){
+	process.env['PATH'] = [
+		`${process.cwd()}/node_modules/.bin`,
+		process.env['PATH']
+	].join(':');
+
 
 	state.server = await startServer();
 
@@ -131,11 +129,8 @@ before(async function(){
 
 after(function(){
 	try{
-		console.log('Quiting browser');
 		state.browser.quit();
-		console.log('Quiting Server');
 		state.server.close();
-		console.log('Termination complete');
 	}
 	catch(e){
 		console.error('Failed to terminate tests');
