@@ -1,14 +1,12 @@
 import Block from './Block.js';
+import BlockHeader from './BlockHeader.js';
+import psThing from './psThing.js';
 
 export{
 	ePub as default,
 	ePub
 };
 
-/*
-global
-	Buffer
-*/
 
 /**
  * Interprets an EPub document
@@ -26,7 +24,7 @@ global
  * is unique, and therefore calculate a hash of the contents. This hash
  * is considered the ePub's unique identifier.
  */
-class ePub{
+class ePub extends psThing{
 	/**
 	 * Current hash algorithm to be used ('SHA-512')
 	 */
@@ -37,16 +35,88 @@ class ePub{
 	 * @param {Object} opts collection of options
 	 */
 	constructor(buffer, opts = {}){
-		this._ = Object.assign({
-			hash: ePub.HASH
-		},opts);
+		super(opts);
+		this._.hashalgo = ePub.HASH;
+
+		this.isLoaded = false;
+		this.addEventListener('load',()=>{
+			this.isLoaded = true;
+		});
+
 		if(buffer instanceof Blob){
-			this.buffer = new Uint8Array(buffer.arrayBuffer());
+			this.parseBlob(buffer);
 		}
 		// is this a DB record?
-		if('_id' in buffer){
+		else if('_id' in buffer){
 			this.rec = buffer;
+			this.emit('load');
 		}
+	}
+
+	/**
+	 * waits for the ePub finishines loading
+	 *
+	 * @returns the ePub object
+	 */
+	async waitLoad(){
+		if(this.isLoaded) return this;
+
+		return new Promise((resolve)=>{
+			this.addEventListener('load',()=>{
+				resolve(this);
+			});
+		});
+	}
+
+	/**
+	 * Clears the current ePub and replaces content with Blob
+	 *
+	 * @param {Blob} blob
+	 */
+	async parseBlob(blob){
+		let prog = {
+			lengthComputable: true,
+			loaded: 0,
+			total: 0
+		};
+		let header = null;
+		this.isLoaded = false;
+		let rec = {};
+		rec._attachments = {};
+		for await (let block of ePub.BlobToBlocks(blob)){
+			header = block.header;
+			if(prog.loaded === 0){
+				rec._id = header.idString;
+				rec.pages = header.pages;
+				prog.total = header.pages;
+				this.emitChange('id');
+				this.emitChange('pages');
+				this.dispatchEvent(new ProgressEvent('blocks', prog));
+			}
+			rec._attachments[block.header.page.toString()] = {
+				content_type: 'application/dpub-seg',
+				data: new Blob([block.buffer])
+			};
+			this.emitChange('blocks');
+			prog.loaded ++;
+			this.dispatchEvent(new ProgressEvent('blocks', prog));
+		}
+		this.rec = rec;
+		this.emit('load');
+	}
+
+	/**
+	 * The ePub's signature
+	 */
+	get id(){
+		return this.rec._id;
+	}
+
+	/**
+	 * The total number of blocks in the ePub
+	 */
+	get pages(){
+		return this.rec.pages;
 	}
 
 	/**
@@ -55,7 +125,7 @@ class ePub{
 	 * @returns {Uint8Array} 64-byte Array representing the file hash
 	 */
 	async calcFileHash(){
-		let hash = ePub.calcFileHash(this.buffer);
+		let hash = ePub.calcFileHash(this.toBlob().arrayBuffer());
 		return hash;
 	}
 
@@ -98,6 +168,46 @@ class ePub{
 		let stm = new Blob(buff,{type:'application/epub+zip'});
 		return stm;
 	}
+
+	/**
+	 * Converts a Blob into a series of parts as a generator
+	 *
+	 * Operates as an asynchronous generator which allows you to loop through the entire stream, but only performs calcuations on demand. The real trick is that it is `async`
+	 *
+	 * There is a special loop for these: `for await(let i of ProcessBuffer)`
+	 *
+	 * @param {Blob} stm
+	 * @returns
+	 */
+	static async *BlobToBlocks(stm){
+		stm = await stm.arrayBuffer();
+		stm = new Uint8Array(stm);
+
+		const header = new BlockHeader();
+		//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
+		//const MAXSIZE = 1555-header.SIZE;
+		const MAXSIZE = Block.MaxSize;
+
+		header.pages = Math.ceil(stm.byteLength / MAXSIZE);
+		header.id = await ePub.calcFileHash(stm);
+		for(let offset = 0; offset < stm.byteLength; offset+=MAXSIZE){
+			let len = stm.byteLength - offset;
+			len = Math.min(len, MAXSIZE);
+
+			let chunk = new Uint8Array(stm.buffer,offset,len);
+			let block = new Block(len);
+			block.header = header;
+			block.body = chunk;
+
+			yield block;
+
+			header.page++;
+		}
+		return;
+	}
+
+
+
 
 	/**
 	 * Calculates the unique id of a given buffer

@@ -7,6 +7,7 @@ import './widgets/~all.js';
 
 import Barcoder from './bcode/Barcoder.js';
 import Camera from './bcode/Camera.js';
+import ePub from './bcode/ePub.js';
 
 const barcoder = new Barcoder();
 const state = {
@@ -57,12 +58,10 @@ async function LoadFiles(files){
 	}
 	let updates = [];
 	for(let file of files){
-		let buff = await file.arrayBuffer();
-		let blocks = Barcoder.ProcessBuffer(buff);
-		for await (let block of blocks){
-			let update = await barcoder.SaveBlock(block);
-			updates.push(update);
-		}
+		let epub = new ePub(file);
+		epub = await epub.waitLoad();
+		let update = await barcoder.Save(epub);
+		updates.push(update);
 	}
 	updates = Promise.all(updates);
 	return updates;

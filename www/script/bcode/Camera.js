@@ -9,7 +9,6 @@ export {
  */
 class Camera extends EventTarget{
 
-
 	constructor(opts){
 		super();
 		this.p = Object.assign({

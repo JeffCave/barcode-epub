@@ -10,9 +10,9 @@ global
 
 import * as b45 from '../base45.js';
 import Block from './Block.js';
-import BlockHeader from './BlockHeader.js';
 import Camera from './Camera.js';
 import ePub from './ePub.js';
+import psThing from './psThing.js';
 
 export{
 	Barcoder as default,
@@ -24,6 +24,18 @@ const Readers = {
 	'datamatrix':()=>{return new ZXing.BrowserDatamatrixCodeReader();},
 };
 
+/**
+ * Stops the video monitoring and decoding.
+ *
+ * Implemented outside the class to make it a private instance. It is
+ * tempting to call this instead of the Camera's stop which is more correct
+ * (I think ... I actually have a doubt as I write this). Hiding this
+ * function inside the module to prevent calls to it.
+ *
+ * @param {Barcoder} self
+ * @param {Camera} camera
+ * @returns
+ */
 function StopVideo(self, camera){
 	if(!self.watcher) return;
 
@@ -35,62 +47,48 @@ function StopVideo(self, camera){
 	}
 }
 
-class Barcoder extends EventTarget{
-	constructor(db,opts={}){
-		super();
-		if(!db){
-			db = new PouchDB(this.constructor.name);
-			db.compact();
-		}
-		this._ = {
+/**
+ * The Barcode reader
+ *
+ * This is the primary library entry point. Most other classes are in support of this
+ *
+ * Acts as an underlying data point for encoding and maintaining the behaviour of a barcode library system.
+ */
+class Barcoder extends psThing{
+	/**
+	 *
+	 * @param {*} db
+	 * @param {*} opts
+	 */
+	constructor(db=null,opts={}){
+		opts = Object.assign({
 			//bcid: 'datamatrix',
 			bcid: 'qrcode',
 			padding: 1,
 			scaleX: 2,
 			scaleY: 2,
 			hash:'SHA-512'
-		};
-		this._ = Object.assign(this._,opts);
-
-		this.db = db;
-		db.changes({since:'now',live:true}).on('change', (e)=>{this.emitChangeEvent(e);});
-	}
-
-	emit(name,detail){
-		let event = new CustomEvent('change', {
-			detail: detail
-		});
-		this.dispatchEvent(event);
-
-	}
-	emitChangeEvent(e){
-		this.emit('change',e);
-	}
-
-
-	static async *ProcessBuffer(stm){
-		const header = new BlockHeader();
-
-		//https://www.keyence.com/ss/products/auto_id/barcode_lecture/basic_2d/datamatrix/index.jsp
-		//const MAXSIZE = 1555-header.SIZE;
-		const MAXSIZE = Math.floor(1555/b45.CompressionRatio)-header.SIZE;
-
-		header.pages = Math.ceil(stm.byteLength / MAXSIZE);
-		header.id = await ePub.calcFileHash(stm);
-		for(let offset = 0; offset < stm.byteLength; offset+=MAXSIZE){
-			let len = stm.byteLength - offset;
-			len = Math.min(len, MAXSIZE);
-
-			let chunk = new Uint8Array(stm,offset,len);
-			let block = new Block(len);
-			block.header = header;
-			block.body = chunk;
-
-			yield block;
-
-			header.page++;
+		},opts);
+		super(opts);
+		// create a database if one was not specified
+		if(!db){
+			db = new PouchDB(this.constructor.name);
+			db.compact();
 		}
-		return;
+		this.db = db;
+		// emit an event everytime the database changes
+		db.changes({since:'now',live:true}).on('change', (e)=>{
+			this.emit('db',e);
+			this.emitChange('db');
+		});
+	}
+
+
+	/**
+	 * @deprecated use class 'ePub' instead
+	 */
+	static ProcessBuffer(stm){
+		return ePub.BlobToBlocks(stm);
 	}
 
 
@@ -107,7 +105,50 @@ class Barcoder extends EventTarget{
 		return epub;
 	}
 
+	/**
+	 * Saves the item to disk
+	 *
+	 * @param {Block|ePub} item
+	 */
+	async Save(item){
+		if(item instanceof Block){
+			this.SaveBlock(item);
+		}
+		else if(item instanceof ePub){
+			this.SaveEPub(item);
+		}
+		else{
+			throw new TypeError('Unrecognized type');
+		}
+	}
 
+	/**
+	 * Saves and entire ePub to disk
+	 *
+	 * @param {ePub} epub
+	 */
+	async SaveEPub(epub){
+		try{
+			let doc = await this.db.get(epub.id);
+			epub.rec._rev = doc._rev;
+		}
+		catch(e){
+			if(![404].includes(e.status)) throw e;
+		}
+		this.db.put(epub.rec);
+		this.emit('saveblock', {
+			block: new Block(epub.rec._attachments.data),
+			status: {level:'pass',code: 200, msg: 'Success'},
+		});
+	}
+
+	/**
+	 * Saves a partial block to disk
+	 *
+	 * @param {Block} block
+	 * @param {int} ttl number of tries before fail
+	 * @returns
+	 */
 	async SaveBlock(block,ttl=10){
 		if(!(block instanceof Block)){
 			throw new TypeError('not an instance of type Block');
@@ -135,24 +176,18 @@ class Barcoder extends EventTarget{
 
 		let page = header.page.toFixed(0);
 		if(page in doc._attachments){
-			let event = new CustomEvent('saveblock', {
-				detail: {
-					block: header,
-					status: {level:'skip',code: 208, msg: 'Already Recorded'},
-				}
+			this.emit('saveblock', {
+				block: header,
+				status: {level:'skip',code: 208, msg: 'Already Recorded'},
 			});
-			this.dispatchEvent(event);
 			return true;
 		}
 		try{
 			let result = await this.db.putAttachment(doc._id, page, doc._rev, new Blob([block]), 'application/dpub-seg');
-			let event = new CustomEvent('saveblock', {
-				detail: {
-					block: header,
-					status: {level:'pass',code: 200, msg: 'Success'},
-				}
+			this.emit('saveblock', {
+				block: header,
+				status: {level:'pass',code: 200, msg: 'Success'},
 			});
-			this.dispatchEvent(event);
 			return result;
 		}
 		catch(e){

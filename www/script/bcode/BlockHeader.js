@@ -1,3 +1,5 @@
+import psThing from './psThing.js';
+
 export {
 	BlockHeader as default,
 	BlockHeader
@@ -11,7 +13,7 @@ export {
  * This class will lay itself over an existing block and allow for simple
  * reading of the parts.
  */
-class BlockHeader extends EventTarget {
+class BlockHeader extends psThing {
 	constructor(buffer=null){
 		super();
 		let p = {};
@@ -114,7 +116,11 @@ class BlockHeader extends EventTarget {
 	 * @returns teh checksum
 	 */
 	setCheck(){
-		this.p.bytes[3] = this.calcChecksum();
+		let checksum = this.calcChecksum();
+		if(this.p.bytes[3] !== checksum){
+			this.emitChange('checksum');
+		}
+		this.p.bytes[3] = checksum;
 		return this.p.bytes[3];
 	}
 
@@ -144,6 +150,7 @@ class BlockHeader extends EventTarget {
 		value = value || 0;
 		value = ~~value; // abs-numeric
 		this.p.bytes[2] = value;
+		this.emitChange('version');
 	}
 
 	/**
@@ -154,7 +161,7 @@ class BlockHeader extends EventTarget {
 	}
 
 	/**
-	 * The ID of the file associated with the block
+	 * The ID of the file associated with the block as 64byte array
 	 */
 	get id(){
 		let id = this.p.id;
@@ -165,11 +172,12 @@ class BlockHeader extends EventTarget {
 		for(let i=Math.min(value.length,this.p.id.length)-1; i>=0; i--){
 			this.p.id[i] = value[i];
 		}
+		this.emitChange('id');
 		this.setCheck();
 	}
 
 	/**
-	 * The id associated with the block, as a string
+	 * The id associated with the block, converted to a string
 	 */
 	get idString(){
 		let id = this.p.id;
@@ -199,6 +207,7 @@ class BlockHeader extends EventTarget {
 		value = value || 0;
 		value = ~~value; // abs-integer
 		this.p.page[0] = value;
+		this.emitChange('page');
 		this.setCheck();
 	}
 
@@ -212,6 +221,7 @@ class BlockHeader extends EventTarget {
 		value = value || 0;
 		value = ~~value; // abs-integer
 		this.p.page[1] = value;
+		this.emitChange('pages');
 		this.setCheck();
 	}
 
