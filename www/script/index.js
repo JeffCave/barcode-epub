@@ -132,12 +132,17 @@ function Animate(start=null,container=animator.container){
  */
 function upload(){
 	let page = document.querySelector('ps-panel[name="library"]');
+
+	let sect = page.querySelector('section[name="file"]');
+	let action = 'add';
+	if(Array.from(sect.classList).includes('hide')){
+		action = 'remove';
+	}
 	let sections = Array.from(page.querySelectorAll('section'));
 	for(let sect of sections){
 		sect.classList.add('hide');
 	}
-	let sect = page.querySelector('section[name="file"]');
-	sect.classList.remove('hide');
+	sect.classList[action]('hide');
 }
 
 

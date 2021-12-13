@@ -44,6 +44,10 @@ class psEpubList extends psThing {
 			}
 		});
 
+		let style= document.createElement('style');
+		shadow.append(style);
+		style.textContent = this.initialCSS;
+
 		// ensure the selection list is initialized
 		this.initialize();
 	}
@@ -174,7 +178,7 @@ class psEpubList extends psThing {
 	/**
 	 * Handles a change to the observed atttibutes
 	 *
-	 * @param {} name
+	 * @param {string} name
 	 * @param {*} oldValue
 	 * @param {*} newValue
 	 */
@@ -184,9 +188,14 @@ class psEpubList extends psThing {
 		}
 	}
 
-
+	/**
+	 * The initial CSS that should be applied.
+	 */
 	get initialCSS(){
-		return [super.initialCSS,psEpubList.DefaultCSS].join('\n');
+		return [
+			super.initialCSS||'',
+			psEpubList.DefaultCSS
+		].join('\n');
 	}
 
 	static get observedAttributes() {
@@ -199,7 +208,6 @@ class psEpubList extends psThing {
  <button name='send' title='Encode'>🙾</button>
  <button name='save' title='Save to Disk'>🖫</button>
  <button name='delete'title='Delete'>🗑</button>
- ⏸
 </nav>
 <ul></ul>
 	   `;
@@ -208,17 +216,51 @@ class psEpubList extends psThing {
 
 	static get DefaultItem(){
 		return `
-<nav><input type='checkbox' /></nav>
+<nav>
+ <input type='checkbox' />
+ <button name='record'>⏸</button>
+</nav>
 <div><output name='id'>xxx...xxx</output></div>
 <div><output name='pages-current'>365</output> of <output name='pages-total'>365</output> (<output name='pages-pct'>100</output>%)</div>
 <div><label>Title</label>: <output name='title'>Life in the Woods</output></div>
 <div><label>Author</label>: <output name='author'>Thoreau</output></div>
+<div><label>Subject</label>: <ul name='keywords'><li>history</li><li>fiction</li><li>parapsychology</li></output></div>
 		`;
 	}
 
 	static get DefaultCSS(){
 		return `
-
+button {
+	min-width: 1cm;
+	min-height: 1cm;
+}
+:host > ul {
+    padding:0;
+    margin:0;
+}
+:host > ul > li {
+    border: 0.1em solid black;
+    background-color: ivory;
+    display:inline-block;
+    padding: 1em;
+    border-radius: 1em;
+	width:100%;
+	max-width: 100vw;
+}
+ul[name='keywords'] {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+ul[name='keywords'] li {
+	position:relative;
+	display:inline-block;
+	padding:0.5em;
+	margin-right:1em;
+	background-color: salmon;
+	border-radius: 1em;
+	line-height:1.5em;
+}
 		`;
 	}
 
