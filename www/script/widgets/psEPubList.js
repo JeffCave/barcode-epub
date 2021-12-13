@@ -40,9 +40,15 @@ class psEpubList extends psThing {
 		// show or hide the buttons based on whether anything is selected or not
 		this.addEventListener('change',(e)=>{
 			if(e.detail.includes('selected')){
-				shadow.querySelector('nav').style.display = (this.selected.size === 0) ? 'none':'block';
+				let items = shadow.querySelector('nav [name="selection"]');
+				items.style.display = (this.selected.size === 0) ? 'none':'initial';
 			}
 		});
+		// respond to file upload
+		shadow.querySelector('ps-filedrop').addEventListener('change', (e)=>{
+			this.barcoder.Save(e.target.files);
+		});
+
 
 		let style= document.createElement('style');
 		shadow.append(style);
@@ -205,9 +211,12 @@ class psEpubList extends psThing {
 	static get DefaultTemplate(){
 		return `
 <nav>
- <button name='send' title='Encode'>🙾</button>
- <button name='save' title='Save to Disk'>🖫</button>
- <button name='delete'title='Delete'>🗑</button>
+ <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPub'>➕</ps-filedrop>
+ <span name='selection'>
+  <button name='send' title='Encode'>🙾</button>
+  <button name='save' title='Save to Disk'>🖫</button>
+  <button name='delete'title='Delete'>🗑</button>
+ </span>
 </nav>
 <ul></ul>
 	   `;

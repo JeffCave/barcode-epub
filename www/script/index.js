@@ -7,7 +7,6 @@ import './widgets/~all.js';
 
 import Barcoder from './bcode/Barcoder.js';
 import Camera from './bcode/Camera.js';
-import ePub from './bcode/ePub.js';
 
 const barcoder = new Barcoder();
 const state = {
@@ -31,7 +30,6 @@ window.addEventListener('load',()=>{
 		'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
 		'button[name="stop"]': ()=>{stopCamera();},
 		'button[name="print"]': ()=>{window.print();},
-		'button[name="fromEpub"]': ()=>{upload();},
 		'header nav button[name="left"]' : ()=>{page(-1);},
 		'header nav button[name="right"]': ()=>{page(+1);},
 	};
@@ -40,12 +38,6 @@ window.addEventListener('load',()=>{
 	}
 	page(0);
 	Animate(true,document.querySelector('div[name="codeset"]'));
-
-	document
-		.querySelector('#UploadEpub')
-		.addEventListener('change', (e)=>{
-			LoadFiles(e.target.files);
-		});
 
 	style = document.createElement('style');
 	document.head.append(style);
@@ -58,29 +50,6 @@ window.addEventListener('load',()=>{
 },{once:true});
 
 
-/**
- * Handles the file submission click.
- *
- * Identifies the submitted files, and hands them over to be placed in
- * the database.
- *
- * @param {FileList} files
- * @returns
- */
-async function LoadFiles(files){
-	if(files instanceof File){
-		files = [files];
-	}
-	let updates = [];
-	for(let file of files){
-		let epub = new ePub(file);
-		epub = await epub.waitLoad();
-		let update = await barcoder.Save(epub);
-		updates.push(update);
-	}
-	updates = Promise.all(updates);
-	return updates;
-}
 
 
 /*********************************************************************
@@ -127,23 +96,7 @@ function Animate(start=null,container=animator.container){
 	}
 }
 
-/**
- * Animates the showing and hiding of the upload widget
- */
-function upload(){
-	let page = document.querySelector('ps-panel[name="library"]');
 
-	let sect = page.querySelector('section[name="file"]');
-	let action = 'add';
-	if(Array.from(sect.classList).includes('hide')){
-		action = 'remove';
-	}
-	let sections = Array.from(page.querySelectorAll('section'));
-	for(let sect of sections){
-		sect.classList.add('hide');
-	}
-	sect.classList[action]('hide');
-}
 
 
 let VideoStatus_Clearer = null;
