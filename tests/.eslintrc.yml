@@ -1,0 +1,25 @@
+env:
+  browser: false
+  es2021: true
+  node: true
+  mocha: true
+extends: eslint:recommended
+parserOptions:
+  #ecmaVersion: 13
+  ecmaVersion: latest
+  sourceType: module
+rules:
+  indent:
+    - error
+    - tab
+    - SwitchCase: 1
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - warn
+    - single
+    - avoidEscape: true
+  semi:
+    - error
+    - always

@@ -1,9 +1,14 @@
-
+image:
+  file: .gitpod.Dockerfile
 tasks:
-  - init: npm install -g eslint
+  - init: npm install -g eslint;
 vscode:
   extensions:
     - mhutchie.git-graph
     - ritwickdey.liveserver
     - zaaack.markdown-editor
+    - hbenl.test-adapter-converter
     - dbaeumer.vscode-eslint
+    - hbenl.vscode-mocha-test-adapter
+    - hbenl.vscode-test-explorer
+    - eamodio.gitlens

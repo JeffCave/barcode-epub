@@ -1,0 +1,7 @@
+{
+	"recommendations": [
+		"hbenl.vscode-mocha-test-adapter",
+		"eamodio.gitlens",
+		"hbenl.test-adapter-converter"
+	]
+}
