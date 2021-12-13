@@ -1,13 +1,21 @@
+
 test:
+  image: gitpod/workspace-full
+  timeout: 10m
   stage: test
   script:
-    - npm install;
-    - ./node_modules/.bin/mocha ./test -R 'json' > ./test-results.$(date --iso-8601=minute).json;
+    - pwd;
+    - sudo apt-get update >> apt.log;
+    - sudo apt-get install -y firefox >> apt.log;
+    - npm install --silent;
+    - export PATH=$PATH:./node_modules/.bin;
+    - mocha ./tests -R 'json' > ./test-results.json;
   artifacts:
     untracked: false
     expire_in: 30 days
     paths:
-      - ./test-results*
+      - ./apt.log
+      - ./test-results.json
 
 pages:
   stage: deploy

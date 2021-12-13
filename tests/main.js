@@ -101,7 +101,7 @@ before(async function(){
 		process.env['PATH']
 	].join(':');
 
-
+	this.timeout(60000);
 	state.server = await startServer();
 
 	if(!fs.existsSync(ffPath)){
@@ -123,6 +123,7 @@ before(async function(){
 	}
 	catch(e){
 		console.error(e);
+		return done(e);
 	}
 	return done();
 });
