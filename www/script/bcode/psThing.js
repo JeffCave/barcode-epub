@@ -52,8 +52,8 @@ class psThing extends EventTarget{
 	 *
 	 * Pure helper becuase dispatching events is verbose
 	 *
-	 * @param {*} name
-	 * @param {*} detail
+	 * @param {string} name
+	 * @param {*} detail value to be attached to the event
 	 */
 	emit(name,detail){
 		let event = new CustomEvent(name, {

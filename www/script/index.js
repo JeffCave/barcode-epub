@@ -15,6 +15,10 @@ const state = {
 };
 let style = null;
 
+
+/**
+ * Wait for the page to load before taking many of the actions.
+ */
 window.addEventListener('load',()=>{
 
 	barcoder.addEventListener('change', RenderIndex);
@@ -52,6 +56,15 @@ window.addEventListener('load',()=>{
 });
 
 
+/**
+ * Handles the file submission click.
+ *
+ * Identifies the submitted files, and hands them over to be placed in
+ * the database.
+ *
+ * @param {FileList} files
+ * @returns
+ */
 async function LoadFiles(files){
 	if(files instanceof File){
 		files = [files];
@@ -67,7 +80,17 @@ async function LoadFiles(files){
 	return updates;
 }
 
+
+/*********************************************************************
+* The rest of the page is primarily made up of the handling of visual
+* elements. These should be moved into Custom Elements their own.
+*********************************************************************/
+
+
 let animator = {};
+/**
+ * Animates the slideshow of images shown during transmission
+ */
 function Animate(start=null,container=animator.container){
 	const ANIM_SPEED = 2000;
 	//const ANIM_SPEED = 750;
@@ -102,7 +125,9 @@ function Animate(start=null,container=animator.container){
 	}
 }
 
-
+/**
+ * Animates the showing and hiding of the upload widget
+ */
 function upload(){
 	let page = document.querySelector('ps-panel[name="library"]');
 	let sections = Array.from(page.querySelectorAll('section'));
@@ -115,6 +140,12 @@ function upload(){
 
 
 let VideoStatus_Clearer = null;
+/**
+ * Handles the animation of the status button
+ *
+ * @param {string} status
+ * @returns
+ */
 function VideoStatus(status){
 	const allowed = ['pass','fail','warn','skip'];
 	if(!allowed.includes(status)) return;
@@ -134,6 +165,11 @@ function VideoStatus(status){
 }
 
 
+/**
+ * Hides the video seelction buttons and attaches the camera to barcoder.
+ *
+ * @param {*} src
+ */
 async function VideoDecode(src='monitor'){
 	let panel = document.querySelector('ps-panel[name="decoder"]');
 	let buttons = Array.from(panel.querySelectorAll('button'));
@@ -157,6 +193,9 @@ async function VideoDecode(src='monitor'){
 }
 
 
+/**
+ * Handles a "stop" button click
+ */
 function stopCamera(){
 	state.camera.StopVideo();
 	let panel = document.querySelector('ps-panel[name="decoder"]');
@@ -216,6 +255,9 @@ async function Download(id){
 }
 
 
+/**
+ * Draws the library page.
+ */
 async function RenderIndex(){
 	let db = barcoder.db;
 	let page = document.querySelector('ps-panel[name="library"]');

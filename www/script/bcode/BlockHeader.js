@@ -52,6 +52,8 @@ class BlockHeader extends psThing {
 	 * Performs validation check, however returns true/false instead of
 	 * giving a reason.
 	 *
+	 * @see validate
+	 *
 	 * @returns boolean
 	 */
 	isValid(){
@@ -93,6 +95,8 @@ class BlockHeader extends psThing {
 
 	/**
 	 * A simple one byte checksum.
+	 *
+	 * Useful in the case that there has been a misread
 	 *
 	 * @returns the checksum calcuated on the block
 	 */
@@ -239,5 +243,8 @@ class BlockHeader extends psThing {
 		return BlockHeader.SIZE;
 	}
 }
+/**
+ * The full size of the header.
+ */
 BlockHeader.SIZE = 72;
 

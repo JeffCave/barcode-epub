@@ -211,6 +211,14 @@ class Barcoder extends psThing{
 		}
 	}
 
+	/**
+	 * Watches a given video stream for relevant barcodes
+	 *
+	 * Starts a watching process to determine if there is a relevant barcode. Submits discovered barcodes to the database.
+	 *
+	 * @param {Camera} camera
+	 * @returns
+	 */
 	async WatchVideo(camera){
 		if(!(camera instanceof Camera)) throw new TypeError('stream must be an instance of `Camera`');
 		if (this.watcher) return this.watcher;

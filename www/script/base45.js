@@ -8,8 +8,17 @@ export{
 	CompressionRatio,
 };
 
+/**
+ * Currently base64 which has a 4/3 (1.33) ratio
+ */
 const CompressionRatio = 4/3;
 
+/**
+ * Given a buffer, returns a string version
+ *
+ * @param {*} buffer
+ * @returns
+ */
 function encode(buffer){
 	if(buffer instanceof Blob) buffer = new Uint8Array(buffer);
 
@@ -20,6 +29,11 @@ function encode(buffer){
 	return str;
 }
 
+/**
+ * Decodes the given string into a Buffer
+ * @param {*} str
+ * @returns {Uint8Array}
+ */
 function decode(str){
 	str = str.replace(/-/g,'+');
 	str = str.replace(/_/g,'/');
@@ -31,5 +45,3 @@ function decode(str){
 	buffer = new Uint8Array(buffer);
 	return buffer;
 }
-
-
