@@ -229,10 +229,16 @@ class BlockHeader extends psThing {
 		this.setCheck();
 	}
 
+	/**
+	 * The date of publication
+	 */
 	get PubDate(){
 		return new ScaleDate(this.p.pubdate[0]);
 	}
 
+	/**
+	 * Date the document is relevant until
+	 */
 	get Until(){
 		return new ScaleDate(this.p.relevance[0], this.PubDate);
 	}
