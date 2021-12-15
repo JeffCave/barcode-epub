@@ -1,4 +1,5 @@
 import psThing from './psThing.js';
+import ScaleDate from './scaledate.js';
 
 export {
 	BlockHeader as default,
@@ -30,11 +31,7 @@ class BlockHeader extends psThing {
 			if(buffer.buffer){
 				buffer = buffer.buffer;
 			}
-			/* dead: remove 2022-05-24
-			// no idea why this exists, but it looks useful
-			if(buffer instanceof ArrayBuffer){
-			}
-			else */ if(Array.isArray(buffer)){
+			if(Array.isArray(buffer)){
 				buffer = new Uint8Array(buffer);
 				buffer = buffer.buffer;
 			}
@@ -43,6 +40,9 @@ class BlockHeader extends psThing {
 		p.bytes = new Uint8Array(buffer,0);
 		p.id = new Uint8Array(buffer,4,64);
 		p.page = new Uint16Array(buffer,68,2);
+		p.pubdate = new Uint16Array(buffer,72,1);
+		p.relevance = new Uint16Array(buffer,74,1);
+		p.metadata = new Uint8Array(buffer,76);
 		this.p = p;
 
 		this.version = 0;
@@ -229,6 +229,14 @@ class BlockHeader extends psThing {
 		this.setCheck();
 	}
 
+	get PubDate(){
+		return new ScaleDate(this.p.pubdate[0]);
+	}
+
+	get Until(){
+		return new ScaleDate(this.p.relevance[0], this.PubDate);
+	}
+
 	/**
 	 * The underlying buffer
 	 */
@@ -246,5 +254,5 @@ class BlockHeader extends psThing {
 /**
  * The full size of the header.
  */
-BlockHeader.SIZE = 72;
+BlockHeader.SIZE = 200;
 
