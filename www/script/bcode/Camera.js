@@ -7,10 +7,10 @@ export {
 /**
  * A simple controller for the video feeds, based aournd the camera
  */
-class Camera{
-
+class Camera extends EventTarget{
 
 	constructor(opts){
+		super();
 		this.p = Object.assign({
 			light: false,
 			src: 'monitor',
@@ -18,11 +18,17 @@ class Camera{
 		this.p.stream = null;
 	}
 
+	/**
+	 * The active video stream.
+	 */
 	get stream(){
 		return this.p.stream;
 	}
 
 
+	/**
+	 * Sets the light state.
+	 */
 	get light(){
 		return this.p.light;
 	}
@@ -35,6 +41,12 @@ class Camera{
 	}
 
 
+	/**
+	 * Changes the current source for the video.
+	 *
+	 * @param {string} src type of video feed to use
+	 * @returns The actual video feed
+	 */
 	async setMonitorSource(src=this.p.src){
 		//verify that the value is of the correct type
 		src = src || '';
@@ -65,6 +77,9 @@ class Camera{
 	}
 
 
+	/**
+	 * Stops the current video source.
+	 */
 	StopVideo(){
 		this.light = false;
 		if(this.video){

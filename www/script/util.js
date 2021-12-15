@@ -42,9 +42,16 @@ export default class vius{
 		});
 	}
 
-	static async hash(str, hash = 'SHA-1'){
+	/**
+	 * Calcuate a hash and return the string
+	 *
+	 * @param {*} str
+	 * @param {*} algo
+	 * @returns
+	 */
+	static async hash(str, algo = 'SHA-1'){
 		str = new TextEncoder('utf-8').encode(str);
-		str = await window.crypto.subtle.digest(hash,str);
+		str = await window.crypto.subtle.digest(algo,str);
 		str = Array.from(new Uint8Array(str)).map(d=>{
 			return String.fromCharCode(d);
 		}).join('');
@@ -52,7 +59,18 @@ export default class vius{
 		return str;
 	}
 
+	/**
+	 * An async version of setTimeout
+	 *
+	 * @param {timeout} delay
+	 * @param {function} fun
+	 * @returns result of called function
+	 */
 	static schedule(delay, fun) {
+		if(typeof delay === 'function'){
+			fun = delay;
+			delay = 23; /*skidoo*/
+		}
 		if(delay < 1) delay = 1;
 		return new Promise((resolve) =>{
 			setTimeout(async ()=>{
@@ -62,6 +80,13 @@ export default class vius{
 		});
 	}
 
+	/**
+	 * Change how frequent a funciton can be called
+	 * 
+	 * @param {*} delay
+	 * @param {*} func
+	 * @returns
+	 */
 	static throttle(delay, func) {
 		let next = 0;
 		let scheduled = null;

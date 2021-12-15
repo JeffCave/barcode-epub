@@ -46,7 +46,10 @@ class Block extends Uint8Array{
 			super(buffer);
 		}
 		else{
-			super(buffer,offset,Block.MaxSize+BlockHeader.SIZE);
+			let size = Block.MaxSize + BlockHeader.SIZE;
+
+			size = Math.min(size, buffer.byteLength);
+			super(buffer,offset,size);
 		}
 		this.p = {};
 	}
