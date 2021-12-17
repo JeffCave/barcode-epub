@@ -233,8 +233,9 @@ class ePub extends psThing{
 
 		meta.identifier = this.idString;
 		if(!meta.identifier){
-			meta.identifier = await ePub.calcFileHash(blob)
+			meta.identifier = await ePub.calcFileHash(blob);
 			meta.identifier = b45.encode(meta.identifier);
+			meta.identifier = meta.identifier.replace(/=/g,'');
 		}
 		meta.size = blob.size;
 

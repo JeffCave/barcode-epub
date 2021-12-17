@@ -276,6 +276,8 @@ async function RenderIndex(){
 		let curpages = Object.keys(rec._attachments||{}).length;
 		let pct = Math.floor(curpages/rec.pages*100);
 
+		html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta,null,'\t');
+
 		html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
 		html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
 		html.querySelector('button[name="save"]').addEventListener('click',()=>{Download(id);});
@@ -285,7 +287,17 @@ async function RenderIndex(){
 		html.querySelector('output[name="pages-current"]').value = curpages;
 		html.querySelector('output[name="pages-total"]').value   = rec.pages;
 		html.querySelector('output[name="pages-pct"]').value	 = pct;
-		html.querySelector('output[name="title"]').value = rec.title;
+
+		html.querySelector('output[name="title"]').value = rec.meta.name;
+		html.querySelector('output[name="author"]').value = rec.meta.author;
+
+		let keywords = [];
+		for(let k of rec.meta.keywords){
+			let li = `<li>${k}</li>`;
+			keywords.push(li);
+		}
+		keywords = keywords.join('');
+		html.querySelector('ul[name="keywords"]').innerHTML = keywords;
 
 		htmlList.append(html);
 	}
