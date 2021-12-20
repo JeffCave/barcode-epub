@@ -186,12 +186,11 @@ class ePub extends psThing{
 	 *
 	 * @returns JSON conformant Metadata
 	 */
-	 async getMeta(){
+	async getMeta(){
 		if (!this.rec) return null;
 		if (this.rec.meta) return this.rec.meta;
 
-		let zip = ePub.getMeta(this.toBlob());
-		zip.relativePath = zip.relativePath || zip.webkitRelativePath || '.';
+		let meta = ePub.getMeta(this.toBlob());
 
 		return meta;
 	}
@@ -204,7 +203,7 @@ class ePub extends psThing{
 	 *
 	 * @returns JSON conformant Metadata
 	 */
-	 static async getMeta(blob){
+	static async getMeta(blob){
 		let zip = blob;
 		zip.relativePath = zip.relativePath || zip.webkitRelativePath || '.';
 
@@ -226,9 +225,9 @@ class ePub extends psThing{
 		let txt = await bin.text();
 		let xml = domParser.parseFromString(txt,'text/xml');
 		let meta = {
-			"@context": "https://schema.org",
-			"@type": "Book",
-			"bookFormat": "EBook",
+			'@context': 'https://schema.org',
+			'@type': 'Book',
+			'bookFormat': 'EBook',
 		};
 
 		meta.identifier = this.idString;
@@ -267,7 +266,7 @@ class ePub extends psThing{
 
 		val = xml.querySelectorAll('identifier');
 		for(let v of val){
-			if(v.attributes["opf:scheme"] === 'ISBN'){
+			if(v.attributes['opf:scheme'] === 'ISBN'){
 				meta.isbn = v.textContent;
 			}
 		}

@@ -5,22 +5,33 @@ global
 	v8debug
 */
 
-const { assert } = require('chai');
-const webdriver = require('selenium-webdriver');
-//const chrome = require('selenium-webdriver/chrome');
-const firefox = require('selenium-webdriver/firefox');
+export{
+	getGeckoVersion,
+	getFirefoxVersion,
+	done,
+	startServer,
+	getDriver,
+	setupMocha,
+	init,
+	state,
+	cleanup
+};
 
-const util = require('util');
-const fs = require('fs');
-const exec = util.promisify(require('child_process').exec);
+import webdriver  from 'selenium-webdriver';
+import firefox from 'selenium-webdriver/firefox.js';
+//const chrome = require('selenium-webdriver/chrome');
+
+import util from 'util';
+import fs from 'fs';
+import {exec,fork} from 'child_process';
+
+const state = {isSetup:false};
 
 const exe = util.promisify(exec);
 const ffPath = './build/firefox/firefox';
-const state = {
-	mocha: null,
-	browser: null,
-	server: null
-};
+
+
+console.log('I am the very model of a modern major general');
 
 
 async function getGeckoVersion(){
@@ -50,148 +61,125 @@ async function done(rtn = true){
 	return rtn;
 }
 
-
+let staticServer = null;
 async function startServer(){
-	let path = `${__dirname}/../www/`;
-	let port = 3030;
+	if(staticServer) return staticServer;
 
-	var http = require('http');
-
-	var finalhandler = require('finalhandler');
-	var serveStatic = require('serve-static');
-
-	var serve = serveStatic(path);
-
-	var server = http.createServer(function(req, res) {
-		var done = finalhandler(req, res);
-		serve(req, res, done);
+	let server = fork(`${process.cwd()}/tests/lib/server.js`,{stdio:[0,1,2,'ipc']});
+	server.on('close',()=>{
+		server = null;
+	});
+	server.on('error',(e)=>{
+		console.error(JSON.stringify(e,null,4));
+	});
+	await new Promise((r)=>{
+		server.on('message',()=>{
+			clearInterval(interval);
+			r();
+		});
+		let interval = setInterval(()=>{
+			server.send('start');
+		},100);
+	});
+	server.addr = new Promise((r)=>{
+		server.on('message',(msg)=>{
+			if(msg.req === 'addr'){
+				r(msg.resp);
+			}
+		});
+		server.send('addr');
 	});
 
-	let code = 'EADDRINUSE';
-	while(code === 'EADDRINUSE'){
-		try{
-			server.listen(port);
-			code = '';
-		}
-		catch(e){
-			code = e.code;
-		}
+	function terminate(code){
+		server.kill();
+		process.exit(code);
 	}
+	process.once('exit', terminate);
+	process.once('SIGINT', terminate);
+	process.once('SIGTERM',terminate);
 
+	staticServer = server;
 	return server;
 
 }
 
 
-function setupMocha(mocha){
+function getDriver(force=false){
+	if(state.driver){
+		if(!force) return state.driver;
+		state.driver.quit();
+		state.driver = null;
+	}
 
-	// if we are in debug mode, make some helper settings
-	let debug = typeof v8debug === 'object' || /--debug|--inspect/.test(process.execArgv.join(' '));
-	if(debug){
-		mocha.timeout(1000 * 60 * 60);
-	}
-	else{
-		mocha.timeout(10000);
-	}
+	const options = new firefox.Options();
+	//options.setBinary(binary);
+	options.headless(); //once newer webdriver ships
+
+	let capabilities = webdriver
+		.Capabilities
+		.firefox()
+		.set('acceptInsecureCerts', true);
+
+	const driver = new webdriver.Builder()
+		.forBrowser('firefox')
+		.setFirefoxOptions(options)
+		.withCapabilities(capabilities)
+		.build();
+
+	state.driver = driver;
+	return driver;
 }
 
-before(async function(){
+
+function setupMocha(mocha){
+	mocha.timeout(state.timeout);
+}
+
+async function init (){
+	if(state.isSetup) return state;
+
+	cleanup();
 	process.env['PATH'] = [
 		`${process.cwd()}/node_modules/.bin`,
 		process.env['PATH']
 	].join(':');
 
-	this.timeout(60000);
 	state.server = await startServer();
 
 	if(!fs.existsSync(ffPath)){
 		await exec('get-firefox --target "./build/" --extract ');
 	}
 
+	// if we are in debug mode, make some helper settings
+	state.debug = typeof v8debug === 'object' || /--debug|--inspect/.test(process.execArgv.join(' '));
+	if(state.debug){
+		state.timeout = 1000 * 60 * 60;
+	}
+	else{
+		state.timeout = 10000;
+	}
+
 	state.By = webdriver.By;
 	state.until = webdriver.until;
-	let options = new firefox.Options();
-	options.setBinary(ffPath);
-	options.addArguments('-headless');
+	state.isSetup = true;
+	return state;
+}
 
-	let builder = new webdriver.Builder();
-	builder = builder.forBrowser('firefox');
-	builder = builder.setFirefoxOptions(options);
-	//builder = builder.setChromeOptions( );
-	try{
-		state.browser = builder.build();
-	}
-	catch(e){
-		console.error(e);
-		return done(e);
-	}
-	return done();
-});
 
-after(function(){
+function cleanup(){
+	if(!state.isSetup) return;
 	try{
-		state.browser.quit();
-		state.server.close();
+		if(state.browser){
+			state.browser.quit();
+		}
+		staticServer.send('stop');
+		Object.keys(state).forEach(d=>{
+			delete state[d];
+		});
+		state.isSetup = false;
 	}
 	catch(e){
 		console.error('Failed to terminate tests');
 		console.error(e);
 	}
-});
-
-
-describe('Testing Framework', function(){
-	setupMocha(this);
-
-	before(function(){
-	});
-
-	after(function(){
-	});
-
-	beforeEach(function(){
-		// do something before test case execution
-		// no matter if there are failed cases
-	});
-
-	afterEach(function(){
-		// do something after test case execution is finished
-		// no matter if there are failed cases
-	});
-
-	it('has an assertion framework', function(){
-		assert.isTrue(true,'Test framework is loaded');
-	});
-
-	it('has a running HTTP server', function(){
-		//assert.isTrue(state.server.listening,'test server is listneing for connections');
-	});
-
-	it('can load a page into the browser', async function(){
-
-		try{
-			let version = await getGeckoVersion();
-			assert.equal(version,'0.29.1','Gecko version');
-			version = await getFirefoxVersion();
-			assert.equal(version,'97.0a1','Firefox version');
-
-			await state.browser.get('https://example.com/');
-			let title = await state.browser.getTitle();
-			assert.isNotEmpty(title,'Generic page found');
-
-			let baseUrl = `http://localhost:${server.address().port}`;
-			await state.browser.get(`${baseUrl}/index.html`);
-			title = await state.browser.getTitle();
-			assert.isNotEmpty(title,'A page was found');
-			let h1 = state.browser.findElement(state.By.css('h1'));
-			let text = await h1.getText();
-			assert.isEmpty(text,'Content was found');
-			console.log(text);
-		}
-		catch(e){
-			return done(e);
-		}
-		return done();
-	});
-
-});
+}

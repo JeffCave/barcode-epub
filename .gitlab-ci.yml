@@ -9,8 +9,8 @@ test:
     - sudo apt-get install -y firefox >> apt.log;
     - npm install --silent;
     - export PATH=$PATH:./node_modules/.bin;
-    - mocha ./tests -R 'json' > ./test-results.json;
-    - mocha ./tests -R 'mocha-junit-reporter' > ./test-results.xml;
+    - mocha --exit --recursive ./tests/tests/ -R 'json' > ./test-results.json;
+    - mocha --exit --recursive ./tests/tests/ -R 'mocha-junit-reporter';
   artifacts:
     untracked: false
     expire_in: 30 days
