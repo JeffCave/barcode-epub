@@ -205,7 +205,7 @@ async function send(id = []){
  * @param {int|string} dir
  */
 function page(dir=1){
-	let pages = document.querySelector('ps-tabpanel');
+	let pages = document.querySelector('ps-mobtabpanel');
 	pages.rotate(dir);
 }
 
