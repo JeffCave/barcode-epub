@@ -7,7 +7,6 @@ import './widgets/~all.js';
 
 import Barcoder from './bcode/Barcoder.js';
 import Camera from './bcode/Camera.js';
-import ePub from './bcode/ePub.js';
 
 const barcoder = new Barcoder();
 const state = {
@@ -21,15 +20,16 @@ let style = null;
  */
 window.addEventListener('load',()=>{
 
-	barcoder.addEventListener('change', RenderIndex);
-	RenderIndex();
+	let list = document.querySelector('ps-epublist');
+	list.barcoder = barcoder;
+	list.addEventListener('send',send);
+	list.addEventListener('save',Download);
 
 	let buttons = {
 		'button[name="fromVideo"]': ()=>{VideoDecode('monitor');},
 		'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
 		'button[name="stop"]': ()=>{stopCamera();},
 		'button[name="print"]': ()=>{window.print();},
-		'button[name="fromEpub"]': ()=>{upload();},
 		'header nav button[name="left"]' : ()=>{page(-1);},
 		'header nav button[name="right"]': ()=>{page(+1);},
 	};
@@ -39,12 +39,6 @@ window.addEventListener('load',()=>{
 	page(0);
 	Animate(true,document.querySelector('div[name="codeset"]'));
 
-	document
-		.querySelector('#UploadEpub')
-		.addEventListener('change', (e)=>{
-			LoadFiles(e.target.files);
-		});
-
 	style = document.createElement('style');
 	document.head.append(style);
 	style  = style.sheet;
@@ -53,32 +47,9 @@ window.addEventListener('load',()=>{
 	Array.from(document.querySelectorAll('.waitload')).forEach(d=>{
 		d.classList.remove('waitload');
 	});
-});
+},{once:true});
 
 
-/**
- * Handles the file submission click.
- *
- * Identifies the submitted files, and hands them over to be placed in
- * the database.
- *
- * @param {FileList} files
- * @returns
- */
-async function LoadFiles(files){
-	if(files instanceof File){
-		files = [files];
-	}
-	let updates = [];
-	for(let file of files){
-		let epub = new ePub(file);
-		epub = await epub.waitLoad();
-		let update = await barcoder.Save(epub);
-		updates.push(update);
-	}
-	updates = Promise.all(updates);
-	return updates;
-}
 
 
 /*********************************************************************
@@ -125,18 +96,7 @@ function Animate(start=null,container=animator.container){
 	}
 }
 
-/**
- * Animates the showing and hiding of the upload widget
- */
-function upload(){
-	let page = document.querySelector('ps-panel[name="library"]');
-	let sections = Array.from(page.querySelectorAll('section'));
-	for(let sect of sections){
-		sect.classList.add('hide');
-	}
-	let sect = page.querySelector('section[name="file"]');
-	sect.classList.remove('hide');
-}
+
 
 
 let VideoStatus_Clearer = null;
@@ -206,24 +166,26 @@ function stopCamera(){
 }
 
 
-async function encode(id = null){
+async function send(id = []){
 	if (!id) return;
 
-
+	id = Array.from(id.detail);
 	let imgcontainer = document.querySelector('div[name="codeset"]');
 	imgcontainer.innerHTML = '';
 	page(1);
 
-	let epub = await barcoder.GetBook(id);
-	let blocks = await epub.getBlocks();
-	for (let block of blocks.values()){
-		let header = block.header;
-		let barcode = await block.toImage();
-		let img = document.createElement('img');
-		img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
-		//img.transferFromImageBitmap(barcode);
-		img.src = barcode;
-		imgcontainer.append(img);
+	let epubs = await barcoder.GetBooks(id);
+	for(let epub of epubs){
+		let blocks = await epub.getBlocks();
+		for (let block of blocks.values()){
+			let header = block.header;
+			let barcode = await block.toImage();
+			let img = document.createElement('img');
+			img.setAttribute('alt', `${header.page} of ${header.pages} - ${header.idString}`);
+			//img.transferFromImageBitmap(barcode);
+			img.src = barcode;
+			imgcontainer.append(img);
+		}
 	}
 }
 
@@ -249,57 +211,12 @@ function page(dir=1){
 
 
 async function Download(id){
-	let epub = await barcoder.GetBook(id);
-	let stm = epub.toBlob();
-	saveAs(stm,`${id}.epub`);
-}
-
-
-/**
- * Draws the library page.
- */
-async function RenderIndex(){
-	let db = barcoder.db;
-	let page = document.querySelector('ps-panel[name="library"]');
-	let htmlList = page.querySelector('ul');
-	let template = page.querySelector('template');
-	let recs = await db.allDocs({include_docs:true,attachments: false});
-
-	htmlList.innerHTML = '';
-	for(let rec of recs.rows){
-		rec = rec.doc;
-		let html = document.createElement('li');
-		html.innerHTML = template.innerHTML;
-
-		let id = rec._id;
-		let rev = rec._rev;
-		let curpages = Object.keys(rec._attachments||{}).length;
-		let pct = Math.floor(curpages/rec.pages*100);
-
-		html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta,null,'\t');
-
-		html.querySelector('button[name="delete"]').addEventListener('click',()=>{db.remove(id,rev);});
-		html.querySelector('button[name="send"]').addEventListener('click',()=>{encode(id);});
-		html.querySelector('button[name="save"]').addEventListener('click',()=>{Download(id);});
-
-		html.querySelector('output[name="id"]').title = id;
-		html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
-		html.querySelector('output[name="pages-current"]').value = curpages;
-		html.querySelector('output[name="pages-total"]').value   = rec.pages;
-		html.querySelector('output[name="pages-pct"]').value	 = pct;
-
-		html.querySelector('output[name="title"]').value = rec.meta.name;
-		html.querySelector('output[name="author"]').value = rec.meta.author;
-
-		let keywords = [];
-		for(let k of rec.meta.keywords){
-			let li = `<li>${k}</li>`;
-			keywords.push(li);
-		}
-		keywords = keywords.join('');
-		html.querySelector('ul[name="keywords"]').innerHTML = keywords;
-
-		htmlList.append(html);
+	id = Array.from(id.detail);
+	let epubs = await barcoder.GetBooks(id);
+	for(let epub of epubs){
+		let stm = await epub.toBlob();
+		saveAs(stm,`${id}.epub`);
 	}
 }
+
 
