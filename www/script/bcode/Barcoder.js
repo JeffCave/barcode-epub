@@ -91,35 +91,111 @@ class Barcoder extends psThing{
 		return ePub.BlobToBlocks(stm);
 	}
 
+	/**
+	 * @deprecated use 'GetBooks' instead
+	 */
+	async GetBook(id){
+		return this.GetBooks(id);
+	}
 
 	/**
 	 *
-	 * @param {Uint8Array|string} id of the book to find
+	 * @param {List of Uint8Array|string} id of the book to find
 	 */
-	async GetBook(id){
-		let rec = await this.db.get(id,{
+	async GetBooks(id){
+		id = Array.from(id);
+		let results = await this.db.allDocs({
+			keys: id,
+			include_docs: true,
 			attachments: true,
 			binary: true
 		});
-		let epub = new ePub(rec);
-		return epub;
+		let epubs = [];
+		for(let rec of results.rows){
+			let epub = new ePub(rec.doc);
+			epubs.push(epub);
+		}
+		return epubs;
+	}
+
+	/**
+	 * Given a list of IDs removes them from the database
+	 *
+	 * @param {*} ids
+	 * @returns
+	 */
+	async remove(ids){
+		ids = Array.from(ids);
+		let recs = await this.db.allDocs({
+			keys: ids,
+			include_docs: true,
+		});
+		let dels = [];
+		for(let rec of recs.rows){
+			rec = rec.doc;
+			rec = {
+				_id: rec._id,
+				_rev: rec._rev,
+				_deleted: true
+			};
+			dels.push(rec);
+		}
+		let rtn = await this.db.bulkDocs(dels);
+		return rtn;
 	}
 
 	/**
 	 * Saves the item to disk
 	 *
-	 * @param {Block|ePub} item
+	 * @param {Block|Blob|ePub} item
 	 */
 	async Save(item){
+		item = item || [];
+		if(typeof item === 'string' || typeof item[Symbol.iterator] !== 'function'){
+			item = [item];
+		}
+		item = Array.from(item);
+
+		if(item.length === 0) return false;
+		let save = [];
+		if(item.length > 1){
+			for(let i of item){
+				save.push(this.Save(i));
+			}
+			save = Promise.all(save);
+			return save;
+		}
+		item = item.pop();
+
 		if(item instanceof Block){
-			this.SaveBlock(item);
+			save = this.SaveBlock(item);
+		}
+		else if(item instanceof Blob){
+			save = this.SaveBlob(item);
 		}
 		else if(item instanceof ePub){
-			this.SaveEPub(item);
+			save = this.SaveEPub(item);
 		}
 		else{
 			throw new TypeError('Unrecognized type');
 		}
+		return save;
+	}
+
+	/**
+	 * Handles the file submission click.
+	 *
+	 * Identifies the submitted files, and hands them over to be placed in
+	 * the database.
+	 *
+	 * @param {FileList} files
+	 * @returns
+	 */
+	async SaveBlob(blob){
+		let epub = new ePub(blob);
+		epub = await epub.waitLoad();
+		let update = this.SaveEPub(epub);
+		return update;
 	}
 
 	/**
@@ -135,11 +211,12 @@ class Barcoder extends psThing{
 		catch(e){
 			if(![404].includes(e.status)) throw e;
 		}
-		this.db.put(epub.rec);
+		let result = this.db.put(epub.rec);
 		this.emit('saveblock', {
 			block: new Block(epub.rec._attachments.data),
 			status: {level:'pass',code: 200, msg: 'Success'},
 		});
+		return result;
 	}
 
 	/**
