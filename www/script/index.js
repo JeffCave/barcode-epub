@@ -10,7 +10,8 @@ import Camera from './bcode/Camera.js';
 
 const barcoder = new Barcoder();
 const state = {
-	camera: null
+	camera: null,
+	pages: null,
 };
 let style = null;
 
@@ -20,6 +21,7 @@ let style = null;
  */
 window.addEventListener('load',()=>{
 
+	state.pages = document.querySelector('ps-mobtabpanel');
 	let list = document.querySelector('ps-epublist');
 	list.barcoder = barcoder;
 	list.addEventListener('send',send);
@@ -30,13 +32,11 @@ window.addEventListener('load',()=>{
 		'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
 		'button[name="stop"]': ()=>{stopCamera();},
 		'button[name="print"]': ()=>{window.print();},
-		'header nav button[name="left"]' : ()=>{page(-1);},
-		'header nav button[name="right"]': ()=>{page(+1);},
+		'button[name="opts"]': ()=>{state.pages.rotate('options');},
 	};
 	for(let b in buttons){
 		document.querySelector(b).addEventListener('click',buttons[b]);
 	}
-	page(0);
 	Animate(true,document.querySelector('div[name="codeset"]'));
 
 	style = document.createElement('style');
@@ -137,7 +137,7 @@ async function VideoDecode(src='monitor'){
 
 	buttons.forEach(b=>{b.classList.add('hide');});
 	stopButton.classList.remove('hide');
-	page('decoder');
+	state.pages.rotate('decoder');
 
 	if(!state.camera){
 		state.camera = new Camera();
@@ -172,7 +172,7 @@ async function send(id = []){
 	id = Array.from(id.detail);
 	let imgcontainer = document.querySelector('div[name="codeset"]');
 	imgcontainer.innerHTML = '';
-	page(1);
+	state.pages.rotate('reader');
 
 	let epubs = await barcoder.GetBooks(id);
 	for(let epub of epubs){
@@ -188,27 +188,6 @@ async function send(id = []){
 		}
 	}
 }
-
-
-/**
- * Changes the visible page to the specified page.
- *
- * Page can be specified as a string or an integer. A string specifies
- * the absolute page name to be changed to, integers represent the number
- * of page to move by from current position.
- *
- * The pages are conceptually in a carosel, so negative numbers move left,
- * postive numbers move right.
- *
- * Nonsensical values result in a page move of 0 (stay where you are)
- *
- * @param {int|string} dir
- */
-function page(dir=1){
-	let pages = document.querySelector('ps-mobtabpanel');
-	pages.rotate(dir);
-}
-
 
 async function Download(id){
 	id = Array.from(id.detail);
