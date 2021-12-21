@@ -14,6 +14,7 @@ class psMobileTabPanelElement extends psTabbedPanelElement {
 	get initialCSS(){
 		let css = super.initialCSS;
 		css = [css,`
+		/*https://m3.material.io/components/navigation-bar/specs*/
 		ul[part='menu']{
 			position:fixed;
 			left:0;
@@ -27,6 +28,13 @@ class psMobileTabPanelElement extends psTabbedPanelElement {
 			display: inline-block;
 			border:1px solid darkgray;
 			flex-grow:1;
+			padding-top:1em;
+		}
+		ul[part='menu'] li h1{
+			font-size: 1em;
+		}
+		ul[part='menu'] li span[name='icon']{
+			font-size:1.25em;
 		}
 		ul[part='menu'] li.active span[name='icon']{
 			background-color:darkgray;
