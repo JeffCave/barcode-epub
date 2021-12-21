@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Convert digital data to paper storage for long term storage",
   "main": "app.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "test": "mocha --exit --recursive ./tests/tests/ -R 'nyan' "
   },
@@ -36,6 +36,7 @@
     "mocha": "^9.1.3",
     "mocha-junit-reporter": "^2.0.2",
     "selenium-webdriver": "^4.1.0",
-    "serve-static": "^1.14.1"
+    "serve-static": "^1.14.1",
+    "mocha-multi-reporters": "^1.5.1"
   }
 }

@@ -4,12 +4,11 @@ import * as helper from '../main.js';
 //before(helper.init);
 //after(helper.cleanup);
 
-describe('Basic usage',async function(){
-	const state = await helper.state;
-	helper.setupMocha(this);
-	this.timeout(10000);
+describe('Basic usage',function(){
+	let state = null;
 
 	before(async function(){
+		state = await helper.state;
 		await helper.init();
 		let url = await state.server.addr;
 		url = url.port;
@@ -54,6 +53,7 @@ describe('Basic usage',async function(){
 
 
 		await driver.get(url);
+		this.skip();
 		let tab = await driver.findElement(state.By.css('ps-tabpanel'));
 		this.skip();
 		tab = await tab.getShadowRoot();

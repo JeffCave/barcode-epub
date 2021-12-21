@@ -1,4 +1,4 @@
 .chromium-cache/
 build/
 node_modules/
-test-results.json
+test-results.*
