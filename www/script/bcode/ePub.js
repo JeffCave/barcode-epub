@@ -1,3 +1,7 @@
+import 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js';
+/* global JSZip */
+
+import * as b45 from '../base45.js';
 import Block from './Block.js';
 import BlockHeader from './BlockHeader.js';
 import psThing from './psThing.js';
@@ -6,6 +10,9 @@ export{
 	ePub as default,
 	ePub
 };
+
+const domParser = new DOMParser();
+
 
 
 /**
@@ -42,6 +49,8 @@ class ePub extends psThing{
 		this.addEventListener('load',()=>{
 			this.isLoaded = true;
 		});
+
+		this.rec = {};
 
 		if(buffer instanceof Blob){
 			this.parseBlob(buffer);
@@ -88,6 +97,7 @@ class ePub extends psThing{
 			if(prog.loaded === 0){
 				rec._id = header.idString;
 				rec.pages = header.pages;
+				rec.meta = await ePub.getMeta(blob);
 				prog.total = header.pages;
 				this.emitChange('id');
 				this.emitChange('pages');
@@ -170,6 +180,111 @@ class ePub extends psThing{
 	}
 
 	/**
+	 * Extracts the metadata from the ePub
+	 *
+	 * https://www.w3.org/publishing/epub32/epub-packages.html#conformance
+	 *
+	 * @returns JSON conformant Metadata
+	 */
+	async getMeta(){
+		if (!this.rec) return null;
+		if (this.rec.meta) return this.rec.meta;
+
+		let meta = ePub.getMeta(this.toBlob());
+
+		return meta;
+	}
+
+
+	/**
+	 * Extracts the metadata from the ePub
+	 *
+	 * https://www.w3.org/publishing/epub32/epub-packages.html#conformance
+	 *
+	 * @returns JSON conformant Metadata
+	 */
+	static async getMeta(blob){
+		let zip = blob;
+		zip.relativePath = zip.relativePath || zip.webkitRelativePath || '.';
+
+		let files = await JSZip.loadAsync(zip);
+		files = files.files;
+		let file = Object
+			.keys(files)
+			.filter(d=>{
+				return /content.opf$/.test(d);
+			})
+			.sort((a,b)=>{
+				return b.length - a.length;
+			})
+			.pop()
+		;
+		file = files[file];
+
+		let bin = await file.async('blob');
+		let txt = await bin.text();
+		let xml = domParser.parseFromString(txt,'text/xml');
+		let meta = {
+			'@context': 'https://schema.org',
+			'@type': 'Book',
+			'bookFormat': 'EBook',
+		};
+
+		meta.identifier = this.idString;
+		if(!meta.identifier){
+			meta.identifier = await ePub.calcFileHash(blob);
+			meta.identifier = b45.encode(meta.identifier);
+			meta.identifier = meta.identifier.replace(/=/g,'');
+		}
+		meta.size = blob.size;
+
+		let val = null;
+		val = xml.querySelector('dateCopyrighted');
+		if(val){
+			meta.copyrightYear = val;
+		}
+
+		val = xml.querySelector('description');
+		val = xml.querySelector('abstract');
+		if(val){
+			meta.abstract = val;
+		}
+
+		val = xml.querySelector('title');
+		if(val){
+			meta.name = val.textContent;
+		}
+		val = xml.querySelector('language');
+		if(val){
+			meta.inLanguage = val.textContent;
+		}
+
+		val = xml.querySelector('creator');
+		if(val){
+			meta.author = val.textContent;
+		}
+
+		val = xml.querySelectorAll('identifier');
+		for(let v of val){
+			if(v.attributes['opf:scheme'] === 'ISBN'){
+				meta.isbn = v.textContent;
+			}
+		}
+
+		val = xml.querySelector('publisher');
+		if(val){
+			meta.publisher = val.textContent;
+		}
+
+		val = xml.querySelectorAll('subject');
+		meta.keywords = [];
+		for(let v of val){
+			meta.keywords.push(v.textContent);
+		}
+		return meta;
+	}
+
+	/**
 	 * Converts a Blob into a series of parts as a generator
 	 *
 	 * Operates as an asynchronous generator which allows you to loop through the entire stream, but only performs calcuations on demand. The real trick is that it is `async`
@@ -217,6 +332,17 @@ class ePub extends psThing{
 	 */
 	static async calcFileHash(buffer){
 		buffer = await buffer;
+		// if its a file or blob, convert it to an buffer
+		if(buffer instanceof Blob){
+			buffer = await new Promise(function(resolve) {
+				var reader = new FileReader();
+				reader.onloadend = function() {
+					resolve(reader.result);
+				};
+				reader.readAsArrayBuffer(buffer);
+			});
+		}
+		// if its a buffer, convert it to a UInt8Array
 		if(buffer instanceof ArrayBuffer){
 			buffer = new Uint8Array(buffer);
 		}

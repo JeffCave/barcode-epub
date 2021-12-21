@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "description": "Convert digital data to paper storage for long term storage",
   "main": "app.js",
+  "type":"module",
   "scripts": {
-    "test": "mocha ./tests -R 'nyan' "
+    "test": "mocha --exit --recursive ./tests/tests/ -R 'nyan' "
   },
   "repository": {
     "type": "git",

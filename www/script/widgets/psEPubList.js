@@ -177,12 +177,25 @@ class psEpubList extends psThing {
 				this.emitChange('selected');
 			});
 
+			html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta,null,'\t');
+
 			html.querySelector('output[name="id"]').title = id;
 			html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
 			html.querySelector('output[name="pages-current"]').value = curpages;
 			html.querySelector('output[name="pages-total"]').value   = rec.pages;
 			html.querySelector('output[name="pages-pct"]').value	 = pct;
 			html.querySelector('output[name="title"]').value = rec.title;
+
+			html.querySelector('output[name="title"]').value = rec.meta.name;
+			html.querySelector('output[name="author"]').value = rec.meta.author;
+
+			let keywords = [];
+			for(let k of rec.meta.keywords){
+				let li = `<li>${k}</li>`;
+				keywords.push(li);
+			}
+			keywords = keywords.join('');
+			html.querySelector('ul[name="keywords"]').innerHTML = keywords;
 
 			htmlList.append(html);
 		}
@@ -236,11 +249,12 @@ class psEpubList extends psThing {
  <input type='checkbox' />
  <button name='record'>⏸</button>
 </nav>
+<script type="application/ld+json"></script>
 <div><output name='id'>xxx...xxx</output></div>
 <div><output name='pages-current'>365</output> of <output name='pages-total'>365</output> (<output name='pages-pct'>100</output>%)</div>
 <div><label>Title</label>: <output name='title'>Life in the Woods</output></div>
 <div><label>Author</label>: <output name='author'>Thoreau</output></div>
-<div><label>Subject</label>: <ul name='keywords'><li>history</li><li>fiction</li><li>parapsychology</li></output></div>
+<ul name='keywords'></ul>
 		`;
 	}
 

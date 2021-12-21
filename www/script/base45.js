@@ -20,7 +20,7 @@ const CompressionRatio = 4/3;
  * @returns
  */
 function encode(buffer){
-	if(buffer instanceof Blob) buffer = new Uint8Array(buffer);
+	buffer = new Uint8Array(buffer);
 
 	let str = String.fromCharCode(...buffer);
 	str = window.btoa(str);
