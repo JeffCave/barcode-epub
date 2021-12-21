@@ -9,6 +9,9 @@ import psTabbedPanelElement from './psTabbedPanelElement.js';
 class psMobileTabPanelElement extends psTabbedPanelElement {
 	constructor() {
 		super();
+		for(let p of this.panels){
+			p.maximizable = false;
+		}
 	}
 
 	get initialCSS(){
@@ -19,10 +22,10 @@ class psMobileTabPanelElement extends psTabbedPanelElement {
 			position:fixed;
 			left:0;
 			bottom:0;
-			width:100vw;
 			display: flex;
 			margin:0;
 			padding:0;
+			background-color: white;
 		}
 		ul[part='menu'] li{
 			display: inline-block;
@@ -41,6 +44,18 @@ class psMobileTabPanelElement extends psTabbedPanelElement {
 			border-radius:1em;
 			padding-left:1em;
 			padding-right:1em;
+		}
+		@media only screen and (orientation: portrait) {
+			ul[part='menu']{
+				width:100vw;
+				flex-direction: row;
+			}
+		}
+		@media only screen and (orientation: landscape) {
+			ul[part='menu']{
+				height:100vh;
+				flex-direction: column;
+			}
 		}
 		`];
 		css = css.join('\n');
