@@ -210,6 +210,7 @@ export default class psPanelElement extends HTMLElement {
 		return `
 @charset 'utf-8';
 :host{
+	flex: 1 0 auto;
 	display:block;
 	position:relative;
 	color:inherit;
@@ -227,13 +228,16 @@ export default class psPanelElement extends HTMLElement {
 
 :host(.normal){
 	flex: 1 0 auto;
-	position:relative;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	position: relative;
 	min-width:inherit;
 	max-width:inherit;
 	min-height:inherit;
 	max-height:inherit;
 	overflow:inherit;
-	padding:6px;
 	transition:
 		min-width 1s,
 		max-width 1s,

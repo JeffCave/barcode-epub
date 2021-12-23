@@ -231,7 +231,7 @@ class psEpubList extends psThing {
 	static get DefaultTemplate(){
 		return `
 <nav>
- <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPub'>➕</ps-filedrop>
+ <ps-filedrop id='UploadEpub' class='mainaction' accept='.epub,.gif' title='Upload an EPub'>➕</ps-filedrop>
  <span name='selection'>
   <button name='send' title='Encode'>🙾</button>
   <button name='save' title='Save to Disk'>🖫</button>
@@ -264,18 +264,40 @@ button {
 	min-width: 1cm;
 	min-height: 1cm;
 }
+/*
+.mainaction{
+	position:absolute;
+	bottom:0;
+	right:0;
+}
+*/
+:host{
+	flex: 1 0 auto;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+}
+:host > nav {
+	flex: 0 0 auto;
+	background-color: steelblue;
+	top:0;
+	left:0;
+	width:100vw;
+}
 :host > ul {
+	flex: 1 0 auto;
+	overflow-y: scroll;
     padding:0;
     margin:0;
 }
 :host > ul > li {
     border: 0.1em solid black;
     background-color: ivory;
-    display:inline-block;
+    display:block;
     padding: 1em;
     border-radius: 1em;
-	width:100%;
-	max-width: 100vw;
+	margin:0.5em;
 }
 ul[name='keywords'] {
 	list-style-type: none;
