@@ -44,7 +44,7 @@ class psEpubList extends psThing {
 			}
 			if(e.detail.includes('selected')){
 				let items = shadow.querySelector('nav [name="selection"]');
-				items.style.display = (this.selected.size === 0) ? 'none':'initial';
+				items.style.visibility = (this.selected.size === 0) ? 'hidden':'visible';
 			}
 		});
 		// respond to file upload
@@ -278,7 +278,7 @@ button {
 }
 :host > nav {
 	flex: 0 0 auto;
-	background-color: steelblue;
+	background-color: var(--main-color);
 	top:0;
 	left:0;
 	width:100vw;
