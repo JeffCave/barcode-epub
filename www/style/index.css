@@ -19,7 +19,7 @@ body{
     position:relative;
 	display:flex;
 	flex-direction: column;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
     margin:0;
 	width: 100vw;
 	height: 100vh;
@@ -31,6 +31,7 @@ header{
 }
 main{
 	position: relative;
+	display: flex;
 	flex: 1 0 auto;
     margin:0;
 	padding:0;

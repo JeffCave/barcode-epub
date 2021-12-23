@@ -226,6 +226,7 @@ export default class psPanelElement extends HTMLElement {
 }
 
 :host(.normal){
+	flex: 1 0 auto;
 	position:relative;
 	min-width:inherit;
 	max-width:inherit;
