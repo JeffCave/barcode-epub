@@ -264,19 +264,17 @@ button {
 	min-width: 1cm;
 	min-height: 1cm;
 }
-/*
 .mainaction{
-	position:absolute;
-	bottom:0;
-	right:0;
+	position: absolute;
+	bottom: 2.5em;
+	left: 2.5em;
+	box-shadow: 0.25em 0.25em 0.25em darkgray;
 }
-*/
 :host{
 	flex: 1 0 auto;
 	display: flex;
 	flex-direction: column;
 	flex-wrap: nowrap;
-	align-items: stretch;
 }
 :host > nav {
 	flex: 0 0 auto;
@@ -288,6 +286,7 @@ button {
 :host > ul {
 	flex: 1 0 auto;
 	overflow-y: scroll;
+	overflow-x: scroll;
     padding:0;
     margin:0;
 }
@@ -298,14 +297,16 @@ button {
     padding: 1em;
     border-radius: 1em;
 	margin:0.5em;
+	position: relative;
 }
 ul[name='keywords'] {
+	display: block;
+	flex-wrap: wrap;
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
 }
 ul[name='keywords'] li {
-	position:relative;
 	display:inline-block;
 	padding:0.5em;
 	margin-right:1em;
