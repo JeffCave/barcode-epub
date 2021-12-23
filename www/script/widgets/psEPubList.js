@@ -44,7 +44,7 @@ class psEpubList extends psThing {
 			}
 			if(e.detail.includes('selected')){
 				let items = shadow.querySelector('nav [name="selection"]');
-				items.style.display = (this.selected.size === 0) ? 'none':'initial';
+				items.style.visibility = (this.selected.size === 0) ? 'hidden':'visible';
 			}
 		});
 		// respond to file upload
@@ -231,7 +231,7 @@ class psEpubList extends psThing {
 	static get DefaultTemplate(){
 		return `
 <nav>
- <ps-filedrop id='UploadEpub' accept='.epub,.gif' title='Upload an EPub'>➕</ps-filedrop>
+ <ps-filedrop id='UploadEpub' class='mainaction' accept='.epub,.gif' title='Upload an EPub'>➕</ps-filedrop>
  <span name='selection'>
   <button name='send' title='Encode'>🙾</button>
   <button name='save' title='Save to Disk'>🖫</button>
@@ -264,26 +264,49 @@ button {
 	min-width: 1cm;
 	min-height: 1cm;
 }
+.mainaction{
+	position: absolute;
+	bottom: 2.5em;
+	left: 2.5em;
+	box-shadow: 0.25em 0.25em 0.25em darkgray;
+}
+:host{
+	flex: 1 0 auto;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+}
+:host > nav {
+	flex: 0 0 auto;
+	background-color: var(--main-color);
+	top:0;
+	left:0;
+	width:100vw;
+}
 :host > ul {
+	flex: 1 0 auto;
+	overflow-y: scroll;
+	overflow-x: scroll;
     padding:0;
     margin:0;
 }
 :host > ul > li {
     border: 0.1em solid black;
     background-color: ivory;
-    display:inline-block;
+    display:block;
     padding: 1em;
     border-radius: 1em;
-	width:100%;
-	max-width: 100vw;
+	margin:0.5em;
+	position: relative;
 }
 ul[name='keywords'] {
+	display: block;
+	flex-wrap: wrap;
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
 }
 ul[name='keywords'] li {
-	position:relative;
 	display:inline-block;
 	padding:0.5em;
 	margin-right:1em;

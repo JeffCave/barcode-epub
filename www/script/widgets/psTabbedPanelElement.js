@@ -144,13 +144,12 @@ export default class psTabbedPanelElement extends HTMLElement {
 			if(p === panel){
 				this.panels[p].classList.add('active');
 				this.tabs[p].classList.add('active');
-				this.panels[p].style.display = 'block';
+				this.panels[p].style.display = 'flex';
 			}
 			else{
 				this.panels[p].classList.remove('active');
 				this.tabs[p].classList.remove('active');
 				this.panels[p].style.display = 'none';
-				this.panels[p].normal();
 			}
 		}
 	}
