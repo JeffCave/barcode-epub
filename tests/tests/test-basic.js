@@ -53,8 +53,7 @@ describe('Basic usage',function(){
 
 
 		await driver.get(url);
-		this.skip();
-		let tab = await driver.findElement(state.By.css('ps-tabpanel'));
+		let tab = await driver.findElement(state.By.css('ps-mobtabpanel'));
 		this.skip();
 		tab = await tab.getShadowRoot();
 		tab = await tab.findElement(state.By.css('ul[part="menu"] > li::nth(2)'));
