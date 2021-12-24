@@ -1,5 +1,8 @@
 'use strict';
 
+import Barcoder from '../bcode/Barcoder.js';
+import Camera from '../bcode/Camera.js';
+
 export {
 	psScanner as default,
 	psScanner
@@ -13,6 +16,7 @@ class psScanner extends HTMLElement {
 	constructor() {
 		super();
 		this._ = {};
+		this._.bcode = null;
 		this._.shadow = this.attachShadow({mode:'open'});
 		this._.shadow.innerHTML = psScanner.DefaultTemplate;
 		this._.VideoStatus_Clearer = null;
@@ -20,24 +24,14 @@ class psScanner extends HTMLElement {
 		let shadow = this._.shadow;
 		// for each of the buttons, add a handler
 		let buttons = {
-			'fromVideo': ()=>{VideoDecode('monitor');},
-			'fromCamera': ()=>{VideoDecode('camera');},
-			'stop': ()=>{stopCamera();},
+			'fromVideo': ()=>{this.VideoDecode('monitor');},
+			'fromCamera': ()=>{this.VideoDecode('camera');},
+			'stop': ()=>{this.stopCamera();},
 		};
 		for(let b in buttons){
 			let button = shadow.querySelector(`button[name="${b}"]`);
 			button.addEventListener('click',buttons[b]);
 		}
-		// show or hide the buttons based on whether anything is selected or not
-		this.addEventListener('change',(e)=>{
-			if(e.detail.includes('barcoder')){
-				this._.changehandler();
-			}
-			if(e.detail.includes('selected')){
-				let items = shadow.querySelector('nav [name="selection"]');
-				items.style.visibility = (this.selected.size === 0) ? 'hidden':'visible';
-			}
-		});
 
 		let style= document.createElement('style');
 		shadow.append(style);
@@ -53,6 +47,70 @@ class psScanner extends HTMLElement {
 	initialize(){
 	}
 
+
+	/**
+	 * The underlying Barcoder object
+	 */
+	get barcoder(){
+		return this._.bcoder;
+	}
+	set barcoder(bcoder){
+		// if its the same one we already have, there is nothing to do
+		if(this._.bcoder === bcoder) return;
+		// as this is a new object, there is a lot of binding to do
+		if(!(bcoder instanceof Barcoder)) throw new TypeError('value is not of type `Barcoder`');
+
+		bcoder.addEventListener('saveblock',(event)=>{
+			if(event.detail.status.code === 204) return;
+			this.VideoStatus(event.detail.status.level);
+		});
+
+		this._.bcoder = bcoder;
+		this.emitChange('barcoder');
+	}
+
+
+	/**
+	 * Emit a change event for the given property.
+	 *
+	 * Change events only get emitted every 23 milliseconds to prevent
+	 * overloading the system. The event sends a list of the properties
+	 * that have been changed.
+	 *
+	 * @param {string} prop The property that has changed
+	 */
+	emitChange(prop){
+		let changes = this._.changes = this._.changes || {
+			props: new Set(),
+			rate: 23 /*skidoo*/,
+			emitting: null
+		};
+		changes.props.add(prop);
+		if(changes.emitting) return;
+
+		changes.emitting = setTimeout(()=>{
+			changes.emitting = false;
+			this.emit('change',Array.from(changes.props.values()));
+			changes.props.clear();
+		},changes.rate);
+	}
+
+
+	/**
+	 * Emits an event
+	 *
+	 * Pure helper becuase dispatching events is verbose
+	 *
+	 * @param {string} name
+	 * @param {*} detail value to be attached to the event
+	 */
+	emit(name,detail){
+		let event = new CustomEvent(name, {
+			detail: detail
+		});
+		this.dispatchEvent(event);
+	}
+
 	/**
 	 * Handles the animation of the status button
 	 *
@@ -65,13 +123,13 @@ class psScanner extends HTMLElement {
 
 		let led = document.querySelector('.status');
 
-		clearTimeout(VideoStatus_Clearer);
+		clearTimeout(this._.VideoStatus_Clearer);
 		// set the status
 		window.navigator.vibrate(200);
 		led.classList.add(status);
 		// let it take effect
-		VideoStatus_Clearer = setTimeout(() => {
-			VideoStatus_Clearer = null;
+		this._.VideoStatus_Clearer = setTimeout(() => {
+			this._.VideoStatus_Clearer = null;
 			// then remove it, so that it fades away
 			led.classList.remove(... allowed);
 		});
@@ -79,28 +137,25 @@ class psScanner extends HTMLElement {
 
 
 	/**
-	 * Hides the video seelction buttons and attaches the camera to barcoder.
+	 * Hides the video selection buttons and attaches the camera to barcoder.
 	 *
 	 * @param {*} src
 	 */
 	async VideoDecode(src='monitor'){
-		let panel = document.querySelector('ps-panel[name="decoder"]');
+		let panel = this._.shadow;
 		let buttons = Array.from(panel.querySelectorAll('button'));
 		let stopButton = panel.querySelector('button[name="stop"]');
 
 		buttons.forEach(b=>{b.classList.add('hide');});
 		stopButton.classList.remove('hide');
-		state.pages.rotate('decoder');
 
-		if(!state.camera){
-			state.camera = new Camera();
+		this.emit('start');
+
+		if(!this._.camera){
+			this._.camera = new Camera();
 		}
-		barcoder.addEventListener('saveblock',(event)=>{
-			if(event.detail.status.code === 204) return;
-			VideoStatus(event.detail.status.level);
-		});
-		await state.camera.setMonitorSource(src);
-		await barcoder.WatchVideo(state.camera);
+		await this._.camera.setMonitorSource(src);
+		await this.barcoder.WatchVideo(this._.camera);
 
 		this.stopCamera();
 	}
@@ -110,15 +165,13 @@ class psScanner extends HTMLElement {
 	 * Handles a "stop" button click
 	 */
 	stopCamera(){
-		state.camera.StopVideo();
-		let panel = document.querySelector('ps-panel[name="decoder"]');
+		this._.camera.StopVideo();
+		let panel = this._.shadow;
 		let buttons = Array.from(panel.querySelectorAll('button'));
 		let stopButton = panel.querySelector('button[name="stop"]');
 		buttons.forEach(b=>{b.classList.remove('hide');});
 		stopButton.classList.add('hide');
 	}
-
-
 
 
 	/**
@@ -230,6 +283,9 @@ class psScanner extends HTMLElement {
 			box-shadow:-0.3cm -0.3cm var(--shadow-size) 0.1cm var(--status-color) inset;
 			transition: box-shadow 2s ease-out;
 
+		}
+		.hide{
+			display:none;
 		}
 		.pass{
 			--status-color: green;

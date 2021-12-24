@@ -6,11 +6,9 @@ global
 import './widgets/~all.js';
 
 import Barcoder from './bcode/Barcoder.js';
-import Camera from './bcode/Camera.js';
 
 const barcoder = new Barcoder();
 const state = {
-	camera: null,
 	pages: null,
 };
 let style = null;
@@ -21,15 +19,21 @@ let style = null;
  */
 window.addEventListener('load',()=>{
 
-	state.pages = document.querySelector('ps-mobtabpanel');
+	let pages = document.querySelector('ps-mobtabpanel');
+	state.pages = pages;
+
 	let list = document.querySelector('ps-epublist');
 	list.barcoder = barcoder;
 	list.addEventListener('send',send);
 	list.addEventListener('save',Download);
 
+	let scan = document.querySelector('ps-scanner');
+	scan.barcoder = barcoder;
+	scan.addEventListener('start',()=>{pages.rotate('dload');});
+
 	let buttons = {
 		'button[name="print"]': ()=>{window.print();},
-		'button[name="opts"]': ()=>{state.pages.rotate('options');},
+		'button[name="opts"]': ()=>{pages.rotate('options');},
 	};
 	for(let b in buttons){
 		document.querySelector(b).addEventListener('click',buttons[b]);

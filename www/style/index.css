@@ -80,10 +80,6 @@ header > nav > ul > li {
     display:inline-block;
 }
 
-.hide{
-    display:none;
-}
-
 @media print {
     @page{
         margin: 1.8cm;

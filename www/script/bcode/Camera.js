@@ -16,6 +16,7 @@ class Camera extends EventTarget{
 			src: 'monitor',
 		},opts);
 		this.p.stream = null;
+		this.p.capabilities = null;
 	}
 
 	/**
@@ -35,8 +36,11 @@ class Camera extends EventTarget{
 	set light(state){
 		state = !!state;
 		if(this.p.light === state) return;
+		if(!this.p.capabilities.torch) return;
+		if(!this.stream) return;
+
 		this.p.light = state;
-		this.video.getVideoTracks()[0].applyConstraints({advanced:[{torch:state}]});
+		this.stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:state}]});
 		this.dispatchEvent(new CustomEvent( 'light',{detail:state}));
 	}
 
@@ -68,6 +72,7 @@ class Camera extends EventTarget{
 					facingMode: 'environment'
 				}
 			});
+			this.p.capabilities = this.stream.getVideoTracks()[0].getCapabilities();
 			this.light = !this.light;
 			this.light = !this.light;
 		}
@@ -82,12 +87,12 @@ class Camera extends EventTarget{
 	 */
 	StopVideo(){
 		this.light = false;
-		if(this.video){
-			for(let track of this.video.getTracks()){
+		if(this.stream){
+			for(let track of this.stream.getTracks()){
 				track.stop();
 			}
 		}
-		this.video = null;
+		this.p.stream = null;
 		this.dispatchEvent(new CustomEvent( 'pause'));
 	}
 }
