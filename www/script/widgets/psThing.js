@@ -10,6 +10,8 @@ export {
  * The primary extra features are that it extends from `EventTarget`,
  * but also contains an event emitter for changes that buffers the events
  * to avoid overwhelming the system.
+ *
+ * @deprecated inherit from the HTMLElement you intend to extend
  */
 class psThing extends HTMLElement{
 	constructor(opts = {}) {

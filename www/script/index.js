@@ -28,9 +28,6 @@ window.addEventListener('load',()=>{
 	list.addEventListener('save',Download);
 
 	let buttons = {
-		'button[name="fromVideo"]': ()=>{VideoDecode('monitor');},
-		'button[name="fromCamera"]': ()=>{VideoDecode('camera');},
-		'button[name="stop"]': ()=>{stopCamera();},
 		'button[name="print"]': ()=>{window.print();},
 		'button[name="opts"]': ()=>{state.pages.rotate('options');},
 	};
@@ -97,73 +94,6 @@ function Animate(start=null,container=animator.container){
 }
 
 
-
-
-let VideoStatus_Clearer = null;
-/**
- * Handles the animation of the status button
- *
- * @param {string} status
- * @returns
- */
-function VideoStatus(status){
-	const allowed = ['pass','fail','warn','skip'];
-	if(!allowed.includes(status)) return;
-
-	let led = document.querySelector('.status');
-
-	clearTimeout(VideoStatus_Clearer);
-	// set the status
-	window.navigator.vibrate(200);
-	led.classList.add(status);
-	// let it take effect
-	VideoStatus_Clearer = setTimeout(() => {
-		VideoStatus_Clearer = null;
-		// then remove it, so that it fades away
-		led.classList.remove(... allowed);
-	});
-}
-
-
-/**
- * Hides the video seelction buttons and attaches the camera to barcoder.
- *
- * @param {*} src
- */
-async function VideoDecode(src='monitor'){
-	let panel = document.querySelector('ps-panel[name="decoder"]');
-	let buttons = Array.from(panel.querySelectorAll('button'));
-	let stopButton = panel.querySelector('button[name="stop"]');
-
-	buttons.forEach(b=>{b.classList.add('hide');});
-	stopButton.classList.remove('hide');
-	state.pages.rotate('decoder');
-
-	if(!state.camera){
-		state.camera = new Camera();
-	}
-	barcoder.addEventListener('saveblock',(event)=>{
-		if(event.detail.status.code === 204) return;
-		VideoStatus(event.detail.status.level);
-	});
-	await state.camera.setMonitorSource(src);
-	await barcoder.WatchVideo(state.camera);
-
-	stopCamera();
-}
-
-
-/**
- * Handles a "stop" button click
- */
-function stopCamera(){
-	state.camera.StopVideo();
-	let panel = document.querySelector('ps-panel[name="decoder"]');
-	let buttons = Array.from(panel.querySelectorAll('button'));
-	let stopButton = panel.querySelector('button[name="stop"]');
-	buttons.forEach(b=>{b.classList.remove('hide');});
-	stopButton.classList.add('hide');
-}
 
 
 async function send(id = []){
