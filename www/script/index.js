@@ -106,8 +106,6 @@ function Animate(start=null,container=animator.container){
 }
 
 
-
-
 async function send(id = []){
 	if (!id) return;
 
