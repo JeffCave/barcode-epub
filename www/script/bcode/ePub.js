@@ -212,7 +212,7 @@ class ePub extends psThing{
 		let file = Object
 			.keys(files)
 			.filter(d=>{
-				return /content.opf$/.test(d);
+				return /\.opf$/.test(d);
 			})
 			.sort((a,b)=>{
 				return b.length - a.length;
