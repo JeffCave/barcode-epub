@@ -241,8 +241,15 @@ class psScanner extends HTMLElement {
 			left:0;
 			width:100vw;
 		}
-		video{
+		:host > section {
+			flex: 1 0 auto;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		:host > section > video{
 			/* z-index: -100; */
+			flex: 0 0 auto;
 			border:0;
 			background-color: slategray;
 			position: relative;
@@ -254,7 +261,7 @@ class psScanner extends HTMLElement {
 
 		.status{
 			/*status as an LED*/
-			position: fixed;
+			position: absolute;
 			right:0;
 			bottom:0;
 			display:inline-block;
