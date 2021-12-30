@@ -158,7 +158,6 @@ class psEpubList extends psThing {
 		htmlList.innerHTML = '';
 		for(let rec of recs.rows){
 			rec = rec.doc;
-			if(!rec.meta) return;
 
 			let html = document.createElement('li');
 			html.innerHTML = template;
@@ -179,7 +178,6 @@ class psEpubList extends psThing {
 				this.emitChange('selected');
 			});
 
-			html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta,null,'\t');
 
 			html.querySelector('output[name="id"]').title = id;
 			html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
@@ -187,16 +185,19 @@ class psEpubList extends psThing {
 			html.querySelector('output[name="pages-total"]').value   = rec.pages;
 			html.querySelector('output[name="pages-pct"]').value	 = pct;
 
-			html.querySelector('output[name="title"]').value = rec.meta.name;
-			html.querySelector('output[name="author"]').value = rec.meta.author;
+			html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta || {},null,'\t');
+			if(rec.meta){
+				html.querySelector('output[name="title"]').value = rec.meta.name;
+				html.querySelector('output[name="author"]').value = rec.meta.author;
 
-			let keywords = [];
-			for(let k of rec.meta.keywords){
-				let li = `<li>${k}</li>`;
-				keywords.push(li);
+				let keywords = [];
+				for(let k of rec.meta.keywords){
+					let li = `<li>${k}</li>`;
+					keywords.push(li);
+				}
+				keywords = keywords.join('');
+				html.querySelector('ul[name="keywords"]').innerHTML = keywords;
 			}
-			keywords = keywords.join('');
-			html.querySelector('ul[name="keywords"]').innerHTML = keywords;
 
 			htmlList.append(html);
 		}
@@ -252,9 +253,9 @@ class psEpubList extends psThing {
 </nav>
 <script type="application/ld+json"></script>
 <div><output name='id'>xxx...xxx</output></div>
-<div><output name='pages-current'>365</output> of <output name='pages-total'>365</output> (<output name='pages-pct'>100</output>%)</div>
-<div><label>Title</label>: <output name='title'>Life in the Woods</output></div>
-<div><label>Author</label>: <output name='author'>Thoreau</output></div>
+<div><output name='pages-current'>?</output> of <output name='pages-total'>?</output> (<output name='pages-pct'>100</output>%)</div>
+<div><label>Title</label>: <output name='title'>???</output></div>
+<div><label>Author</label>: <output name='author'>???</output></div>
 <ul name='keywords'></ul>
 		`;
 	}

@@ -156,10 +156,16 @@ class psScanner extends HTMLElement {
 		if(!this._.camera){
 			this._.camera = new Camera();
 		}
-		await this._.camera.setMonitorSource(src);
-		await this.barcoder.WatchVideo(this._.camera,video);
-
-		this.stopCamera();
+		try{
+			await this._.camera.setMonitorSource(src);
+			await this.barcoder.WatchVideo(this._.camera,video);
+		}
+		catch(e){
+			let msg = e.message.toLowerCase();
+			if(msg === 'permission denied'){
+				this.stopCamera();
+			}
+		}
 	}
 
 
@@ -169,10 +175,14 @@ class psScanner extends HTMLElement {
 	stopCamera(){
 		this._.camera.StopVideo();
 		let panel = this._.shadow;
+
 		let buttons = Array.from(panel.querySelectorAll('button'));
 		let stopButton = panel.querySelector('button[name="stop"]');
+		let video = panel.querySelector('video');
+
 		buttons.forEach(b=>{b.classList.remove('hide');});
 		stopButton.classList.add('hide');
+		video.srcObject = null;
 	}
 
 
