@@ -158,6 +158,7 @@ class psEpubList extends psThing {
 		htmlList.innerHTML = '';
 		for(let rec of recs.rows){
 			rec = rec.doc;
+
 			let html = document.createElement('li');
 			html.innerHTML = template;
 
@@ -177,25 +178,26 @@ class psEpubList extends psThing {
 				this.emitChange('selected');
 			});
 
-			html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta,null,'\t');
 
 			html.querySelector('output[name="id"]').title = id;
 			html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
 			html.querySelector('output[name="pages-current"]').value = curpages;
 			html.querySelector('output[name="pages-total"]').value   = rec.pages;
 			html.querySelector('output[name="pages-pct"]').value	 = pct;
-			html.querySelector('output[name="title"]').value = rec.title;
 
-			html.querySelector('output[name="title"]').value = rec.meta.name;
-			html.querySelector('output[name="author"]').value = rec.meta.author;
+			html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta || {},null,'\t');
+			if(rec.meta){
+				html.querySelector('output[name="title"]').value = rec.meta.name;
+				html.querySelector('output[name="author"]').value = rec.meta.author;
 
-			let keywords = [];
-			for(let k of rec.meta.keywords){
-				let li = `<li>${k}</li>`;
-				keywords.push(li);
+				let keywords = [];
+				for(let k of rec.meta.keywords){
+					let li = `<li>${k}</li>`;
+					keywords.push(li);
+				}
+				keywords = keywords.join('');
+				html.querySelector('ul[name="keywords"]').innerHTML = keywords;
 			}
-			keywords = keywords.join('');
-			html.querySelector('ul[name="keywords"]').innerHTML = keywords;
 
 			htmlList.append(html);
 		}
@@ -251,9 +253,9 @@ class psEpubList extends psThing {
 </nav>
 <script type="application/ld+json"></script>
 <div><output name='id'>xxx...xxx</output></div>
-<div><output name='pages-current'>365</output> of <output name='pages-total'>365</output> (<output name='pages-pct'>100</output>%)</div>
-<div><label>Title</label>: <output name='title'>Life in the Woods</output></div>
-<div><label>Author</label>: <output name='author'>Thoreau</output></div>
+<div><output name='pages-current'>?</output> of <output name='pages-total'>?</output> (<output name='pages-pct'>100</output>%)</div>
+<div><label>Title</label>: <output name='title'>???</output></div>
+<div><label>Author</label>: <output name='author'>???</output></div>
 <ul name='keywords'></ul>
 		`;
 	}
@@ -261,14 +263,15 @@ class psEpubList extends psThing {
 	static get DefaultCSS(){
 		return `
 button {
-	min-width: 1cm;
-	min-height: 1cm;
+	min-width: 48px;
+	min-height: 48px;
 }
 .mainaction{
 	position: absolute;
 	bottom: 2.5em;
 	left: 2.5em;
 	box-shadow: 0.25em 0.25em 0.25em darkgray;
+	z-index:10;
 }
 :host{
 	flex: 1 0 auto;

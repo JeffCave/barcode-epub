@@ -12,9 +12,9 @@
 
  <script  type="module" src="./script/index.js"></script>
 
- <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+ <link rel="shortcut icon" type="image/png" href="favicon.png" />
 
- <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
+ <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons" />
  <link rel="stylesheet" type="text/css" href="./style/index.css" />
 
  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui" />
@@ -31,16 +31,8 @@
 <main class='waitload'>
  <ps-mobtabpanel>
   <ps-panel icon='photo_camera' name='decoder'>
-   <h1>Decoder</h1>
-   <nav>
-    <button name='fromVideo'>🖵</button>
-    <button name='fromCamera'>📷</button>
-    <button name='stop' class='hide'>⏹</button>
-   </nav>
-   <section name='video'>
-    <video></video>
-    <div class='status'></div>
-   </section>
+			<h1>Scanner</h1>
+			<ps-scanner></ps-scanner>
   </ps-panel>
   <ps-panel icon='library_books' name='library'>
    <h1>Library</h1>
@@ -63,21 +55,5 @@
   </ps-panel>
  </ps-mobtabpanel>
 </main>
-<section style='display:none;'>
- Sidebar 2
-</section>
-<footer>
- <div>
-  <a href=''>Jeff Cave</a>
-  &mdash; Privacy
-  &mdash; <a href='docs/readme.md'>Purpose</a>
-  &mdash; <a href='?experimental'>Experimental Mode</a>
- </div>
- <pre style='float:right;'>
-  $Id$
- </pre>
-</footer>
-
-
 </body>
 </html>

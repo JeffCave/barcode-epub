@@ -5,5 +5,6 @@ import './psFileDrop.js';
 import './psMobileTabPanelElement.js';
 import './psPanelElement.js';
 import './psProgress.js';
+import './psScanner.js';
 import './psTabbedPanelElement.js';
 import './psTreeView.js';
