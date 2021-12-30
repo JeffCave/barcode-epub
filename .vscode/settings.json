@@ -18,11 +18,11 @@
     "gitlens.defaultTimeFormat": "HH:mm",
     "gitpod.openInStable.neverPrompt": true,
     "javascript.updateImportsOnFileMove.enabled": "always",
-    "redhat.telemetry.enabled": true,
-    "window.autoDetectColorScheme": true,
 	"mochaExplorer.cwd": "./",
 	"mochaExplorer.files": "tests/tests/**/*.js",
 	"mochaExplorer.ignore": "tests/lib/",
 	"mochaExplorer.exit": true,
-	"mochaExplorer.timeout": 10000
+	"mochaExplorer.timeout": 10000,
+    "redhat.telemetry.enabled": true,
+    "window.autoDetectColorScheme": true
 }
