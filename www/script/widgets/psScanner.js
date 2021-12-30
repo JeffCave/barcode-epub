@@ -299,11 +299,11 @@ class psScanner extends HTMLElement {
 			background-color: rgba(0,0,0,0);
 			top:0;
 			left:0;
-			width:100%;
-			height:100%;
-			border: 0 solid black;
+			width: 80%;
+			height: 80%;
+			border: 10vmin solid transparent;
 			box-shadow: 0 0 var(--shadow-size) 5vmax var(--status-color) inset;
-			--status-color: darkslategrey;
+			--status-color: transparent;
 			--shadow-size: 20vmax;
 
 			/* status colour changes*/
