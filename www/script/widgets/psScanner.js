@@ -217,8 +217,8 @@ class psScanner extends HTMLElement {
 		return `
 <nav>
  <button name='fromVideo'>🖵</button>
- <button name='fromCamera'>📷</button>
- <button name='stop' class='hide'>⏹</button>
+ <button name='fromCamera' class='mainaction'>📷</button>
+ <button name='stop' class='mainaction hide'>⏹</button>
 </nav>
 <section name='video'>
  <video></video>
@@ -231,14 +231,17 @@ class psScanner extends HTMLElement {
 	static get DefaultCSS(){
 		return `
 		button {
-			min-width: 1cm;
-			min-height: 1cm;
+			min-width: 48px;
+			min-height: 48px;
 		}
 		.mainaction{
 			position: absolute;
 			bottom: 2.5em;
 			left: 2.5em;
 			box-shadow: 0.25em 0.25em 0.25em darkgray;
+			z-index:10;
+			min-width: 48px;
+			min-height: 48px;
 		}
 		:host{
 			flex: 1 0 auto;
@@ -258,6 +261,7 @@ class psScanner extends HTMLElement {
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			position:relative;
 		}
 		:host > section > video{
 			/* z-index: -100; */
@@ -273,6 +277,7 @@ class psScanner extends HTMLElement {
 
 		.status{
 			/*status as an LED*/
+			/*
 			position: absolute;
 			right:0;
 			bottom:0;
@@ -282,24 +287,26 @@ class psScanner extends HTMLElement {
 			border:0.1cm solid black;
 			height:1cm;
 			width:1cm;
+			box-shadow:-0.3cm -0.3cm var(--shadow-size) 0.1cm var(--status-color) inset;
+			--status-color:darkslategrey;
+			--shadow-size: 0.8cm;
+			*/
 
 			/* status as a ghost frame */
-			/*
-			z-index:-99;
-			position:fixed;
+			/*z-index: 1;*/
+			position:absolute;
 			border-radius: 0;
 			background-color: rgba(0,0,0,0);
 			top:0;
 			left:0;
-			width:100vw;
-			height:100vh;
-			border: 0;
-			*/
+			width:100%;
+			height:100%;
+			border: 0 solid black;
+			box-shadow: 0 0 var(--shadow-size) 5vmax var(--status-color) inset;
+			--status-color: darkslategrey;
+			--shadow-size: 20vmax;
 
 			/* status colour changes*/
-			--status-color:darkslategrey;
-			--shadow-size: 0.8cm;
-			box-shadow:-0.3cm -0.3cm var(--shadow-size) 0.1cm var(--status-color) inset;
 			transition: box-shadow 2s ease-out;
 
 		}

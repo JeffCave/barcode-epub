@@ -263,14 +263,15 @@ class psEpubList extends psThing {
 	static get DefaultCSS(){
 		return `
 button {
-	min-width: 1cm;
-	min-height: 1cm;
+	min-width: 48px;
+	min-height: 48px;
 }
 .mainaction{
 	position: absolute;
 	bottom: 2.5em;
 	left: 2.5em;
 	box-shadow: 0.25em 0.25em 0.25em darkgray;
+	z-index:10;
 }
 :host{
 	flex: 1 0 auto;

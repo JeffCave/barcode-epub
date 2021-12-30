@@ -6,10 +6,10 @@ units, maximizing reusability. This folder is where all the visual components
 we create are placed (to distinguish them from the back-end stuff).
 
 In order to create a reactive application, this collection of Widgets
-are made using Web Components are built using
+are made using
 [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components).
 Web Components are a W3C standard built into the browser to all allow
-for the creastion of custom HTML elements.
+for the creation of custom HTML elements.
 
 These widgets have been taken from the project [MISS](https://gitlab.com/jefferey-cave/miss)
 and were built for that project. By convention, these widgets have been
@@ -145,7 +145,8 @@ Inherits: [`progress`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 
 #### max
 
-An `integer` reflecing the content attribute of the same anem, limited to integers greater than zero.
+An `integer` reflecing the content attribute of the same anem, limited
+to integers greater than zero.
 
 #### value
 
@@ -153,7 +154,9 @@ An `integer` that reflects the current value.
 
 #### title
 
-The content to be displayed in teh progress bar itself. `HTMLProgressElement` does allow for content to be placed `innerHTML`, but does nto display it. This is a failing we have rectified.
+The content to be displayed in teh progress bar itself. `HTMLProgressElement`
+does allow for content to be placed `innerHTML`, but does nto display it.
+This is a failing we have rectified.
 
 ### Methods
 
@@ -165,7 +168,7 @@ The content to be displayed in teh progress bar itself. `HTMLProgressElement` do
 * [Progress Element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/progress)
 
 ## psTabbedPanelElement
-[🗎](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/psTabbedPanelElement.js) is...description
+[🗎](https://gitlab.com/dpub/barcode-epub/-/blob/master/www/lib/widgets/psTabbedPanelElement.js)
 
 Inherits: [`psPanelElement`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/progress)
 
