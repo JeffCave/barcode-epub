@@ -158,6 +158,8 @@ class psEpubList extends psThing {
 		htmlList.innerHTML = '';
 		for(let rec of recs.rows){
 			rec = rec.doc;
+			if(!rec.meta) return;
+
 			let html = document.createElement('li');
 			html.innerHTML = template;
 
@@ -184,7 +186,6 @@ class psEpubList extends psThing {
 			html.querySelector('output[name="pages-current"]').value = curpages;
 			html.querySelector('output[name="pages-total"]').value   = rec.pages;
 			html.querySelector('output[name="pages-pct"]').value	 = pct;
-			html.querySelector('output[name="title"]').value = rec.title;
 
 			html.querySelector('output[name="title"]').value = rec.meta.name;
 			html.querySelector('output[name="author"]').value = rec.meta.author;

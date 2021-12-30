@@ -8,7 +8,13 @@ import './widgets/~all.js';
 import Barcoder from './bcode/Barcoder.js';
 
 const barcoder = new Barcoder();
+/**
+ * @deprecated
+ */
 const state = {
+	/**
+	 * @deprecated
+	 */
 	pages: null,
 };
 let style = null;
@@ -29,7 +35,9 @@ window.addEventListener('load',()=>{
 
 	let scan = document.querySelector('ps-scanner');
 	scan.barcoder = barcoder;
-	scan.addEventListener('start',()=>{pages.rotate('dload');});
+	scan.addEventListener('start',()=>{
+		pages.rotate('dload');
+	});
 
 	let buttons = {
 		'button[name="print"]': ()=>{window.print();},

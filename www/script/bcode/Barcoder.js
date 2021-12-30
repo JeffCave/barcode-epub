@@ -296,8 +296,9 @@ class Barcoder extends psThing{
 	 * @param {Camera} camera
 	 * @returns
 	 */
-	async WatchVideo(camera){
+	async WatchVideo(camera,video=null){
 		if(!(camera instanceof Camera)) throw new TypeError('stream must be an instance of `Camera`');
+		if(video && !(video instanceof HTMLVideoElement)) throw new TypeError('stream must be an instance of `HTMLVideoElement`');
 		if (this.watcher) return this.watcher;
 
 		if(!this.codeReader){
@@ -306,7 +307,6 @@ class Barcoder extends psThing{
 			this.codeReader = reader;
 		}
 
-		let video = document.querySelector('video');
 		this.watcherStopper = ()=>{StopVideo(this,camera);};
 		camera.addEventListener('pause',this.watcherStopper);
 		this.watcher = new Promise((resolved,reject)=>{

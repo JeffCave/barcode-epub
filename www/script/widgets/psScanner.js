@@ -121,7 +121,7 @@ class psScanner extends HTMLElement {
 		const allowed = ['pass','fail','warn','skip'];
 		if(!allowed.includes(status)) return;
 
-		let led = document.querySelector('.status');
+		let led = this._.shadow.querySelector('.status');
 
 		clearTimeout(this._.VideoStatus_Clearer);
 		// set the status
@@ -145,6 +145,8 @@ class psScanner extends HTMLElement {
 		let panel = this._.shadow;
 		let buttons = Array.from(panel.querySelectorAll('button'));
 		let stopButton = panel.querySelector('button[name="stop"]');
+		let video = panel.querySelector('video');
+
 
 		buttons.forEach(b=>{b.classList.add('hide');});
 		stopButton.classList.remove('hide');
@@ -155,7 +157,7 @@ class psScanner extends HTMLElement {
 			this._.camera = new Camera();
 		}
 		await this._.camera.setMonitorSource(src);
-		await this.barcoder.WatchVideo(this._.camera);
+		await this.barcoder.WatchVideo(this._.camera,video);
 
 		this.stopCamera();
 	}
