@@ -18,14 +18,26 @@ class psOptions extends HTMLElement {
 		this._.bcode = null;
 		this._.shadow = this.attachShadow({mode:'open'});
 		this._.shadow.innerHTML = psOptions.DefaultTemplate;
-		this._.VideoStatus_Clearer = null;
 
+
+		// ensure the selection list is initialized
+		this.initialize();
+	}
+
+	/**
+	 * Initialize the data
+	 */
+	initialize(){
 		let shadow = this._.shadow;
 		// for each of the buttons, add a handler
 		let buttons = {
-			'fromVideo': ()=>{this.VideoDecode('monitor');},
-			'fromCamera': ()=>{this.VideoDecode('camera');},
-			'stop': ()=>{this.stopCamera();},
+			'Bug': ()=>{ window.open('https://gitlab.com/dpub/barcode-epub/-/issues','_blank'); },
+			'DeleteAll': async ()=>{
+				let token = await this.barcoder.RemoveAll();
+				if(confirm('Are you sure you want to burn your data?')){
+					this.barcoder.RemoveAll(token);
+				}
+			},
 		};
 		for(let b in buttons){
 			let button = shadow.querySelector(`button[name="${b}"]`);
@@ -36,16 +48,13 @@ class psOptions extends HTMLElement {
 		shadow.append(style);
 		style.textContent = this.initialCSS;
 
-		// ensure the selection list is initialized
-		this.initialize();
+		this._.isloaded = true;
+		this.emit('loaded');
 	}
 
-	/**
-	 * Initialize the data
-	 */
-	initialize(){
+	get isLoaded(){
+		return this._.isloaded;
 	}
-
 
 	/**
 	 * The underlying Barcoder object
@@ -58,11 +67,6 @@ class psOptions extends HTMLElement {
 		if(this._.bcoder === bcoder) return;
 		// as this is a new object, there is a lot of binding to do
 		if(!(bcoder instanceof Barcoder)) throw new TypeError('value is not of type `Barcoder`');
-
-		bcoder.addEventListener('saveblock',(event)=>{
-			if(event.detail.status.code === 204) return;
-			this.VideoStatus(event.detail.status.level);
-		});
 
 		this._.bcoder = bcoder;
 		this.emitChange('barcoder');
@@ -140,7 +144,7 @@ class psOptions extends HTMLElement {
 	static get DefaultTemplate(){
 		return `
 <nav>
- <button name='Bug' title='Report a Bug' onclick='window.location="https://gitlab.com/dpub/barcode-epub/-/issues"'>&#128028;</button>
+ <button name='Bug' title='Report a Bug'>&#128028;</button>
  <button name='DeleteAll' title='Remove all data'>🔥</button>
 </nav>
 <section name='video'>

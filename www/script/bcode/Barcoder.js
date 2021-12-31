@@ -70,12 +70,24 @@ class Barcoder extends psThing{
 			hash:'SHA-512'
 		},opts);
 		super(opts);
+
 		// create a database if one was not specified
 		if(!db){
-			db = new PouchDB(this.constructor.name);
+			db = this.constructor.name;
+		}
+		// if it was a string, create a db of that name
+		if(typeof db === 'string'){
+			db = new PouchDB(db);
 			db.compact();
 		}
+		if(!(db instanceof PouchDB)){
+			throw new TypeError('db not a valid Database');
+		}
 		this.db = db;
+		this.db.info().then((info)=>{
+			this._.dbname = info.db_name;
+			this._.destroyTokens = new Map();
+		});
 		// emit an event everytime the database changes
 		db.changes({since:'now',live:true}).on('change', (e)=>{
 			this.emit('db',e);
@@ -142,6 +154,48 @@ class Barcoder extends psThing{
 		}
 		let rtn = await this.db.bulkDocs(dels);
 		return rtn;
+	}
+
+	/**
+	 *
+	 * @param {UUID} token
+	 * @returns
+	 */
+	async RemoveAll(token=null){
+		let tokens = this._.destroyTokens;
+		let now = Date.now();
+		let max = 10;
+		if(!token){
+			if(tokens.size >= max){
+				for(let t of tokens){
+					if(t[1] < now) tokens.delete(t[0]);
+				}
+			}
+			if(tokens.size < max) {
+				token = window.crypto.randomUUID();
+				this._.destroyTokens.set(token,now+10000);
+			}
+			else{
+				token = tokens.keys().pop();
+			}
+			return token;
+		}
+		else if(tokens.has(token)){
+			tokens.clear();
+			let dest = await this.db.destroy();
+			this.db = new PouchDB(this._.dbname);
+			// emit an event everytime the database changes
+			this.db.changes({since:'now',live:true}).on('change', (e)=>{
+				this.emit('db',e);
+				this.emitChange('db');
+			});
+			this.emit('db');
+			this.emitChange('db');
+			return dest;
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**

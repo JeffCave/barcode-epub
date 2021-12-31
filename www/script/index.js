@@ -39,6 +39,9 @@ window.addEventListener('load',()=>{
 		pages.rotate('dload');
 	});
 
+	let options = document.querySelector('ps-options');
+	options.barcoder = barcoder;
+
 	let buttons = {
 		'button[name="print"]': ()=>{window.print();},
 		'button[name="opts"]': ()=>{pages.rotate('options');},
