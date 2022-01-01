@@ -35,7 +35,7 @@ class psOptions extends HTMLElement {
 			value: {},
 			isDirty: true
 		};
-
+		this._.saveName = '_local/options';
 
 		// ensure the selection list is initialized
 		this.initialize();
@@ -120,12 +120,13 @@ class psOptions extends HTMLElement {
 
 		// as this is a new object, there is a lot of binding to do
 		value.on('change',(event)=>{
-			if(event.detail.doc._id === '_local/options'){
+			if(event.detail.doc._id === this._.saveName){
 				this.json = event.detail.doc._id;
 			}
 		});
 
 		this._.db = value;
+		this.load();
 		this.emit('DB Changed');
 	}
 
@@ -153,6 +154,20 @@ class psOptions extends HTMLElement {
 		this.emitChange(name);
 	}
 
+	async load(rec=null){
+		if(!rec){
+			rec = await this.db
+				.get(this._.saveName)
+				.catch((e)=>{
+					if(e.status === 404) return null;
+					else throw e;
+				});
+		}
+		// no record, nothing to do
+		if(!rec) return false;
+		this.fromJSON(rec.opts);
+	}
+
 	/**
 	 * Saves the options to the database
 	 *
@@ -164,9 +179,9 @@ class psOptions extends HTMLElement {
 
 		let data = this.toJSON();
 		let rec = await this.db
-			.get('_local/options')
+			.get(this._.saveName)
 			.catch((e)=>{
-				if(e.status === 404) return {'_id':'_local/options'};
+				if(e.status === 404) return {'_id':this._.saveName};
 				else throw e;
 			});
 
@@ -199,6 +214,12 @@ class psOptions extends HTMLElement {
 	}
 	fromJSON(json,delim='.'){
 		json = Object.flatten(json,delim);
+		for(let [k,v] of Object.entries(json)){
+			let input = this._.shadow.querySelector(`input[name='${k}']`);
+			if(input){
+				input.value = v;
+			}
+		}
 		return json;
 	}
 

@@ -117,18 +117,20 @@ Object.flatten = function(json,delim='.'){
 		}
 		else if(Object.isObject(json)){
 			let obj = Object.create(null);
-			for(let name of json){
-				let val = walk(json[name]);
+			for(let [name,val] of Object.entries(json)){
 				if(Object.isObject(val)){
-					for(let n of val){
-						obj[`${name}${delim}${n}`] = val[n];
+					for(let [n,v] of Object.entries(val)){
+						v = walk(v);
+						obj[`${name}${delim}${n}`] = v;
 					}
 				}
 				else{
 					obj[name] = val;
 				}
 			}
+			return obj;
 		}
+		return json;
 	}
 	json = walk(json);
 	return json;
