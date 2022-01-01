@@ -29,18 +29,17 @@ window.addEventListener('load',()=>{
 	state.pages = pages;
 
 	let list = document.querySelector('ps-epublist');
-	list.barcoder = barcoder;
 	list.addEventListener('send',send);
 	list.addEventListener('save',Download);
 
 	let scan = document.querySelector('ps-scanner');
-	scan.barcoder = barcoder;
 	scan.addEventListener('start',()=>{
 		pages.rotate('dload');
 	});
 
-	let options = document.querySelector('ps-options');
-	options.barcoder = barcoder;
+	['ps-epublist','ps-scanner','ps-options'].forEach((d)=>{
+		document.querySelector(d).barcoder = barcoder;
+	});
 
 	let buttons = {
 		'button[name="print"]': ()=>{window.print();},

@@ -1,5 +1,13 @@
 'use strict';
 
+import 'https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js';
+
+/*
+global PouchDB
+*/
+
+import '../jsonHelper.js';
+import Vius from '../util.js';
 import Barcoder from '../bcode/Barcoder.js';
 
 export {
@@ -9,7 +17,12 @@ export {
 
 
 /**
- * A panel that offers camera related controls
+ * An Options form
+ *
+ * The generic options form will observe a series of inputs and emit a
+ * change event for any modificaiton to their value. For consumption at
+ * a later date, the data can be saved or applied as a JSON object. Optionally,
+ * a POuchDB object can be supplied which the data will be serialized to.
  */
 class psOptions extends HTMLElement {
 	constructor() {
@@ -18,6 +31,10 @@ class psOptions extends HTMLElement {
 		this._.bcode = null;
 		this._.shadow = this.attachShadow({mode:'open'});
 		this._.shadow.innerHTML = psOptions.DefaultTemplate;
+		this._.data = {
+			value: {},
+			isDirty: true
+		};
 
 
 		// ensure the selection list is initialized
@@ -27,7 +44,9 @@ class psOptions extends HTMLElement {
 	/**
 	 * Initialize the data
 	 */
-	initialize(){
+	async initialize(){
+		if(this._.isloaded) return true;
+
 		let shadow = this._.shadow;
 		// for each of the buttons, add a handler
 		let buttons = {
@@ -48,8 +67,26 @@ class psOptions extends HTMLElement {
 		shadow.append(style);
 		style.textContent = this.initialCSS;
 
+		let watchables = shadow.querySelectorAll('input');
+		for(let watch of watchables){
+			watch.addEventListener('change',(e)=>{
+				this.changeHandler(e);
+			});
+		}
+		this._.saveDelay = null;
+		this.addEventListener('change',()=>{
+			if(this._.saveDelay) return;
+			this._.saveDelay = setTimeout(()=>{
+				clearTimeout(this._.saveDelay);
+				this._.saveDelay = null;
+				this.save();
+			},1000);
+		});
+
+
 		this._.isloaded = true;
 		this.emit('loaded');
+		return true;
 	}
 
 	get isLoaded(){
@@ -69,9 +106,109 @@ class psOptions extends HTMLElement {
 		if(!(bcoder instanceof Barcoder)) throw new TypeError('value is not of type `Barcoder`');
 
 		this._.bcoder = bcoder;
-		this.emitChange('barcoder');
+		this.db = bcoder.db;
+		this.emit('Barcoder Changed');
 	}
 
+	get db(){
+		return this._.db || null;
+	}
+	set db(value){
+		// if its the same one we already have, there is nothing to do
+		if(this._.db === value) return;
+		if(!(value instanceof PouchDB)) throw new TypeError('value is not of type `PouchDB`');
+
+		// as this is a new object, there is a lot of binding to do
+		value.on('change',(event)=>{
+			if(event.detail.doc._id === '_local/options'){
+				this.json = event.detail.doc._id;
+			}
+		});
+
+		this._.db = value;
+		this.emit('DB Changed');
+	}
+
+	get json(){
+		if(!this._.data.isDirty) return this._.data.curr;
+		this._.data.value = this.toJSON();
+		this._.data.isDirty = false;
+		return this._.data.curr;
+	}
+	set json(value){
+		let n = value;
+		if(Object.isObject(n)){
+			n = JSON.stringify(value);
+		}
+		let o = this.json;
+		o = JSON.stringify(o);
+
+		if (o === n) return;
+		this.fromJSON(value);
+	}
+
+	changeHandler(event){
+		let name = event.target.name;
+		this._.data.isDirty = true;
+		this.emitChange(name);
+	}
+
+	/**
+	 * Saves the options to the database
+	 *
+	 * @returns
+	 */
+	async save(){
+		// if there is no database
+		if(!this.db) return false;
+
+		let data = this.toJSON();
+		let rec = await this.db
+			.get('_local/options')
+			.catch((e)=>{
+				if(e.status === 404) return {'_id':'_local/options'};
+				else throw e;
+			});
+
+		// if the data is unchanged, don't bother
+		let a = JSON.stringify(data);
+		let b = JSON.stringify(rec.opts);
+		if(a === b) return true;
+
+		// save the data
+		rec.opts = data;
+		return this.db.put(rec);
+	}
+
+	toString(){
+		let json = this.toJSON();
+		json = JSON.stringify(json);
+		return json;
+	}
+
+	toJSON(){
+		let dom = this._.shadow;
+		let json = psOptions.toJSON(dom);
+		return json;
+	}
+
+	static toJSON(dom,delim='.'){
+		let values = Vius.readOptions(dom);
+		let obj = Object.expand(values,delim);
+		return obj;
+	}
+	fromJSON(json,delim='.'){
+		json = Object.flatten(json,delim);
+		return json;
+	}
+
+
+
+
+
+
+
+	/******************************************************************************************/
 
 	/**
 	 * Emit a change event for the given property.
@@ -114,6 +251,10 @@ class psOptions extends HTMLElement {
 		this.dispatchEvent(event);
 	}
 
+	static get observedAttributes() {
+		return ['json'];
+	}
+
 	/**
 	 * Handles a change to the observed atttibutes
 	 *
@@ -135,10 +276,6 @@ class psOptions extends HTMLElement {
 			super.initialCSS||'',
 			psOptions.DefaultCSS
 		].join('\n');
-	}
-
-	static get observedAttributes() {
-		return [];
 	}
 
 	static get DefaultTemplate(){

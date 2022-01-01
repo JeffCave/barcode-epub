@@ -3,10 +3,47 @@
 
 export default class vius{
 	/**
+	 * Compare to objects for sortability.
+	 *
+	 * This has a general order:
+	 * 1. boolean
+	 *    1. TRUE
+	 *    2. FALSE
+	 * 2. numerics
+	 *    - numeric order
+	 * 3. strings
+	 *    - Unicode string order
+	 */
+	static compare(a,b){
+		let aType = typeof a;
+		let bType = typeof b;
+		let diff = 0;
+		if(aType !== bType){
+			diff = String.compare(aType,bType);
+		}
+		else{
+			if(aType === 'boolean'){
+				a = a?1:0;
+				b = b?1:0;
+			}
+			if(aType === 'number'){
+				diff = a-b;
+			}
+			else{
+				a = JSON.baseStringify(a);
+				b = JSON.baseStringify(b);
+				diff = String.compare(a,b);
+			}
+		}
+		return Math.sign(diff);
+	}
+
+	/**
 	 * Read the settings from the form and convert them into a data
 	 * object.
 	 *
 	 * Return: collection of key value pairs
+	 *
 	 */
 	static readOptions(node){
 		if(typeof node === 'string'){
@@ -82,7 +119,7 @@ export default class vius{
 
 	/**
 	 * Change how frequent a funciton can be called
-	 * 
+	 *
 	 * @param {*} delay
 	 * @param {*} func
 	 * @returns
@@ -108,3 +145,4 @@ export default class vius{
 		};
 	}
 }
+
