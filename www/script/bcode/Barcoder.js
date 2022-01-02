@@ -70,12 +70,24 @@ class Barcoder extends psThing{
 			hash:'SHA-512'
 		},opts);
 		super(opts);
+
 		// create a database if one was not specified
 		if(!db){
-			db = new PouchDB(this.constructor.name);
+			db = this.constructor.name;
+		}
+		// if it was a string, create a db of that name
+		if(typeof db === 'string'){
+			db = new PouchDB(db);
 			db.compact();
 		}
+		if(!(db instanceof PouchDB)){
+			throw new TypeError('db not a valid Database');
+		}
 		this.db = db;
+		this.db.info().then((info)=>{
+			this._.dbname = info.db_name;
+			this._.destroyTokens = new Map();
+		});
 		// emit an event everytime the database changes
 		db.changes({since:'now',live:true}).on('change', (e)=>{
 			this.emit('db',e);
@@ -142,6 +154,65 @@ class Barcoder extends psThing{
 		}
 		let rtn = await this.db.bulkDocs(dels);
 		return rtn;
+	}
+
+	/**
+	 * Destroys all data in the database
+	 *
+	 * This is a two step process:
+	 *
+	 * 1. Call with no parameters, you will get a token valid for 10 seconds
+	 * 2. Call it with the token, the database will be destroyed and a new one created
+	 *
+	 * @param {UUID} token
+	 * @returns
+	 */
+	async RemoveAll(token=null){
+		let tokens = this._.destroyTokens;
+		let now = Date.now();
+		let max = 10;
+		// if they are calling without a token, then we intend to create one
+		if(!token){
+			// check to make sure we haven't run out of token storage space
+			if(tokens.size >= max){
+				// if we are out of space, see if some of them are old enough to remove
+				for(let t of tokens){
+					if(t[1] < now) tokens.delete(t[0]);
+				}
+			}
+			// check to make sure we have space
+			if(tokens.size < max) {
+				// creaste the token
+				token = window.crypto.randomUUID();
+				this._.destroyTokens.set(token,now+10000);
+			}
+			else{
+				// otherwise just grab the most recently created one
+				token = tokens.keys().pop();
+			}
+			return token;
+		}
+		// if they sent a token, and it is one we can use for deleting the database
+		else if(tokens.has(token)){
+			// clear all removal tokens, they were for teh old database
+			tokens.clear();
+			// destroy the database
+			let dest = await this.db.destroy();
+			// create a new one
+			this.db = new PouchDB(this._.dbname);
+			// rebind the event emitter
+			this.db.changes({since:'now',live:true}).on('change', (e)=>{
+				this.emit('db',e);
+				this.emitChange('db');
+			});
+			// notify the world that the db has changed
+			this.emit('db');
+			this.emitChange('db');
+			return dest;
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**
