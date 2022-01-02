@@ -1,5 +1,3 @@
-'use strict';
-
 import 'https://cdnjs.cloudflare.com/ajax/libs/pouchdb/7.0.0/pouchdb.min.js';
 
 /*
@@ -83,7 +81,6 @@ class psOptions extends HTMLElement {
 			},1000);
 		});
 
-
 		this._.isloaded = true;
 		this.emit('loaded');
 		return true;
@@ -149,7 +146,28 @@ class psOptions extends HTMLElement {
 	}
 
 	changeHandler(event){
-		let name = event.target.name;
+		let e = event.target;
+
+		/*
+		if(e.hasAttribute('validator')){
+
+			let code = e.getAttribute('validator');
+			code = `return function AnonTemp(global){
+				return ${code};
+			}`;
+			let checker = new Function( code );
+			checker = checker();
+			let result = checker.call(e,this);
+			if(result === true){
+				e.setCustomValidity('');
+			}
+			else{
+				e.setCustomValidity(result || 'Invalid settings');
+			}
+		}
+		*/
+
+		let name = e.name;
 		this._.data.isDirty = true;
 		this.emitChange(name);
 	}
@@ -314,7 +332,21 @@ class psOptions extends HTMLElement {
   <input type='button' name='BackupBooks' value='Books' />
  <h2>Filters</h2>
  <label>Subjects</label>
- <input type='text' name='filter.subject' placeholder='Regex expression. Matches will be removed.' />
+ <script>
+function validateRegex(value){
+	try{
+		console.log('HERE');
+		new RegExp(value);
+		return true;
+	}
+	catch(e){
+		console.log('THERE');
+		return 'Invalid Regular Expression';
+	}
+	console.log('EVERYWHERE');
+}
+ </script>
+ <input type='text' name='filter.subject' placeholder='Regex expression. Matches will be removed.' validator='window.validateRegex(this.value);' />
  <label>Author</label>
  <input type='text' name='filter.author' placeholder='Regex expression. Matches will be removed' />
  <label>Title</label>
@@ -393,6 +425,10 @@ class psOptions extends HTMLElement {
 			padding:0.2em;
 			border-radius:0.2em;
 			border: 1px solid black;
+		}
+		input:invalid{
+			box-shadow: 0 0 0.5em 0 red;
+			border-color: red;
 		}
 
 
