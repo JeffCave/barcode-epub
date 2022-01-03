@@ -18,43 +18,33 @@ export{
 };
 
 import webdriver  from 'selenium-webdriver';
-import firefox from 'selenium-webdriver/firefox.js';
-//const chrome = require('selenium-webdriver/chrome');
 
-import util from 'util';
+import FirefoxDriver from './lib/FirefoxDriver.js';
+import ChromeDriver from './lib/chromeDriver.js';
+
 import fs from 'fs';
 import {exec,fork} from 'child_process';
 
 const state = {isSetup:false};
 
-const exe = util.promisify(exec);
 const ffPath = './build/firefox/firefox';
 
 
 console.log('I am the very model of a modern major general');
 
 
+/**
+ * @deprecated use 'FirefoxDriver.getDriverVersion' instead
+ */
 async function getGeckoVersion(){
-	let result = await exe('geckodriver -V');
-	let text = result.stdout;
-	text = text.split(' ');
-	text = text[1];
-	return text;
+	return FirefoxDriver.getDriverVersion();
 }
 
+/**
+ * @deprecated use 'FirefoxDriver.getBrowserVersion' instead
+ */
 async function getFirefoxVersion(){
-	let text = null;
-	try{
-		text = await exec(`${ffPath} --version`);
-		text = text.stdout;
-		text = text.split(' ');
-		text = text.pop();
-		text = text.replace('\n','');
-	}
-	catch(e){
-		text = null;
-	}
-	return text;
+	return FirefoxDriver.getBrowserVersion();
 }
 
 async function done(rtn = true){
@@ -111,23 +101,11 @@ function getDriver(force=false){
 		state.driver = null;
 	}
 
-	const options = new firefox.Options();
-	//options.setBinary(binary);
-	options.headless(); //once newer webdriver ships
+	//let generator = FirefoxDriver;
+	let generator = ChromeDriver;
 
-	let capabilities = webdriver
-		.Capabilities
-		.firefox()
-		.set('acceptInsecureCerts', true);
-
-	const driver = new webdriver.Builder()
-		.forBrowser('firefox')
-		.setFirefoxOptions(options)
-		.withCapabilities(capabilities)
-		.build();
-
-	state.driver = driver;
-	return driver;
+	state.driver = generator.getDriver();
+	return state.driver;
 }
 
 

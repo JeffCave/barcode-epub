@@ -44,18 +44,16 @@ describe('Basic usage',function(){
 	 */
 	it('can upload an epub',async function(){
 
-		this.timeout(10000);
+		this.timeout(60000);
 		let driver = helper.getDriver();
 		let url = await state.server.addr;
 		url = url.port;
 		url = `http://127.0.0.1:${url}/index.html`;
 
-
-
 		await driver.get(url);
 		let tab = await driver.findElement(state.By.css('ps-mobtabpanel'));
-		this.skip();
 		tab = await tab.getShadowRoot();
+		this.skip();
 		tab = await tab.findElement(state.By.css('ul[part="menu"] > li::nth(2)'));
 		tab.click();
 		let uploader = driver.findElement(state.By.css('ps-panel#Catalogue > nav > button[name="fromEpub"]'));
