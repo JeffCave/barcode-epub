@@ -6,8 +6,6 @@ global
 */
 
 export{
-	getGeckoVersion,
-	getFirefoxVersion,
 	done,
 	startServer,
 	getDriver,
@@ -22,30 +20,17 @@ import webdriver  from 'selenium-webdriver';
 import FirefoxDriver from './lib/FirefoxDriver.js';
 import ChromeDriver from './lib/chromeDriver.js';
 
-import fs from 'fs';
-import {exec,fork} from 'child_process';
+import {fork} from 'child_process';
 
-const state = {isSetup:false};
+const state = {
+	isSetup:false,
+	timeout: 10000,
+};
 
-const ffPath = './build/firefox/firefox';
 
 
 console.log('I am the very model of a modern major general');
 
-
-/**
- * @deprecated use 'FirefoxDriver.getDriverVersion' instead
- */
-async function getGeckoVersion(){
-	return FirefoxDriver.getDriverVersion();
-}
-
-/**
- * @deprecated use 'FirefoxDriver.getBrowserVersion' instead
- */
-async function getFirefoxVersion(){
-	return FirefoxDriver.getBrowserVersion();
-}
 
 async function done(rtn = true){
 	return rtn;
@@ -101,8 +86,9 @@ function getDriver(force=false){
 		state.driver = null;
 	}
 
-	//let generator = FirefoxDriver;
-	let generator = ChromeDriver;
+	let generator = null;
+	generator = FirefoxDriver;
+	generator = ChromeDriver;
 
 	state.driver = generator.getDriver();
 	return state.driver;
@@ -123,10 +109,6 @@ async function init (){
 	].join(':');
 
 	state.server = await startServer();
-
-	if(!fs.existsSync(ffPath)){
-		await exec('get-firefox --target "./build/" --extract ');
-	}
 
 	// if we are in debug mode, make some helper settings
 	state.debug = typeof v8debug === 'object' || /--debug|--inspect/.test(process.execArgv.join(' '));

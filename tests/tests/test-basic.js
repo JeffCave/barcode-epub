@@ -10,10 +10,16 @@ describe('Basic usage',function(){
 	before(async function(){
 		state = await helper.state;
 		await helper.init();
+		helper.setupMocha(this);
 		let url = await state.server.addr;
 		url = url.port;
 		url = `https://127.0.0.1:${url}/index.html`;
 		this.url = url;
+		return helper.done(true);
+	});
+
+	after(async function(){
+		helper.cleanup();
 		return helper.done(true);
 	});
 
@@ -44,7 +50,7 @@ describe('Basic usage',function(){
 	 */
 	it('can upload an epub',async function(){
 
-		this.timeout(60000);
+		this.timeout(state.timeout);
 		let driver = helper.getDriver();
 		let url = await state.server.addr;
 		url = url.port;

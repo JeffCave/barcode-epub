@@ -1,6 +1,7 @@
 
 import {exec} from 'child_process';
 import util from 'util';
+import fs from 'fs';
 
 import webdriver  from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox.js';
@@ -11,7 +12,7 @@ const exe = util.promisify(exec);
 
 let driver = null;
 
-export default class Firefox extends Driver{
+export default class FirefoxDriver extends Driver{
 
 	static get BrowserPath(){
 		return './build/firefox/firefox';
@@ -37,8 +38,7 @@ export default class Firefox extends Driver{
 			.setAcceptInsecureCerts(true);
 
 		driver = new webdriver.Builder()
-			//.forBrowser('firefox')
-			.forBrowser('chrome')
+			.forBrowser('firefox')
 			.setFirefoxOptions(ffOptions)
 			.withCapabilities(capabilities)
 			.build();
@@ -46,9 +46,10 @@ export default class Firefox extends Driver{
 		return driver;
 	}
 
-
-	static InstallDriver(){
-
+	static async InstallDriver(){
+		if(!fs.existsSync(FirefoxDriver.BrowserPath)){
+			await exec('get-firefox --target "./build/" --extract ');
+		}
 	}
 
 	static async getDriverVersion(){
@@ -62,7 +63,7 @@ export default class Firefox extends Driver{
 	static async getBrowserVersion(){
 		let text = null;
 		try{
-			text = await exec(`${Firefox.BrowserPath} --version`);
+			text = await exec(`${FirefoxDriver.BrowserPath} --version`);
 			text = text.stdout;
 			text = text.split(' ');
 			text = text.pop();

@@ -1,12 +1,12 @@
 
 test:
-  image: gitpod/workspace-full
+  image: selenium/standalone-chrome
   timeout: 10m
   stage: test
   script:
     - pwd;
-    - sudo apt-get update >> apt.log;
-    - sudo apt-get install -y firefox >> apt.log;
+    #- sudo apt-get update >> apt.log;
+    #- sudo apt-get install -y chromium >> apt.log;
     - npm install --silent;
     - export PATH=$PATH:./node_modules/.bin;
     - mocha --exit --recursive ./tests/tests/ --reporter mocha-multi-reporters --reporter-options configFile=./tests/reporter.config.json;

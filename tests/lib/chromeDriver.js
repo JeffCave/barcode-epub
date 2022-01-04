@@ -1,9 +1,11 @@
 
 import {exec} from 'child_process';
 import util from 'util';
+import fs from 'fs';
 
 import webdriver  from 'selenium-webdriver';
 //import chromium from 'selenium-webdriver/chromium.js';
+import chrome from 'selenium-webdriver/chrome.js';
 import 'chromedriver';
 
 import Driver from './Driver.js';
@@ -12,10 +14,17 @@ const exe = util.promisify(exec);
 
 let driver = null;
 
+export{
+	instance as default,
+	instance as ChromeDriver,
+};
 
-export default class ChromiumDriver extends Driver{
+class ChromiumDriver extends Driver{
+	constructor(){
+		super();
+	}
 
-	static get BrowserPath(){
+	get BrowserPath(){
 		return '/snap/bin/chromium';
 	}
 
@@ -23,29 +32,47 @@ export default class ChromiumDriver extends Driver{
 		return 'https://chromedriver.storage.googleapis.com/index.html?path=96.0.4664.45/';
 	}
 
-	static getDriver(force=false){
+	get ProfileDir(){
+		return `${process.cwd()}/build/chrome/profile/`;
+	}
+
+	get Driver(){
+		return this.getDriver();
+	}
+
+	getDriver(force=false){
 		if(driver){
 			if(!force) return driver;
 			driver.quit();
 		}
 
+		fs.mkdirSync(this.ProfileDir,{recursive: true});
 		const args = [
 			'--disable-extensions',
 			'--window-size=1366,768',
 			'--no-sandbox', // required for Linux without GUI
 			'--disable-gpu', // required for Windows,
 			'--enable-logging --v=1', // write debug logs to file(debug.log)
+			`--profile-directory=${this.ProfileDir}`,
+			'--incognito',
 		];
+		let capabilities = webdriver.Capabilities.chrome();
+		capabilities.set('chromeOptions', { args });
+		//capabilities.set('chrome.binary', '/snap/bin/chromium');
+		capabilities.set('acceptInsecureCerts', true);
 
-		//args.push('--headless');
+		let options = new chrome.Options();
+		//options.setBinaryPath('/snap/bin/chromium');
 
-		let capabilities = webdriver.Capabilities.chrome()
-			.set('chromeOptions', { args })
-			.set('chrome.binary', '/snap/bin/chromium')
-			.set('acceptInsecureCerts', true);
+		if(Driver.useHeadless){
+			//capabilities.addArguments('--headless');
+			options.headless();
+		}
+
 
 		driver = new webdriver.Builder()
-			.forBrowser('chrome')
+			.forBrowser('chromium')
+			.setChromeOptions(options)
 			.withCapabilities(capabilities)
 			.build();
 
@@ -53,11 +80,11 @@ export default class ChromiumDriver extends Driver{
 	}
 
 
-	static InstallDriver(){
+	InstallDriver(){
 
 	}
 
-	static async getDriverVersion(){
+	async getDriverVersion(){
 		let result = await exe('geckodriver -V');
 		let text = result.stdout;
 		text = text.split(' ');
@@ -65,7 +92,7 @@ export default class ChromiumDriver extends Driver{
 		return text;
 	}
 
-	static async getBrowserVersion(){
+	async getBrowserVersion(){
 		let text = null;
 		try{
 			text = await exec(`${ChromiumDriver.BrowserPath} --version`);
@@ -80,5 +107,5 @@ export default class ChromiumDriver extends Driver{
 		return text;
 	}
 
-
 }
+const instance = new ChromiumDriver();
