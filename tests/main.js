@@ -12,7 +12,8 @@ export{
 	setupMocha,
 	init,
 	state,
-	cleanup
+	cleanup,
+	tryUntil
 };
 
 import webdriver  from 'selenium-webdriver';
@@ -131,6 +132,8 @@ function cleanup(){
 	try{
 		if(state.browser){
 			state.browser.quit();
+			state.browser.close();
+			state.browser = null;
 		}
 		staticServer.send('stop');
 		Object.keys(state).forEach(d=>{
@@ -142,4 +145,31 @@ function cleanup(){
 		console.error('Failed to terminate tests');
 		console.error(e);
 	}
+}
+
+async function tryUntil(timeout,fun){
+	if(typeof timeout === 'function'){
+		fun = timeout;
+		timeout = 60000;
+	}
+
+	let midpoint = timeout / 2;
+	let grow = 1.62;
+	let rtn = null;
+	for(let delay = 23; !rtn && delay > 22;){
+		try{
+			rtn = await fun();
+		}
+		catch(e){
+			rtn = null;
+			delay = Math.floor(delay * grow);
+			if(delay > midpoint){
+				delay = midpoint;
+				grow = 1/grow;
+			}
+			//console.log(delay);
+			await new Promise((r)=>{setTimeout(r,delay);});
+		}
+	}
+	return rtn;
 }

@@ -57,39 +57,61 @@ describe('Basic usage',function(){
 		url = `http://127.0.0.1:${url}/index.html`;
 
 		await driver.get(url);
-		let tab = await driver.findElement(state.By.css('ps-mobtabpanel'));
-		tab = await tab.getShadowRoot();
-		this.skip();
-		tab = await tab.findElement(state.By.css('ul[part="menu"] > li::nth(2)'));
-		tab.click();
-		let uploader = driver.findElement(state.By.css('ps-panel#Catalogue > nav > button[name="fromEpub"]'));
-		uploader = uploader.findElement(state.By.css('input[type="file"]'));
+
+
+		await driver.executeScript(`async ()=>{
+			let dbs = await indexedDB.databases();
+			for(let db of dbs){
+				indexedDB.deleteDatabase(db.name);
+			}
+		}`);
+
+		let tabs = await driver.findElement(state.By.css('ps-mobtabpanel'));
+		tabs = await tabs.getShadowRoot();
+		let tab = await tabs.findElement(state.By.css('ul[part="menu"] > li:nth-of-type(2)'));
+		await tab.click();
+		let uploader = await driver.findElement(state.By.css('ps-mobtabpanel > ps-panel[name="library"]'));
+		//uploader = await uploader.getShadowRoot();
+		uploader = await uploader.findElement(state.By.css('ps-epublist'));
+		uploader = await uploader.getShadowRoot();
+		uploader = await uploader.findElement(state.By.css('ps-filedrop'));
+		uploader = await uploader.getShadowRoot();
+		uploader = await uploader.findElement(state.By.css('input[type=file]'));
 
 		let filename = [process.cwd(),'tests','lib','wonderland.epub'].join('/');
 		uploader.sendKeys(filename);
 
-		let li = driver.wait(function () {
-			return driver.isElementPresent(state.By.css('ps-panel#Catalogue > ul > li'));
-		}, 5000);
+		let epublist = await driver.findElement(state.By.css('ps-mobtabpanel > ps-panel[name="library"] > ps-epublist'));
+		epublist = await epublist.getShadowRoot();
 
-		let meta = li.data-meta;
+		let li = await helper.tryUntil( ()=>{ return epublist.findElement(state.By.css('li')); });
+
+		let script = await li.findElement(state.By.css('script[type="application/ld+json"]'));
+		await driver.executeScript("arguments[0].style.display = 'block';",script);
+		let meta = await script.getText();
+		await driver.executeScript("arguments[0].removeAttribute('style');",script);
 		meta = JSON.parse(meta);
 
 		let expected = {
 			'name': "Alice's Adventures in Wonderland",
 			'author': 'Lewis Carroll',
 			'inLanguage': 'en',
-			'keywords':['Fantasy fiction','Children\'s stories','Imaginary places -- Juvenile fiction','Alice (Fictitious character from Carroll) -- Juvenile fiction']
+			'keywords':[
+				'Fantasy fiction',
+				'Children\'s stories',
+				'Imaginary places -- Juvenile fiction',
+				'Alice (Fictitious character from Carroll) -- Juvenile fiction'
+			]
 		};
 		for(let e in expected){
-			let val = expected[e];
+			let val = meta[e];
 			if(Array.isArray(val)){
-				assert.equal(val.length,expected.length,`${e} same size`);
+				assert.equal(val.length,expected[e].length,`${e} same size`);
 				val.sort();
-				expected.keywords.sort();
+				expected[e].sort();
 				val = JSON.stringify(val);
-				expected.keywords = JSON.stringify(expected.keywords);
-				assert.equal(val,expected.keywords,`${e} same value`);
+				expected[e] = JSON.stringify(expected[e]);
+				assert.equal(val,expected[e],`${e} same value`);
 			}
 			else{
 				assert.equal(meta[e],expected[e],`${e} loaded`);
