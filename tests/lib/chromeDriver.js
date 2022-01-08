@@ -4,9 +4,10 @@ import util from 'util';
 import fs from 'fs';
 
 import webdriver  from 'selenium-webdriver';
-//import chromium from 'selenium-webdriver/chromium.js';
-import chrome from 'selenium-webdriver/chrome.js';
+//import ChromiumSelenium from 'selenium-webdriver/chromium.js';
+import ChromeSelenium from 'selenium-webdriver/chrome.js';
 import 'chromedriver';
+import chromium from 'chromium';
 
 import Driver from './Driver.js';
 
@@ -25,7 +26,7 @@ class ChromiumDriver extends Driver{
 	}
 
 	get BrowserPath(){
-		return '/snap/bin/chromium';
+		return chromium.path;
 	}
 
 	get DriverUrl(){
@@ -58,11 +59,11 @@ class ChromiumDriver extends Driver{
 		];
 		let capabilities = webdriver.Capabilities.chrome();
 		capabilities.set('chromeOptions', { args });
-		//capabilities.set('chrome.binary', '/snap/bin/chromium');
+		capabilities.set('chrome.binary', this.BrowserPath);
 		capabilities.set('acceptInsecureCerts', true);
 
-		let options = new chrome.Options();
-		//options.setBinaryPath('/snap/bin/chromium');
+		let options = new ChromeSelenium.Options();
+		options.setBinaryPath(this.BrowserPath);
 
 		if(Driver.useHeadless){
 			//capabilities.addArguments('--headless');

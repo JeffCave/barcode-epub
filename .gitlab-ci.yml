@@ -1,13 +1,14 @@
 
 test:
-  image: selenium/standalone-chrome
+  image: node
   timeout: 10m
   stage: test
   script:
     - pwd;
     #- sudo apt-get update >> apt.log;
     #- sudo apt-get install -y chromium >> apt.log;
-    - npm install --silent;
+    #- sudo apt-get install -y npm nodejs >> apt.log;
+    - npm install;
     - export PATH=$PATH:./node_modules/.bin;
     - mocha --exit --recursive ./tests/tests/ --reporter mocha-multi-reporters --reporter-options configFile=./tests/reporter.config.json;
   artifacts:

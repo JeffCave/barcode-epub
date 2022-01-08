@@ -3,6 +3,12 @@
 import { assert } from 'chai';
 import * as helper from '../main.js';
 
+
+after(async function(){
+	helper.cleanup();
+	return helper.done(true);
+});
+
 describe('Testing Framework', function(){
 	let state = null;
 
@@ -10,11 +16,6 @@ describe('Testing Framework', function(){
 		await helper.init();
 		state = await helper.state;
 		helper.setupMocha(this);
-	});
-
-	after(function(){
-		let driver = helper.getDriver();
-		driver.quit();
 	});
 
 	it('has an assertion framework', function(){
@@ -40,7 +41,9 @@ describe('Testing Framework', function(){
 		let url = await state.server.addr;
 		url = url.port;
 		url = `http://127.0.0.1:${url}/index.html`;
+
 		await driver.get(url);
+
 		let title = await driver.getTitle();
 		assert.isNotEmpty(title,'A page was found');
 		let h1 = await driver.findElement(state.By.css('h1'));

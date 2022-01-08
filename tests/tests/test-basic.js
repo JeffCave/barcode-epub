@@ -2,7 +2,11 @@ import { assert } from 'chai';
 import * as helper from '../main.js';
 
 //before(helper.init);
-//after(helper.cleanup);
+
+after(async function(){
+	helper.cleanup();
+	return helper.done(true);
+});
 
 describe('Basic usage',function(){
 	let state = null;
@@ -18,10 +22,7 @@ describe('Basic usage',function(){
 		return helper.done(true);
 	});
 
-	after(async function(){
-		helper.cleanup();
-		return helper.done(true);
-	});
+
 
 	it('has basic interface componentents');
 	it('uploaded document appears in list');
@@ -78,6 +79,7 @@ describe('Basic usage',function(){
 		uploader = await uploader.getShadowRoot();
 		uploader = await uploader.findElement(state.By.css('input[type=file]'));
 
+		this.timeout(120000);
 		let filename = [process.cwd(),'tests','lib','wonderland.epub'].join('/');
 		uploader.sendKeys(filename);
 

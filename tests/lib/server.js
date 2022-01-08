@@ -6,7 +6,6 @@ import serveStatic from 'serve-static';
 
 
 let server = null;
-console.log('I have knowledge of things animal, vegetable, and mineral');
 
 function serve(){
 	let path = `${process.cwd()}/www/`;
