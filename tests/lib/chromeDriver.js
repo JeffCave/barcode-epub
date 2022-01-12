@@ -2,12 +2,17 @@
 import {exec} from 'child_process';
 import util from 'util';
 import fs from 'fs';
+import path from 'path';
 
 import webdriver  from 'selenium-webdriver';
 //import ChromiumSelenium from 'selenium-webdriver/chromium.js';
 import ChromeSelenium from 'selenium-webdriver/chrome.js';
 import 'chromedriver';
-import chromium from 'chromium';
+
+
+import ChromiumDownloader from 'download-chromium';
+
+
 
 import Driver from './Driver.js';
 
@@ -23,10 +28,7 @@ export{
 class ChromiumDriver extends Driver{
 	constructor(){
 		super();
-	}
-
-	get BrowserPath(){
-		return chromium.path;
+		this.BrowserPath = path.resolve(`${process.cwd()}/build/chrome/profile/`);
 	}
 
 	get DriverUrl(){
@@ -81,12 +83,23 @@ class ChromiumDriver extends Driver{
 	}
 
 
-	InstallDriver(){
-
+	async InstallDriver(){
+		// look up chromium revision by taking the version number and fidning the base number
+		// https://omahaproxy.appspot.com/
+		// https://npm.taobao.org/mirrors/chromium-browser-snapshots/Linux_x64/
+		let revision = '938248';
+		let location = path.dirname(this.BrowserPath);
+		this.BrowserPath = await ChromiumDownloader({
+			revision: revision,
+			log: true,
+			onProgress: undefined,
+			installPath: location
+		});
+		console.log(`Chromium available @ ${this.BrowserPath}`);
 	}
 
 	async getDriverVersion(){
-		let result = await exe('geckodriver -V');
+		let result = await exe(`${this.BrowserPath} --version`);
 		let text = result.stdout;
 		text = text.split(' ');
 		text = text[1];
@@ -96,7 +109,7 @@ class ChromiumDriver extends Driver{
 	async getBrowserVersion(){
 		let text = null;
 		try{
-			text = await exec(`${ChromiumDriver.BrowserPath} --version`);
+			text = await exe(`${this.BrowserPath} --version`);
 			text = text.stdout;
 			text = text.split(' ');
 			text = text.pop();

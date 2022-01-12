@@ -76,7 +76,7 @@ async function startServer(){
 }
 
 
-function getDriver(force=false){
+async function getDriver(force=false){
 	if(state.driver){
 		if(!force) return state.driver;
 		state.driver.quit();
@@ -87,6 +87,7 @@ function getDriver(force=false){
 	generator = FirefoxDriver;
 	generator = ChromeDriver;
 
+	await generator.InstallDriver();
 	state.driver = generator.getDriver();
 	return state.driver;
 }

@@ -52,7 +52,7 @@ describe('Basic usage',function(){
 	it('can upload an epub',async function(){
 
 		this.timeout(state.timeout);
-		let driver = helper.getDriver();
+		let driver = await helper.getDriver();
 		let url = await state.server.addr;
 		url = url.port;
 		url = `http://127.0.0.1:${url}/index.html`;

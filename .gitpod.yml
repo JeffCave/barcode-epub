@@ -1,7 +1,5 @@
 image:
   file: .gitpod.Dockerfile
-tasks:
-  - init: npm install -g eslint;
 vscode:
   extensions:
     - mhutchie.git-graph

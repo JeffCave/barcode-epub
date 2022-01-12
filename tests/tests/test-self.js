@@ -28,7 +28,7 @@ describe('Testing Framework', function(){
 	});
 
 	it('can load a page into the browser', async function(){
-		let driver = helper.getDriver();
+		let driver = await helper.getDriver();
 		await driver.get('https://example.com/');
 		let title = await driver.getTitle();
 		assert.isNotEmpty(title,'Generic page found');
@@ -37,7 +37,7 @@ describe('Testing Framework', function(){
 
 
 	it('can load our hosted page into browser', async function(){
-		let driver = helper.getDriver();
+		let driver = await helper.getDriver();
 		let url = await state.server.addr;
 		url = url.port;
 		url = `http://127.0.0.1:${url}/index.html`;
