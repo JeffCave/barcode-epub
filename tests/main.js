@@ -114,7 +114,7 @@ async function init (){
 		state.timeout = 1000 * 60 * 60;
 	}
 	else{
-		state.timeout = 10000;
+		state.timeout = 60000;
 	}
 
 	state.By = webdriver.By;

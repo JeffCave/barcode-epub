@@ -16,6 +16,7 @@ describe('Testing Framework', function(){
 		await helper.init();
 		state = await helper.state;
 		helper.setupMocha(this);
+		this.timeout(state.timeout);
 	});
 
 	it('has an assertion framework', function(){
@@ -28,6 +29,7 @@ describe('Testing Framework', function(){
 	});
 
 	it('can load a page into the browser', async function(){
+		this.timeout(state.timeout);
 		let driver = await helper.getDriver();
 		await driver.get('https://example.com/');
 		let title = await driver.getTitle();
@@ -37,6 +39,7 @@ describe('Testing Framework', function(){
 
 
 	it('can load our hosted page into browser', async function(){
+		this.timeout(state.timeout);
 		let driver = await helper.getDriver();
 		let url = await state.server.addr;
 		url = url.port;
