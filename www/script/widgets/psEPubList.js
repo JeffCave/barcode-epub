@@ -6,6 +6,9 @@ export {
 };
 
 import Barcoder from '../bcode/Barcoder.js';
+import ePub from '../bcode/ePub.js';
+
+import psEpubListItem from './psEPubListItem.js';
 import psThing from './psThing.js';
 
 /**
@@ -152,54 +155,13 @@ class psEpubList extends psThing {
 
 		let db = this.barcoder.db;
 		let htmlList = this._.shadow.querySelector('ul');
-		let template = psEpubList.DefaultItem;
 		let recs = await db.allDocs({include_docs:true,attachments: false});
 
 		htmlList.innerHTML = '';
 		for(let rec of recs.rows){
-			rec = rec.doc;
-
-			let html = document.createElement('li');
-			html.innerHTML = template;
-
-			let id = rec._id;
-			let curpages = Object.keys(rec._attachments||{}).length;
-			let pct = Math.floor(curpages/rec.pages*100);
-
-			let checkbox = html.querySelector('input[type="checkbox"]');
-			checkbox.checked = this.selected.has(id);
-			checkbox.addEventListener('change',(e)=>{
-				if(e.target.checked){
-					this.selected.add(id);
-				}
-				else{
-					this.selected.delete(id);
-				}
-				this.emitChange('selected');
-			});
-
-
-			html.querySelector('output[name="id"]').title = id;
-			html.querySelector('output[name="id"]').value = [id.slice(0,4),'…',id.slice(-4)].join('');
-			html.querySelector('output[name="pages-current"]').value = curpages;
-			html.querySelector('output[name="pages-total"]').value   = rec.pages;
-			html.querySelector('output[name="pages-pct"]').value	 = pct;
-
-			html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta || {},null,'\t');
-			if(rec.meta){
-				html.querySelector('output[name="title"]').value = rec.meta.name;
-				html.querySelector('output[name="author"]').value = rec.meta.author;
-
-				let keywords = [];
-				for(let k of rec.meta.keywords){
-					let li = `<li>${k}</li>`;
-					keywords.push(li);
-				}
-				keywords = keywords.join('');
-				html.querySelector('ul[name="keywords"]').innerHTML = keywords;
-			}
-
-			htmlList.append(html);
+			let item = new psEpubListItem();
+			item.epub = new ePub(rec.doc);
+			htmlList.append(item);
 		}
 	}
 
@@ -243,21 +205,6 @@ class psEpubList extends psThing {
 <ul></ul>
 	   `;
 
-	}
-
-	static get DefaultItem(){
-		return `
-<nav>
- <input type='checkbox' />
- <button name='record'>⏸</button>
-</nav>
-<script type="application/ld+json"></script>
-<div><output name='id'>xxx...xxx</output></div>
-<div><output name='pages-current'>?</output> of <output name='pages-total'>?</output> (<output name='pages-pct'>100</output>%)</div>
-<div><label>Title</label>: <output name='title'>???</output></div>
-<div><label>Author</label>: <output name='author'>???</output></div>
-<ul name='keywords'></ul>
-		`;
 	}
 
 	static get DefaultCSS(){
