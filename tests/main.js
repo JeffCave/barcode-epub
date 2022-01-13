@@ -6,56 +6,28 @@ global
 */
 
 export{
-	getGeckoVersion,
-	getFirefoxVersion,
 	done,
 	startServer,
 	getDriver,
 	setupMocha,
 	init,
 	state,
-	cleanup
+	cleanup,
+	tryUntil
 };
 
 import webdriver  from 'selenium-webdriver';
-import firefox from 'selenium-webdriver/firefox.js';
-//const chrome = require('selenium-webdriver/chrome');
 
-import util from 'util';
-import fs from 'fs';
-import {exec,fork} from 'child_process';
+import FirefoxDriver from './lib/FirefoxDriver.js';
+import ChromeDriver from './lib/chromeDriver.js';
 
-const state = {isSetup:false};
+import {fork} from 'child_process';
 
-const exe = util.promisify(exec);
-const ffPath = './build/firefox/firefox';
+const state = {
+	isSetup:false,
+	timeout: 10000,
+};
 
-
-console.log('I am the very model of a modern major general');
-
-
-async function getGeckoVersion(){
-	let result = await exe('geckodriver -V');
-	let text = result.stdout;
-	text = text.split(' ');
-	text = text[1];
-	return text;
-}
-
-async function getFirefoxVersion(){
-	let text = null;
-	try{
-		text = await exec(`${ffPath} --version`);
-		text = text.stdout;
-		text = text.split(' ');
-		text = text.pop();
-		text = text.replace('\n','');
-	}
-	catch(e){
-		text = null;
-	}
-	return text;
-}
 
 async function done(rtn = true){
 	return rtn;
@@ -104,30 +76,20 @@ async function startServer(){
 }
 
 
-function getDriver(force=false){
+async function getDriver(force=false){
 	if(state.driver){
 		if(!force) return state.driver;
 		state.driver.quit();
 		state.driver = null;
 	}
 
-	const options = new firefox.Options();
-	//options.setBinary(binary);
-	options.headless(); //once newer webdriver ships
+	let generator = null;
+	generator = FirefoxDriver;
+	generator = ChromeDriver;
 
-	let capabilities = webdriver
-		.Capabilities
-		.firefox()
-		.set('acceptInsecureCerts', true);
-
-	const driver = new webdriver.Builder()
-		.forBrowser('firefox')
-		.setFirefoxOptions(options)
-		.withCapabilities(capabilities)
-		.build();
-
-	state.driver = driver;
-	return driver;
+	await generator.InstallDriver();
+	state.driver = generator.getDriver();
+	return state.driver;
 }
 
 
@@ -146,17 +108,13 @@ async function init (){
 
 	state.server = await startServer();
 
-	if(!fs.existsSync(ffPath)){
-		await exec('get-firefox --target "./build/" --extract ');
-	}
-
 	// if we are in debug mode, make some helper settings
 	state.debug = typeof v8debug === 'object' || /--debug|--inspect/.test(process.execArgv.join(' '));
 	if(state.debug){
 		state.timeout = 1000 * 60 * 60;
 	}
 	else{
-		state.timeout = 10000;
+		state.timeout = 60000;
 	}
 
 	state.By = webdriver.By;
@@ -171,6 +129,8 @@ function cleanup(){
 	try{
 		if(state.browser){
 			state.browser.quit();
+			state.browser.close();
+			state.browser = null;
 		}
 		staticServer.send('stop');
 		Object.keys(state).forEach(d=>{
@@ -182,4 +142,31 @@ function cleanup(){
 		console.error('Failed to terminate tests');
 		console.error(e);
 	}
+}
+
+async function tryUntil(timeout,fun){
+	if(typeof timeout === 'function'){
+		fun = timeout;
+		timeout = 60000;
+	}
+
+	let midpoint = timeout / 2;
+	let grow = 1.62;
+	let rtn = null;
+	for(let delay = 23; !rtn && delay > 22;){
+		try{
+			rtn = await fun();
+		}
+		catch(e){
+			rtn = null;
+			delay = Math.floor(delay * grow);
+			if(delay > midpoint){
+				delay = midpoint;
+				grow = 1/grow;
+			}
+			//console.log(delay);
+			await new Promise((r)=>{setTimeout(r,delay);});
+		}
+	}
+	return rtn;
 }

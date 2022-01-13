@@ -38,8 +38,7 @@ String.compare = function(a,b){
 	return diff;
 };
 
-JSON.baseStringify = JSON.stringify;
-JSON.stringify = function(value,replacer,space){
+JSON.stringifyOrdered = function(value,replacer,space){
 	function keysort(obj){
 		if(Object.isObject(obj)){
 			obj = Object.entries(obj);
