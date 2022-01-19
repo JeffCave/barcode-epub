@@ -9,6 +9,7 @@ export{
 	done,
 	startServer,
 	getDriver,
+	getDriverGenerator,
 	setupMocha,
 	init,
 	state,
@@ -76,6 +77,21 @@ async function startServer(){
 }
 
 
+function getDriverGenerator(driver = 'chromium'){
+	let generator = null;
+	switch(driver){
+		case 'firefox':
+			generator = FirefoxDriver;
+			break;
+		case 'chromium':
+		case 'chrome':
+		default:
+			generator = ChromeDriver;
+			break;
+	}
+	return generator;
+}
+
 async function getDriver(force=false){
 	if(state.driver){
 		if(!force) return state.driver;
@@ -83,9 +99,7 @@ async function getDriver(force=false){
 		state.driver = null;
 	}
 
-	let generator = null;
-	generator = FirefoxDriver;
-	generator = ChromeDriver;
+	let generator = getDriverGenerator();
 
 	await generator.InstallDriver();
 	state.driver = generator.getDriver();

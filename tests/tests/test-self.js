@@ -28,6 +28,22 @@ describe('Testing Framework', function(){
 		this.skip();
 	});
 
+	it('has the correct browser and driver versions available',async function(){
+		this.timeout(state.timeout);
+		try{
+			await helper.getDriver();
+		}
+		catch(e){
+			assert.fail('Failed to instantiate driver (probably missing shared object)');
+		}
+		let driver = await helper.getDriverGenerator();
+
+		let version = await driver.getDriverVersion();
+		assert.equal(version,'97.0.4692.71','Webdriver version is as expected');
+		version = await driver.getBrowserVersion();
+		assert.equal(version,'97.0.4691.0','Browser version is as expected');
+	});
+
 	it('can load a page into the browser', async function(){
 		this.timeout(state.timeout);
 		let driver = await helper.getDriver();
