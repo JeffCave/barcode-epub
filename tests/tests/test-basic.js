@@ -86,7 +86,8 @@ describe('Basic usage',function(){
 		let epublist = await driver.findElement(state.By.css('ps-mobtabpanel > ps-panel[name="library"] > ps-epublist'));
 		epublist = await epublist.getShadowRoot();
 
-		let li = await helper.tryUntil( ()=>{ return epublist.findElement(state.By.css('li')); });
+		let li = await helper.tryUntil( 10000, ()=>{ return epublist.findElement(state.By.css('ps-epublistitem')); });
+		li = await li.getShadowRoot();
 
 		let script = await li.findElement(state.By.css('script[type="application/ld+json"]'));
 		await driver.executeScript("arguments[0].style.display = 'block';",script);
