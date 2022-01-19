@@ -23,17 +23,11 @@ class psEpubListItem extends HTMLElement {
 				emitting: null
 			}
 		};
-		this._.shadow = this.attachShadow({mode:'open'});
-		this._.shadow.innerHTML = psEpubListItem.DefaultTemplate;
-
-		let shadow = this._.shadow;
-
-		let style= document.createElement('style');
-		shadow.append(style);
-		style.textContent = this.initialCSS;
+		let shadow = this.attachShadow({mode:'open'});
+		shadow.innerHTML = psEpubListItem.DefaultTemplate;
 
 		this._.changehandler = ()=>{this.Updator();};
-		this.addEventListener('epub',this._.changehandler);
+		this.addEventListener('change',this._.changehandler);
 	}
 
 	get epub(){
@@ -55,7 +49,7 @@ class psEpubListItem extends HTMLElement {
 	 * is the item checked
 	 */
 	get isSelected(){
-		return this._.selected;
+		return !!this._.selected;
 	}
 	set isSelected(value){
 		value = !!value;
@@ -63,6 +57,12 @@ class psEpubListItem extends HTMLElement {
 		if(value === this._.selected) return;
 		// apply change
 		this._.selected = value;
+		if(value && !this.hasAttribute('selected')){
+			this.setAttributeNode(document.createAttribute('selected'));
+		}
+		else{
+			this.removeAttribute('selected');
+		}
 		this.emitChange('selected');
 	}
 
@@ -113,22 +113,16 @@ class psEpubListItem extends HTMLElement {
 		let html = this.shadowRoot;
 		html.innerHTML = template;
 
-		let rec = this._.epub;
+		let rec = this._.epub.rec;
 
 		let id = rec._id;
 		let curpages = Object.keys(rec._attachments||{}).length;
 		let pct = Math.floor(curpages/rec.pages*100);
 
 		let checkbox = html.querySelector('input[type="checkbox"]');
-		checkbox.checked = this.selected.has(id);
+		checkbox.checked = this.isSelected;
 		checkbox.addEventListener('change',(e)=>{
-			if(e.target.checked){
-				this.selected.add(id);
-			}
-			else{
-				this.selected.delete(id);
-			}
-			this.emitChange('selected');
+			this.isSelected = e.target.checked;
 		});
 
 		html.querySelector('output[name="id"]').title = id;
@@ -170,10 +164,11 @@ class psEpubListItem extends HTMLElement {
 	 * The initial CSS that should be applied.
 	 */
 	get initialCSS(){
-		return [
+		let css = [
 			super.initialCSS||'',
 			psEpubListItem.DefaultCSS
 		].join('\n');
+		return css;
 	}
 
 	static get observedAttributes() {
@@ -182,6 +177,7 @@ class psEpubListItem extends HTMLElement {
 
 	static get DefaultTemplate(){
 		return `
+<style>${psEpubListItem.DefaultCSS}</style>
 <nav>
  <input type='checkbox' />
  <button name='record'>⏸</button>
@@ -201,37 +197,14 @@ button {
 	min-width: 48px;
 	min-height: 48px;
 }
-.mainaction{
-	position: absolute;
-	bottom: 2.5em;
-	left: 2.5em;
-	box-shadow: 0.25em 0.25em 0.25em darkgray;
-	z-index:10;
-}
 :host{
 	flex: 1 0 auto;
 	display: flex;
 	flex-direction: column;
 	flex-wrap: nowrap;
-}
-:host > nav {
-	flex: 0 0 auto;
-	background-color: var(--main-color);
-	top:0;
-	left:0;
-	width:100vw;
-}
-:host > ul {
-	flex: 1 0 auto;
-	overflow-y: scroll;
-	overflow-x: scroll;
-    padding:0;
-    margin:0;
-}
-:host > ul > li {
-    border: 0.1em solid black;
+
+	border: 0.1em solid black;
     background-color: ivory;
-    display:block;
     padding: 1em;
     border-radius: 1em;
 	margin:0.5em;
@@ -251,6 +224,9 @@ ul[name='keywords'] li {
 	background-color: salmon;
 	border-radius: 1em;
 	line-height:1.5em;
+}
+output[name='id']{
+	font-family: monospace;
 }
 		`;
 	}
