@@ -19,6 +19,9 @@ test:
       - ./test-results.*
     reports:
       junit: test-results.xml
+  only:
+  - master
+  - staging
 
 pages:
   stage: deploy
@@ -29,4 +32,4 @@ pages:
     - public
   only:
   - master
-  - staging
+  - staging # temporary, eventually just master
