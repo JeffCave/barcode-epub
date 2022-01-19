@@ -32,4 +32,6 @@ let options = {
 };
 
 // Run the tests
-lint(paths, options);
+describe('001 - Linter validation',function(){
+	lint(paths, options);
+});
