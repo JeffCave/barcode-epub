@@ -184,9 +184,15 @@ class psEpubListItem extends HTMLElement {
 </nav>
 <script type="application/ld+json"></script>
 <div><output name='id'>xxx...xxx</output></div>
-<div><output name='pages-current'>?</output> of <output name='pages-total'>?</output> (<output name='pages-pct'>100</output>%)</div>
-<div><label>Title</label>: <output name='title'>???</output></div>
-<div><label>Author</label>: <output name='author'>???</output></div>
+<div name='pages'><output name='pages-current'>?</output> of <output name='pages-total'>?</output> (<output name='pages-pct'>100</output>%)</div>
+<div>
+<label>Title</label>
+<output name='title'>???</output>
+</div>
+<div>
+<label>Author</label>
+<output name='author'>???</output>
+</div>
 <ul name='keywords'></ul>
 		`;
 	}
@@ -210,6 +216,10 @@ button {
 	margin:0.5em;
 	position: relative;
 }
+:host > * {
+	overflow-x: auto;
+	overflow-wrap: break-word;
+}
 ul[name='keywords'] {
 	display: block;
 	flex-wrap: wrap;
@@ -225,8 +235,13 @@ ul[name='keywords'] li {
 	border-radius: 1em;
 	line-height:1.5em;
 }
-output[name='id']{
+output[name='id'], div[name='pages']{
 	font-family: monospace;
+}
+
+label {
+	display: block;
+	font-weight: bold;
 }
 		`;
 	}

@@ -249,21 +249,6 @@ button {
 	margin:0.5em;
 	position: relative;
 }
-ul[name='keywords'] {
-	display: block;
-	flex-wrap: wrap;
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
-}
-ul[name='keywords'] li {
-	display:inline-block;
-	padding:0.5em;
-	margin-right:1em;
-	background-color: salmon;
-	border-radius: 1em;
-	line-height:1.5em;
-}
 		`;
 	}
 
