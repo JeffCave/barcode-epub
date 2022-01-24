@@ -259,9 +259,16 @@ class ePub extends psThing{
 			meta.inLanguage = val.textContent;
 		}
 
-		val = xml.querySelector('creator');
-		if(val){
-			meta.author = val.textContent;
+		val = xml.querySelectorAll('creator');
+		meta.author = [];
+		for(let v of val){
+			let role = v.getAttribute('role') || '';
+			role = role.replace(/^aut$/,'');
+			if(role === ''){
+				let authors = v.textContent;
+				authors = authors.split('&amp;');
+				meta.author = meta.author.concat(authors);
+			}
 		}
 
 		val = xml.querySelectorAll('identifier');

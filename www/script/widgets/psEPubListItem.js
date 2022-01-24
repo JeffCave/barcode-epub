@@ -134,7 +134,13 @@ class psEpubListItem extends HTMLElement {
 		html.querySelector('script[type="application/ld+json"]').textContent = JSON.stringify(rec.meta || {},null,'\t');
 		if(rec.meta){
 			html.querySelector('output[name="title"]').value = rec.meta.name;
-			html.querySelector('output[name="author"]').value = rec.meta.author;
+			let auth = [];
+			for(let a of rec.meta.author){
+				let li = `<li>${a}</li>`;
+				auth.push(li);
+			}
+			auth = auth.join('');
+			html.querySelector('ul[name="author"]').innerHTML = auth;
 
 			let keywords = [];
 			for(let k of rec.meta.keywords){
@@ -191,7 +197,7 @@ class psEpubListItem extends HTMLElement {
 </div>
 <div>
 <label>Author</label>
-<output name='author'>???</output>
+<ul name='author'></ul>
 </div>
 <ul name='keywords'></ul>
 		`;
@@ -219,6 +225,21 @@ button {
 :host > * {
 	overflow-x: auto;
 	overflow-wrap: break-word;
+}
+ul[name='author'] {
+	display: block;
+	list-style-type: none;
+	margin: 0.5em;
+	padding: 0;
+}
+ul[name='author'] li {
+	display:inline-block;
+	padding:0.5em;
+	margin-right:1em;
+	background-color: white;
+	border: 1px solid black;
+	border-radius: 1em;
+	line-height:1em;
 }
 ul[name='keywords'] {
 	display: block;
