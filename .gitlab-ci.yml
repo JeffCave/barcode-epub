@@ -10,7 +10,7 @@ test:
     - sudo apt-get install -y libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev >> apt.log;
     - npm install;
     - export PATH=$PATH:./node_modules/.bin;
-    - mocha --exit --recursive ./tests/tests/ --reporter mocha-multi-reporters --reporter-options configFile=./tests/reporter.config.json;
+    - mocha --exit --sort --recursive ./tests/tests/ --reporter mocha-multi-reporters --reporter-options configFile=./tests/reporter.config.json;
   artifacts:
     untracked: false
     expire_in: 30 days
@@ -19,6 +19,9 @@ test:
       - ./test-results.*
     reports:
       junit: test-results.xml
+  only:
+  - master
+  - staging
 
 pages:
   stage: deploy
@@ -29,4 +32,4 @@ pages:
     - public
   only:
   - master
-  - staging
+  - staging # temporary, eventually just master

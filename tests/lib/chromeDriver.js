@@ -1,4 +1,7 @@
-
+/**
+ *
+   pkill chromedriver && pkill -f "(chromium)?(--headless)" && pkill -f "(chrome)?(--headless)"
+ */
 import {exec} from 'child_process';
 import util from 'util';
 import fs from 'fs';
@@ -28,7 +31,8 @@ export{
 class ChromiumDriver extends Driver{
 	constructor(){
 		super();
-		this.BrowserPath = path.resolve(`${process.cwd()}/build/chrome/profile/`);
+		this.BrowserPath = path.resolve(`${process.cwd()}/build/chrome/chrome`);
+		this.DriverPath = path.resolve(`${process.cwd()}/node_modules/.bin/chromedriver`);
 	}
 
 	get DriverUrl(){
@@ -99,7 +103,7 @@ class ChromiumDriver extends Driver{
 	}
 
 	async getDriverVersion(){
-		let result = await exe(`${this.BrowserPath} --version`);
+		let result = await exe(`${this.DriverPath} --version`);
 		let text = result.stdout;
 		text = text.split(' ');
 		text = text[1];
@@ -110,10 +114,9 @@ class ChromiumDriver extends Driver{
 		let text = null;
 		try{
 			text = await exe(`${this.BrowserPath} --version`);
-			text = text.stdout;
+			text = text.stdout.replace('\n',' ');
 			text = text.split(' ');
-			text = text.pop();
-			text = text.replace('\n','');
+			text = text[1];
 		}
 		catch(e){
 			text = null;

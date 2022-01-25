@@ -5,7 +5,7 @@
 	"main": "app.js",
 	"type": "module",
 	"scripts": {
-		"test": "mocha --exit --recursive ./tests/tests/ -R 'nyan' "
+		"test": "mocha --exit --sort --recursive ./tests/tests/ -R 'nyan' "
 	},
 	"repository": {
 		"type": "git",
