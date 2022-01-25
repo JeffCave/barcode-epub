@@ -6,7 +6,7 @@
             "document"
         ]
     },
-	"diffEditor.ignoreTrimWhitespace": false,
+	"diffEditor.ignoreTrimWhitespace": true,
     "editor.detectIndentation": false,
 	"editor.insertSpaces": false,
     "files.trimTrailingWhitespace": true,
