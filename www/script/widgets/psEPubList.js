@@ -161,6 +161,15 @@ class psEpubList extends psThing {
 		for(let rec of recs.rows){
 			let item = new psEpubListItem();
 			item.epub = new ePub(rec.doc);
+			item.addEventListener('change',(e)=>{
+				if(e.target.isSelected){
+					this.selected.add(e.target.epub.id);
+				}
+				else{
+					this.selected.delete(e.target.epub.id);
+				}
+				this.emitChange('selected');
+			});
 			htmlList.append(item);
 		}
 	}
