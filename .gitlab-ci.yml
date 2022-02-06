@@ -1,3 +1,28 @@
+
+test:
+  #image: node #missing a bunch of dependancies. Would fix them if I knew what they were
+  image: gitpod/workspace-full
+  timeout: 10m
+  stage: test
+  script:
+    - pwd;
+    - sudo apt-get update >> apt.log;
+    - sudo apt-get install -y libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev >> apt.log;
+    - npm install;
+    - export PATH=$PATH:./node_modules/.bin;
+    - mocha --exit --sort --recursive ./tests/tests/ --reporter mocha-multi-reporters --reporter-options configFile=./tests/reporter.config.json;
+  artifacts:
+    untracked: false
+    expire_in: 30 days
+    paths:
+      - ./apt.log
+      - ./test-results.*
+    reports:
+      junit: test-results.xml
+  only:
+  - master
+  - staging
+
 pages:
   stage: deploy
   script:
@@ -7,3 +32,4 @@ pages:
     - public
   only:
   - master
+  - staging # temporary, eventually just master

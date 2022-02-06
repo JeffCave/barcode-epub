@@ -1,4 +1,28 @@
 {
+    "[html]": {
+        "editor.tabSize": 1,
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ]
+    },
+	"diffEditor.ignoreTrimWhitespace": true,
+    "editor.detectIndentation": false,
+	"editor.insertSpaces": false,
     "files.trimTrailingWhitespace": true,
-    "files.insertFinalNewline": true
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "gitlens.defaultDateFormat": "YYYY-MM-DD HH:mm",
+    "gitlens.defaultDateShortFormat": "YYYY-MM-DD",
+    "gitlens.defaultTimeFormat": "HH:mm",
+    "gitpod.openInStable.neverPrompt": true,
+    "javascript.updateImportsOnFileMove.enabled": "always",
+	"mochaExplorer.cwd": "./",
+	"mochaExplorer.files": "tests/tests/**/*.js",
+	"mochaExplorer.ignore": "tests/lib/",
+	"mochaExplorer.exit": true,
+	"mochaExplorer.timeout": 10000,
+    "redhat.telemetry.enabled": true,
+    "window.autoDetectColorScheme": true
 }

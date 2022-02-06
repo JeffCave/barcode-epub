@@ -1,3 +1,4 @@
-encoded/
-node_modules/
 .chromium-cache/
+build/
+node_modules/
+test-results.*

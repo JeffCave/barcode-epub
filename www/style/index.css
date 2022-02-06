@@ -1,0 +1,136 @@
+/**
+ * Given A4 paper is 21 x 29.7cm and it is important to leave enough
+ * margin for binding and hole punching (20cm each side), an optimal size appears to
+ * be 5 across (@3.4x3.4 cm each)
+ *
+ * Splitting: 4 bytes for a protocol identifier + 64bytes for a UID (sha512) + 2 bytes for sequence ID + 2 bytes for total packages
+ * 72 bytes total
+ */
+/*
+
+https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/
+
+*/
+
+@import url(./main.css);
+
+
+body{
+    position:relative;
+	display:flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+    margin:0;
+	width: 100vw;
+	height: 100vh;
+}
+header{
+	display: flex;
+	flex: 0 0 auto;
+	justify-content: space-between;
+}
+main{
+	position: relative;
+	display: flex;
+	flex: 1 0 auto;
+    margin:0;
+	padding:0;
+	border:0;
+}
+#codeset img {
+    /* border: 10px solid white; */
+    padding: 0;
+    margin: 0;
+    display:none;
+    height:80vmin;
+    width:80vmin;
+}
+#codeset img::after{
+    content: "[" attr(alt) "]";
+}
+#codeset img.show{
+    display:inline-block;
+    cursor:none;
+}
+article{
+    position:relative;
+    display:none;
+    width:100%;
+    padding:0;
+    margin:0;
+}
+article:nth-of-type(1){
+    display:inline-block;
+}
+button {
+    min-width: 1cm;
+    min-height: 1cm;
+}
+canvas{
+    display:none;
+}
+header {
+    background-color: white;
+}
+header > nav > ul {
+    list-style-type: none;
+    padding:0;
+}
+header > nav > ul > li {
+    display:inline-block;
+}
+
+@media print {
+    @page{
+        margin: 1.8cm;
+        margin-top:1.5cm;
+        margin-bottom:1.5cm;
+        /* border: 1px solid black; */
+        @top-right {
+            content: counter(page) " of " counter(pages);
+            margin: 30pt 0 10pt 0;
+            font-size: 8pt;
+        }
+    }
+    body{
+        background-color: initial;
+    }
+    header{
+        display: none;
+    }
+    main{
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    ps-tabpanel::part(menu){
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    ps-panel::part(resizer){
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    ps-panel[name='book'] nav {
+        display: none;
+        margin:0;
+        padding:0;
+        border:0;
+    }
+    #codeset img {
+        position: relative;
+        display: inline-block;
+        top:0;
+        left:0;
+        height: 42mm;
+        width: 42mm;
+        animation-name: none;
+        opacity:1;
+        page-break-inside: initial;
+        border:0;
+    }
+}
